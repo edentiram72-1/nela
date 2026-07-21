@@ -38,6 +38,10 @@ Fix planner task ordering test
 - Do not introduce circular dependencies.
 - Do not rewrite completed modules without a documented reason.
 - Prefer small interfaces over large shared abstractions.
+- The Brain must not execute desktop, browser, file, service, or plugin actions directly.
+- Agent-specific behavior belongs in Agents, not in `brain/`.
+- Communication between major modules should happen through Events.
+- New Agents must implement the shared contract in `agents/base.py`.
 
 ## Documentation Rules
 
@@ -60,6 +64,10 @@ Add tests when practical for:
 - Planner behavior.
 - Memory retrieval.
 - Terminal and browser safety boundaries.
+- Intent recognition.
+- Decision logic.
+- Context state.
+- Agent dispatch behavior.
 
 If tests are not added, explain why in `docs/ai_handoff.md`.
 
@@ -88,4 +96,3 @@ If tests are not added, explain why in `docs/ai_handoff.md`.
 - Design new systems.
 - Coordinate development.
 - Approve major structural changes.
-

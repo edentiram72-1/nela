@@ -2,90 +2,303 @@
 
 ## Purpose
 
-NELA OS is a modular AI operating layer. Its architecture is designed for multiple AI assistants to collaborate safely through GitHub while keeping every feature isolated, documented, and traceable.
+NELA OS is a desktop-first AI operating system foundation. It is designed to grow into an intelligent assistant that can converse by voice, remember context, understand the screen, control applications, automate workflows, and load new capabilities as plugins.
 
-The system should evolve through small, independent modules rather than large coupled rewrites.
+The system is built around one central Brain. The Brain understands, reasons, plans, and delegates. It does not execute actions directly.
 
-## Architectural Principles
+## Core Architecture
 
-1. **GitHub is the source of truth.** All assistants coordinate through branches, commits, pull requests, issues, and the handoff document.
-2. **Modules stay independent.** A feature should live in the most specific folder possible and expose a narrow interface.
-3. **Documentation changes with behavior.** Any meaningful change must update relevant docs and `docs/ai_handoff.md`.
-4. **Architecture is explicit.** Major structural changes require a decision entry in `docs/decisions.md`.
-5. **Tests follow risk.** Add tests whenever practical, especially for shared contracts, data transformations, and automation.
+```text
+Voice
+  |
+  v
+Conversation
+  |
+  v
+Brain
+  |
+  +--> Planner
+  +--> Memory
+  +--> Intent Router
+  |
+  v
+Agents
+  |
+  v
+Computer
+```
 
-## Top-Level Modules
+## Principles
 
-### `core/`
+1. **The Brain delegates.** It never performs desktop, browser, file, or service actions directly.
+2. **Agents execute.** Every capability is an independent Agent with the same lifecycle contract.
+3. **Events connect modules.** Modules communicate through events, not direct dependencies.
+4. **Memory is explicit.** Short-term, long-term, vector, and profile memory are separate concerns.
+5. **Plugins extend capability.** New capabilities should be installable as plugins.
+6. **Documentation follows behavior.** Significant changes update docs and `docs/ai_handoff.md`.
+7. **GitHub is the collaboration layer.** AI assistants coordinate through branches, commits, pull requests, issues, and the handoff file.
 
-Core runtime contracts, shared primitives, orchestration interfaces, and cross-module types. Code in this folder should be stable and reviewed carefully because changes may affect the entire system.
+## Project Structure
 
-### `agents/`
+```text
+NELA/
+  README.md
+  LICENSE
+  .env.example
+  .gitignore
 
-Independent AI agent modules and agent-specific adapters. Each agent implementation should be isolated behind a clear interface so that one assistant's workflow does not force changes in another assistant's module.
+  docs/
+    architecture.md
+    roadmap.md
+    ai_handoff.md
+    coding_rules.md
+    api.md
+    memory_model.md
 
-### `memory/`
+  core/
+    app.py
+    config.py
+    events.py
+    logger.py
+    startup.py
 
-Memory storage, retrieval, summarization, indexing, and persistence. This folder should separate memory interfaces from storage backends so the project can change persistence strategies later.
+  brain/
+    planner.py
+    reasoning.py
+    conversation.py
+    intent_router.py
 
-### `voice/`
+  voice/
+    microphone.py
+    speech_to_text.py
+    text_to_speech.py
+    wake_word.py
 
-Speech input, speech output, transcription, voice synthesis, and audio-related interaction logic.
+  vision/
+    screen_capture.py
+    screen_reader.py
+    ui_detector.py
 
-### `vision/`
+  memory/
+    short_term.py
+    long_term.py
+    vector_store.py
+    profile.py
 
-Image understanding, screen analysis, OCR, and visual context processing.
+  agents/
+    terminal/
+    browser/
+    spotify/
+    files/
+    calendar/
+    gmail/
+    github/
+    codex/
+    automation/
+    vision/
+    desktop/
 
-### `planner/`
+  skills/
+  plugins/
+  tests/
+  scripts/
+  config/
+  assets/
+    sounds/
+    voices/
+  logs/
+  prompts/
+```
 
-Planning, task decomposition, prioritization, scheduling decisions, and execution strategies.
+## Core Components
 
-### `automation/`
+### Brain
 
-Scheduled jobs, event triggers, monitors, background workflows, and repeatable operational tasks.
+Responsible for:
 
-### `skills/`
+- Understanding user intent.
+- Reasoning about the request.
+- Planning task execution.
+- Delegating work to Agents.
+- Emitting events that describe decisions and tasks.
 
-Reusable assistant capabilities. A skill should be self-contained and documented enough that any AI can understand when to use it.
+Current files:
 
-### `terminal/`
+- `brain/conversation.py`
+- `brain/intent_router.py`
+- `brain/reasoning.py`
+- `brain/planner.py`
 
-Terminal command execution, shell integration, command safety, and local development tooling.
+### Planner
 
-### `browser/`
+Breaks every request into executable tasks.
 
-Browser control, page inspection, navigation, web task support, and browser automation helpers.
+Example:
 
-### `config/`
+```text
+User: "Open Spotify and play relaxing music."
 
-Configuration templates and defaults. Secrets must not be committed.
+Planner:
+1. Open Spotify
+2. Wait until Spotify is ready
+3. Search for a relaxing music playlist
+4. Start playback
+```
+
+### Memory
+
+Stores:
+
+- User profile.
+- Preferences.
+- Conversations.
+- Projects.
+- Long-term memories.
+- Session memories.
+
+See `docs/memory_model.md`.
+
+### Voice
+
+Responsible for:
+
+- Wake word detection.
+- Speech recognition.
+- Speech synthesis.
+- Voice input and output boundaries.
+
+### Vision
+
+Responsible for:
+
+- Reading the screen.
+- Understanding UI state.
+- OCR.
+- Detecting buttons, inputs, and other UI elements.
+- Helping agents navigate applications.
+
+### Agent System
+
+Every capability is an independent Agent.
+
+Each Agent exposes:
+
+```python
+initialize()
+execute(command)
+stop()
+status()
+health_check()
+```
+
+Agents currently exist as placeholders for:
+
+- Terminal
+- Browser
+- Spotify
+- Files
+- Calendar
+- Gmail
+- GitHub
+- Codex
+- Automation
+- Vision
+- Desktop
+
+### Events
+
+Every Agent communicates only through events. Direct agent-to-agent dependencies are not allowed.
+
+Example:
+
+```text
+Voice
+  |
+  v
+IntentRecognized
+  |
+  v
+Planner
+  |
+  v
+TaskCreated
+  |
+  v
+SpotifyAgent
+  |
+  v
+TaskCompleted
+```
+
+Current event primitives are defined in `core/events.py`.
+
+### Plugin System
+
+Every new capability should be installable as a plugin when it is not part of the core assistant runtime.
+
+Examples:
+
+```text
+plugins/
+  weather/
+  youtube/
+  slack/
+  whatsapp/
+  homeassistant/
+  iphone/
+```
+
+Plugin loading is not implemented yet. The current repository only reserves the structure.
+
+## Logging
+
+Centralized logging is configured in `core/logger.py`.
+
+Runtime log targets:
+
+- `logs/brain.log`
+- `logs/voice.log`
+- `logs/agents.log`
+- `logs/errors.log`
+- `logs/performance.log`
+
+Log files are ignored by Git. `logs/.gitkeep` keeps the folder available.
 
 ## Dependency Direction
 
 Recommended dependency direction:
 
 ```text
-apps/features -> agents/planner/automation -> core
-voice/vision/browser/terminal -> core
-memory -> core
+core <- brain <- voice/conversation entry points
+core <- agents
+core <- memory
+core <- vision
 tests -> all modules
 ```
 
-Avoid circular dependencies. Shared behavior belongs in `core/`; module-specific behavior should remain inside its module.
+Rules:
 
-## Change Workflow
+- `brain/` may create plans and events, but must not execute external actions.
+- `agents/` may execute actions, but must not make architecture decisions.
+- `memory/` should expose storage interfaces without owning conversation flow.
+- `voice/` and `vision/` should expose inputs to the Brain or Agents without directly controlling unrelated modules.
+- Shared runtime primitives belong in `core/`.
 
-1. Create one branch per feature or fix.
-2. Read `docs/ai_handoff.md` before starting.
-3. Keep changes scoped to the relevant module.
-4. Update documentation and handoff notes.
-5. Add or update tests when practical.
-6. Commit small, reviewable changes.
-7. Open a pull request for review.
+## Documentation Requirements
+
+Every module should document:
+
+- Purpose.
+- Dependencies.
+- Events.
+- Public API.
+- Examples.
+- Known limitations.
+- Future improvements.
 
 ## Architecture Change Policy
 
-Do not change the top-level architecture casually. Any major change must:
+Major structural changes must:
 
 - Explain the reason for the change.
 - Describe affected modules.

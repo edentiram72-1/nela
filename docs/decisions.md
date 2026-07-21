@@ -20,7 +20,7 @@ Related files:
 
 ### DEC-0001: Use GitHub As The Multi-AI Collaboration Layer
 
-**Date:** 2026-07-22  
+**Date:** 2026-07-22
 **Status:** Accepted
 
 **Context:** NELA OS needs to support collaboration between Codex, Claude, ChatGPT, and future AI assistants. Direct assistant-to-assistant communication would add complexity and fragility.
@@ -42,7 +42,7 @@ Related files:
 
 ### DEC-0002: Keep Top-Level Modules Independent
 
-**Date:** 2026-07-22  
+**Date:** 2026-07-22
 **Status:** Accepted
 
 **Context:** Multiple assistants may work on different features at the same time. Coupled modules increase the risk of merge conflicts and accidental regressions.
@@ -60,3 +60,29 @@ Related files:
 - `docs/architecture.md`
 - `docs/coding_rules.md`
 
+### DEC-0003: Make The Brain Agent-Neutral And Event-Driven
+
+**Date:** 2026-07-22
+**Status:** Accepted
+
+**Context:** Phase 1 requires a production-ready Brain foundation. The Brain must think, plan, remember, and delegate without directly performing actions or embedding service-specific behavior.
+
+**Decision:** The Brain owns conversation flow, intent recognition, decision making, planning, context, memory orchestration, and dispatch coordination. Execution remains inside independent Agents. Major lifecycle changes are published as Events.
+
+**Consequences:**
+
+- New Agents can register dynamically through `AgentDispatcher`.
+- The Brain can support future plugins without hardcoded Agent logic.
+- Testing can focus on Brain behavior without real desktop or service integrations.
+- Real action execution must be implemented in Agents during later phases.
+
+**Related files:**
+
+- `brain/conversation.py`
+- `brain/intent_router.py`
+- `brain/planner.py`
+- `brain/decision.py`
+- `brain/context.py`
+- `brain/dispatcher.py`
+- `brain/memory_manager.py`
+- `agents/base.py`
