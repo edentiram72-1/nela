@@ -86,3 +86,26 @@ Related files:
 - `brain/dispatcher.py`
 - `brain/memory_manager.py`
 - `agents/base.py`
+
+### DEC-0004: Use Review Bundles For Claude Collaboration
+
+**Date:** 2026-07-23
+**Status:** Accepted
+
+**Context:** Claude cannot access local machine paths such as `/Users/.../nala/docs/architecture.md`. Direct assistant-to-assistant communication is also outside the intended collaboration model.
+
+**Decision:** Add a Claude collaboration Agent and export script that prepare a Markdown review bundle. The bundle can be pasted into Claude, uploaded to Claude, or attached to a GitHub pull request.
+
+**Consequences:**
+
+- Claude can review the same source of truth without direct local access.
+- Codex can regenerate a current review bundle after significant changes.
+- Review focus and required files remain explicit and traceable.
+- The system still avoids direct communication channels between AI assistants.
+
+**Related files:**
+
+- `agents/claude/agent.py`
+- `scripts/export_claude_review_bundle.py`
+- `docs/claude_review_bundle.md`
+- `docs/ai_handoff.md`

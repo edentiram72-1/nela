@@ -124,6 +124,27 @@ Status: Experimental
 
 Purpose: Send a Task to its target Agent and emit status events.
 
+## Claude Collaboration APIs
+
+### `ClaudeAgent.execute(command)`
+
+Module: `agents/claude/agent.py`
+Status: Experimental
+
+Purpose: Prepare Claude review requests and export review bundles without creating a direct connection to Claude.
+
+Supported actions:
+
+- `create_review_request`
+- `export_review_bundle`
+
+### `export_bundle(repo_root, output_path, focus, review_files=DEFAULT_REVIEW_FILES)`
+
+Module: `scripts/export_claude_review_bundle.py`
+Status: Experimental
+
+Purpose: Create `docs/claude_review_bundle.md`, a Markdown artifact containing instructions, repository metadata, key docs, and selected code files for Claude review.
+
 ## Agent Contract
 
 Module: `agents/base.py`
@@ -173,4 +194,3 @@ Store long-term memory and emit `MemoryUpdated`.
 ### `MemoryManager.recent_context(limit=10)`
 
 Retrieve recent short-term memory and emit `MemoryRetrieved`.
-

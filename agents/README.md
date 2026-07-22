@@ -40,6 +40,7 @@ Shared types:
 - `calendar`
 - `gmail`
 - `github`
+- `claude`
 - `codex`
 - `automation`
 - `vision`
@@ -49,6 +50,7 @@ Shared types:
 
 - Current Agents are placeholders.
 - Real external integrations are not implemented yet.
+- The Claude Agent intentionally does not connect to Claude directly. It only prepares review requests and Markdown bundles.
 
 ## Future Improvements
 
@@ -57,4 +59,3 @@ Shared types:
 - Agent sandboxing.
 - Plugin-backed dynamic loading.
 - Integration tests for critical Agents.
-

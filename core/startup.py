@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from agents.automation.agent import AutomationAgent
 from agents.browser.agent import BrowserAgent
 from agents.calendar.agent import CalendarAgent
+from agents.claude.agent import ClaudeAgent
 from agents.codex.agent import CodexAgent
 from agents.desktop.agent import DesktopAgent
 from agents.files.agent import FilesAgent
@@ -81,6 +82,7 @@ def _register_builtin_agents(dispatcher: AgentDispatcher) -> None:
         CalendarAgent(),
         GmailAgent(),
         GitHubAgent(),
+        ClaudeAgent(),
         CodexAgent(),
         AutomationAgent(),
         VisionAgent(),

@@ -10,6 +10,7 @@
 6. Never modify unrelated code.
 7. Add tests whenever practical.
 8. Record major structural changes in `docs/decisions.md`.
+9. Use review bundles or GitHub pull requests for Claude collaboration; do not create a direct Claude connection.
 
 ## Branch Naming
 
@@ -89,6 +90,7 @@ If tests are not added, explain why in `docs/ai_handoff.md`.
 - Find edge cases.
 - Improve UX ideas.
 - Never rewrite completed modules without justification.
+- Review `docs/claude_review_bundle.md` or a GitHub pull request when local file access is not available.
 
 ### ChatGPT
 

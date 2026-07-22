@@ -12,6 +12,8 @@ The Brain now supports text and voice-transcript input, structured intent recogn
 
 The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Current Agents are placeholders and expose the required lifecycle contract, but they do not yet control real applications or services.
 
+Claude collaboration is now supported through a generated review bundle. There is no direct Claude connection. Use `docs/claude_review_bundle.md` or regenerate it with `python3 -m scripts.export_claude_review_bundle`.
+
 ## Current Milestone
 
 **Phase 1: Build The Brain**
@@ -41,6 +43,9 @@ The Brain does not perform external actions directly. It delegates Tasks to regi
 - `brain/reasoning.py`
 - `agents/base.py`
 - `agents/registry.py`
+- `agents/claude/agent.py`
+- `scripts/export_claude_review_bundle.py`
+- `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
 - `memory/long_term.py`
 - `memory/vector_store.py`
@@ -64,6 +69,7 @@ The Brain does not perform external actions directly. It delegates Tasks to regi
 ## Pending Tasks
 
 - Review whether this branch should be merged into `develop` before `main`.
+- Paste or upload `docs/claude_review_bundle.md` into Claude and capture review findings.
 - Create GitHub remote and push branches when the destination repository is known.
 - Implement the first real Agent, preferably `desktop`, `terminal`, `browser`, or `files`.
 - Add a durable persistence backend for long-term memory.
@@ -80,6 +86,7 @@ The Brain does not perform external actions directly. It delegates Tasks to regi
 - Long-term memory is in-memory only and does not persist after restart.
 - Task timeout metadata exists, but synchronous Agent execution cannot interrupt a blocking Agent yet.
 - No remote GitHub repository is configured locally.
+- `docs/claude_review_bundle.md` is generated from the current branch and should be regenerated after meaningful architecture or code changes.
 
 ## Validation
 
@@ -90,6 +97,14 @@ python3 -m unittest discover -s tests
 ```
 
 Result: all tests passed.
+
+Claude bundle generation:
+
+```text
+python3 -m scripts.export_claude_review_bundle --output docs/claude_review_bundle.md --focus "Review NELA OS Phase 1 Brain foundation for architecture, event model, memory, agent lifecycle, plugin readiness, security, permissions, error recovery, and long-term maintainability."
+```
+
+Result: bundle generated successfully with 26 included files.
 
 Application smoke test:
 
@@ -109,6 +124,7 @@ Recommended first Agent: `desktop` or `terminal`.
 
 - Do not create a direct communication channel with Claude or any other assistant.
 - Use GitHub as the collaboration layer.
+- For Claude review, regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
 - Read `docs/architecture.md`, `docs/api.md`, and `docs/coding_rules.md` before changing code.
 - Keep the Brain agent-neutral.
 - Put execution logic inside Agents only.

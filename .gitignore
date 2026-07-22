@@ -33,3 +33,6 @@ __pycache__/
 
 # Local data
 data/
+
+# Generated review bundles
+docs/claude_review_bundle.md

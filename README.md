@@ -122,6 +122,21 @@ python -m unittest discover -s tests
 
 GitHub is the collaboration layer. Do not create direct communication channels between AI assistants.
 
+## Claude Review Workflow
+
+Claude cannot read local files such as `/Users/.../nala/docs/architecture.md` directly. To collaborate with Claude:
+
+1. Generate the review bundle:
+
+```bash
+python3 -m scripts.export_claude_review_bundle
+```
+
+2. Paste or upload `docs/claude_review_bundle.md` into Claude.
+3. Ask Claude to return architecture findings and recommended next tasks.
+4. Copy accepted decisions into `docs/decisions.md`.
+5. Update `docs/ai_handoff.md`.
+
 ## First Step For Any AI Assistant
 
 1. Read `docs/ai_handoff.md`.
@@ -129,4 +144,3 @@ GitHub is the collaboration layer. Do not create direct communication channels b
 3. Check the active Git branch.
 4. Confirm the current task and target module.
 5. Update `docs/ai_handoff.md` before stopping work.
-
