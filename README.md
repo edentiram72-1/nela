@@ -27,11 +27,11 @@ The repository now contains a working foundation that can:
 - Manage short-term and long-term memory layers.
 - Dispatch tasks to registered Agents through a shared contract.
 - Publish lifecycle events through an in-process Event Bus.
-- Use safe mock Agents for MVP validation without controlling real apps.
+- Use safe mock Agents for MVP validation while Desktop Agent V1 begins real macOS application lifecycle control.
 - Export Claude review bundles without creating a direct Claude connection.
 - Support GitHub-based collaboration between Codex, Claude, and ChatGPT.
 
-No real desktop, browser, terminal, Spotify, Gmail, GitHub, voice, or vision control is enabled yet. Current Agents are safe placeholders unless explicitly implemented later.
+Desktop Agent V1 is the first real execution Agent. It is limited to safe macOS application lifecycle management. Browser, terminal, Spotify, Gmail, GitHub, voice, and vision control remain safe placeholders unless explicitly implemented later.
 
 ## What Has Been Done
 
@@ -160,7 +160,7 @@ Current lifecycle events include:
 
 The Event Bus is synchronous and in-process for now. Event hardening is a future task.
 
-### 5. Agent Contract And Safe Mock Agents
+### 5. Agent Contract And Agents
 
 All Agents share one contract from `agents/base.py`:
 
@@ -172,9 +172,9 @@ status()
 health_check()
 ```
 
-Implemented placeholders and mock-backed Agents:
+Implemented Agents:
 
-- Desktop
+- Desktop: real macOS application lifecycle management for supported apps.
 - Terminal
 - Browser
 - Voice
@@ -189,7 +189,37 @@ Implemented placeholders and mock-backed Agents:
 - Claude
 - Automation
 
-These Agents currently validate delegation and lifecycle behavior. They do not perform real side effects.
+All non-Desktop Agents currently validate delegation and lifecycle behavior through safe mock behavior. They do not perform real side effects.
+
+### Desktop Agent V1
+
+Desktop Agent V1 replaces the previous Desktop mock with a real macOS lifecycle Agent.
+
+Supported actions:
+
+- launch a supported application
+- detect whether a supported application is running
+- bring a running supported application to the foreground
+- gracefully close a supported application
+- return structured execution results with status, application, action, and execution time
+
+Supported applications:
+
+- Google Chrome
+- Safari
+- Finder
+- VS Code
+- Spotify
+- Terminal
+
+Safety limits:
+
+- no force kill
+- no arbitrary shell commands
+- no file modification
+- no administrator privileges
+- no destructive actions
+- application lifecycle management only
 
 ### 6. Claude Review Workflow
 
@@ -344,7 +374,7 @@ Send Claude direct links to branch, diff, or specific blob files.
 Current branch:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/feature/NELA-0002-confirmation-deadlock
+https://github.com/edentiram72-1/nela/tree/feature/NELA-0005-desktop-agent-v1
 ```
 
 Option 2: generate a review bundle.
@@ -412,12 +442,12 @@ ChatGPT is responsible for:
 
 ## Current Known Limitations
 
-- Agents are safe mock placeholders and do not control real applications yet.
+- Desktop Agent V1 can control supported macOS application lifecycle actions. Other Agents are safe mock placeholders and do not control real applications yet.
 - Intent recognition is deterministic and rule-based.
 - Event Bus is synchronous and in-process.
 - Long-term memory is in-memory only and not durable.
 - Timeout metadata cannot interrupt a blocking synchronous Agent yet.
-- Task retries still need idempotency metadata before real side effects are allowed.
+- Desktop lifecycle actions are intentionally narrow. Broader task retries still need idempotency metadata before additional real side effects are allowed.
 - A central permission policy is not implemented yet.
 - Plugin loading is not implemented yet.
 - Parallel and conditional task execution are represented in the model but not fully executed.
@@ -433,7 +463,7 @@ Before real external Agents are enabled:
 5. Simplify the dual memory path for `Remember` requests.
 6. Update diagrams to show the Decision Engine and Dispatcher explicitly.
 
-After these safety layers, begin the first real Agent implementation, likely Desktop, Terminal, Browser, or Files.
+After Desktop Agent V1, continue safety hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
 
 ## First Step For Any AI Assistant
 

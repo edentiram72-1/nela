@@ -72,10 +72,30 @@ class Planner:
                 Task(
                     description=f"Request application launch: {intent.application or 'requested application'}",
                     action="launch_application",
-                    target_agent=target_agent or "desktop",
+                    target_agent="desktop",
                     payload={"application": intent.application},
                     retry_policy=RetryPolicy(max_attempts=2, backoff_seconds=1.0),
                     timeout_seconds=20.0,
+                )
+            )
+        elif intent.action == "CloseApplication":
+            tasks.append(
+                Task(
+                    description=f"Request application close: {intent.application or 'requested application'}",
+                    action="close_application",
+                    target_agent="desktop",
+                    payload={"application": intent.application},
+                    timeout_seconds=20.0,
+                )
+            )
+        elif intent.action == "SwitchApplication":
+            tasks.append(
+                Task(
+                    description=f"Bring application to foreground: {intent.application or 'requested application'}",
+                    action="switch_application",
+                    target_agent="desktop",
+                    payload={"application": intent.application},
+                    timeout_seconds=10.0,
                 )
             )
         elif intent.action == "PlayMedia":

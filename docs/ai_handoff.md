@@ -10,7 +10,7 @@ Phase 1 Brain foundation has been implemented on top of the initial collaboratio
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
-The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Current Agents are safe mock placeholders: they expose the required lifecycle contract, pass health checks, accept delegated commands, and return mock success results without controlling real applications or services.
+The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Most Agents are safe mock placeholders. Desktop Agent V1 is now in progress as the first real execution Agent, limited to safe macOS application lifecycle management.
 
 `NELA-0002-confirmation-deadlock` has been implemented on a dedicated branch. The Conversation Engine now routes pending confirmation answers before intent classification, supports affirmative and negative replies, re-asks once for unclear replies, cancels after repeated unclear replies, and expires stale confirmations after a configurable TTL.
 
@@ -26,6 +26,12 @@ NELA can now run from the command line. Use `python3 -m core.app` for an interac
 
 The root README is now a full English project overview, and `README.he.md` provides a full Hebrew version. Both summarize the architecture, completed work, GitHub/Claude collaboration flow, current limitations, and next recommended tasks.
 
+`NELA-0005-desktop-agent-v1` has started on branch `feature/NELA-0005-desktop-agent-v1`. The Desktop mock has been replaced with a macOS lifecycle Agent that supports known application lookup, running detection, launch/focus, foreground switching, graceful close, structured results, and health reporting. Unit tests use a fake command runner and do not open or close real applications.
+
+Desktop lifecycle intents now route through the existing Brain flow without architecture changes. `OpenApplication`, `CloseApplication`, and `SwitchApplication` create Desktop Agent tasks through the Planner.
+
+The root README now documents Desktop Agent V1, supported applications, safety limits, known limitations, and the current feature branch.
+
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
@@ -36,7 +42,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Active Branch
 
-`feature/NELA-0002-confirmation-deadlock`
+`feature/NELA-0005-desktop-agent-v1`
 
 ## Recently Modified Files
 
@@ -101,12 +107,15 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `vision/README.md`
 - `tests/*`
 - `tests/test_conversation_confirmations.py`
+- `tests/test_desktop_agent.py`
 - `tests/test_dispatcher.py`
 - `tests/test_intent_recognition.py`
+- `tests/test_planner.py`
 
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
+- Push `feature/NELA-0005-desktop-agent-v1` to GitHub and send Claude direct blob links for review.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
@@ -119,7 +128,8 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Known Issues
 
-- Agents are placeholders and return safe mock success results; they do not perform real external actions.
+- Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
+- Live validation opened/foregrounded Finder only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
 - Long-term memory is in-memory only and does not persist after restart.
@@ -148,6 +158,14 @@ python3 -m unittest discover -s tests
 
 Result: 27 tests passed.
 
+Latest validation for `NELA-0005-desktop-agent-v1`:
+
+```text
+python3 -m unittest discover -s tests
+```
+
+Result: 38 tests passed.
+
 Claude bundle generation:
 
 ```text
@@ -167,10 +185,10 @@ Result: runtime bootstrapped successfully.
 CLI one-shot smoke test:
 
 ```text
-python3 -m core.app --once "Open Spotify and play my Night playlist"
+python3 -m core.app --once "open Finder"
 ```
 
-Result: Brain summary printed successfully, created four media tasks, dispatched them to the registered `spotify` mock Agent, and returned four `ok` Agent results.
+Result: Brain summary printed successfully, created one Desktop task, dispatched it to the real Desktop Agent, and macOS brought Finder to the foreground.
 
 GitHub public access check:
 
@@ -182,7 +200,7 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Continue dispatcher safety hardening before implementing real external Agents.
+Send Desktop Agent V1 to Claude for architecture and safety review, then continue permission and idempotency hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
 
 Scope:
 

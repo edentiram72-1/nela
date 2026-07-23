@@ -53,6 +53,8 @@ class IntentPattern:
 
 DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
     IntentPattern("Remember", ("remember", "save this", "learn this")),
+    IntentPattern("CloseApplication", ("close", "quit")),
+    IntentPattern("SwitchApplication", ("switch to", "focus", "bring to front")),
     IntentPattern("StopTask", ("stop", "cancel"), requires_confirmation=True),
     IntentPattern("PlayMedia", ("play", "music", "playlist", "song")),
     IntentPattern("OpenApplication", ("open", "launch", "start")),
@@ -122,7 +124,14 @@ def _detect_priority(normalized: str) -> Priority:
 
 def _extract_application(text: str) -> str | None:
     match = re.search(
-        r"\b(?:open|launch|start)\s+([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
+        r"\b(?:open|launch|start|close|quit|focus)\s+([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        return _title_name(_trim_application_name(match.group(1).strip()))
+    match = re.search(
+        r"\b(?:switch|bring)\s+(?:to\s+)?([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
         text,
         flags=re.IGNORECASE,
     )
@@ -166,7 +175,7 @@ def _title_name(value: str) -> str:
 
 
 def _trim_application_name(value: str) -> str:
-    stopwords = {"and", "then", "to", "with", "for", "play", "search", "open"}
+    stopwords = {"and", "then", "to", "with", "for", "play", "search", "open", "front"}
     parts = []
     for part in value.split():
         if part.lower() in stopwords:
