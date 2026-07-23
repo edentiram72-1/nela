@@ -430,6 +430,56 @@ Exit interactive mode:
 exit
 ```
 
+## Hebrew Language And Voice Foundation
+
+The response-output foundation now exists as a separate layer after the Brain.
+
+The Brain still produces semantic turns and delegates actions to Agents. It does not contain Hebrew phrasing, personality rules, or provider-specific voice code.
+
+New response flow:
+
+```text
+User input
+  |
+  v
+Brain semantic turn
+  |
+  v
+Language Engine
+  |
+  v
+Hebrew response text
+  |
+  +--> UI
+  |
+  v
+Voice Agent
+```
+
+Implemented:
+
+- `language/`: modular Hebrew Language Engine.
+- `language/hebrew/`: small seed Hebrew language pack.
+- `language/personality/`: loadable personality preference profiles for Claude-owned rules.
+- `core/response.py`: adapter from semantic Brain turns to Hebrew responses and optional voice delegation.
+- `agents/voice/agent.py`: real Voice Agent foundation with queue, stop, interrupt, pause/resume commands, status, health checks, and structured results.
+- `voice/providers/`: replaceable speech provider architecture with a local macOS `say` provider and a mock test provider.
+- `docs/language_system.md`: language-pack architecture.
+- `docs/voice_architecture.md`: voice system architecture.
+
+Validate language packs:
+
+```bash
+python3 -m scripts.validate_language_packs
+```
+
+Safe voice defaults:
+
+- `NELA_VOICE_AUTO_SPEAK_RESPONSES=true`
+- `NELA_VOICE_SILENT_MODE=true`
+
+This keeps the language-to-voice pipeline active without playing audio during early development.
+
 ## Run Tests
 
 ```bash
@@ -451,7 +501,7 @@ Send Claude direct links to branch, diff, or specific blob files.
 Current branch:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/feature/NELA-0006-ui-foundation
+https://github.com/edentiram72-1/nela/tree/feature/NELA-language-voice-foundation
 ```
 
 Option 2: generate a review bundle.
@@ -530,6 +580,7 @@ ChatGPT is responsible for:
 ## Current Known Limitations
 
 - Desktop Agent V1 can control supported macOS application lifecycle actions. Other Agents are safe mock placeholders and do not control real applications yet.
+- Hebrew Language Engine and Voice Agent Foundation are experimental infrastructure. Claude still owns final language content, personality behavior, and voice style rules.
 - Claude's visual identity artifacts are present under `design/`, but the live Tkinter shell still uses a placeholder Eye component.
 - Intent recognition is deterministic and rule-based.
 - Event Bus is synchronous and in-process.

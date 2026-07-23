@@ -1,0 +1,17 @@
+[
+  {
+    "id": "memory.remember.success.001",
+    "text": "זכרתי את זה.",
+    "category": "memory.remember.success",
+    "language": "he",
+    "tone": ["warm", "calm"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["memory", "success"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

@@ -6,6 +6,8 @@ Phase 1 exposes internal foundation APIs for the Brain, Agent Dispatcher, Event 
 
 These APIs are usable for development and tests, but should still be treated as **Experimental** until the first real Agent integration is complete.
 
+The Hebrew Language Engine and Voice Agent Foundation are also Experimental. They provide the response-output pipeline while Claude continues to own personality and language-content design.
+
 ## Stability Levels
 
 | Level | Meaning |
@@ -58,6 +60,8 @@ Module: `core/app.py`
 Status: Experimental
 
 Purpose: Process one user request and print the structured Brain summary.
+
+The CLI also prints `NELA Response`, the Hebrew user-facing response rendered by the Language Engine. Voice output can be enabled or silenced through configuration.
 
 Optional flag:
 
@@ -167,6 +171,107 @@ Status: Experimental
 
 Purpose: Create `docs/claude_review_bundle.md`, a Markdown artifact containing instructions, repository metadata, key docs, and selected code files for Claude review.
 
+## Language APIs
+
+### `LanguageEngine.render_response(category, variables=None, tone=None, emotion=None, tags=())`
+
+Module: `language/engine.py`
+Status: Experimental
+
+Purpose: Select and render a phrase from the active language pack.
+
+Example:
+
+```python
+text = runtime.language.render_response(
+    "desktop.open.success",
+    {"application": "Spotify"},
+)
+```
+
+### `LanguageEngine.select_phrase(category, tone=None, emotion=None, tags=())`
+
+Module: `language/engine.py`
+Status: Experimental
+
+Purpose: Select a phrase entry using category, weight, recent-use avoidance, personality preferences, tone, emotion, and tags.
+
+### `LanguageEngine.validate_pack(path=None)`
+
+Module: `language/engine.py`
+Status: Experimental
+
+Purpose: Validate language pack JSON, required fields, metadata, template variables, and duplicate IDs.
+
+### `python3 -m scripts.validate_language_packs`
+
+Module: `scripts/validate_language_packs.py`
+Status: Experimental
+
+Purpose: Validate the Hebrew language pack from the command line.
+
+## Response APIs
+
+### `NelaResponseAdapter.render_turn(turn)`
+
+Module: `core/response.py`
+Status: Experimental
+
+Purpose: Convert a semantic `ConversationTurn` into a Hebrew user-facing response without executing actions.
+
+### `NelaResponseAdapter.render_and_maybe_speak(turn)`
+
+Module: `core/response.py`
+Status: Experimental
+
+Purpose: Render the same Hebrew response for UI and, when enabled, delegate speech to the Voice Agent through the Dispatcher.
+
+## Voice APIs
+
+### `VoiceAgent.execute(command)`
+
+Module: `agents/voice/agent.py`
+Status: Experimental
+
+Purpose: Speak, queue, stop, interrupt, pause, resume, configure, and report status for voice output.
+
+Supported command actions:
+
+- `speak`
+- `queue_speech`
+- `flush_queue`
+- `stop`
+- `interrupt`
+- `pause`
+- `resume`
+- `set_enabled`
+- `configure_profile`
+- `status`
+
+### `SpeechProvider`
+
+Module: `voice/providers/base.py`
+Status: Experimental
+
+Purpose: Replaceable provider contract for speech backends.
+
+Current providers:
+
+- `MacOSSpeechProvider`
+- `MockSpeechProvider`
+
+### `create_speech_provider(name)`
+
+Module: `voice/providers/factory.py`
+Status: Experimental
+
+Purpose: Create a speech provider from configuration.
+
+Supported names:
+
+- `macos_say`
+- `mock`
+
 ## Agent Contract
 
 Module: `agents/base.py`
@@ -221,6 +326,14 @@ Current Brain lifecycle events include:
 - `AgentUnavailable`
 - `MemoryUpdated`
 - `MemoryRetrieved`
+- `SpeechQueued`
+- `SpeechStarted`
+- `SpeechPaused`
+- `SpeechResumed`
+- `SpeechCompleted`
+- `SpeechInterrupted`
+- `SpeechFailed`
+- `VoiceStatusChanged`
 - `ConversationEnded`
 
 ## Memory APIs

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "coding.general.001",
+    "text": "בודקת את הקוד.",
+    "category": "coding.general",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "thinking",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["coding"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

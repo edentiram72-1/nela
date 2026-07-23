@@ -33,6 +33,14 @@ class EventTypes:
     CONFIRMATION_REQUESTED = "ConfirmationRequested"
     CONFIRMATION_RESOLVED = "ConfirmationResolved"
     CONFIRMATION_EXPIRED = "ConfirmationExpired"
+    SPEECH_QUEUED = "SpeechQueued"
+    SPEECH_STARTED = "SpeechStarted"
+    SPEECH_PAUSED = "SpeechPaused"
+    SPEECH_RESUMED = "SpeechResumed"
+    SPEECH_COMPLETED = "SpeechCompleted"
+    SPEECH_INTERRUPTED = "SpeechInterrupted"
+    SPEECH_FAILED = "SpeechFailed"
+    VOICE_STATUS_CHANGED = "VoiceStatusChanged"
     CONVERSATION_ENDED = "ConversationEnded"
 
 

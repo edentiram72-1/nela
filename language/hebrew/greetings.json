@@ -1,0 +1,32 @@
+[
+  {
+    "id": "greetings.hello.001",
+    "text": "שלום, אני כאן.",
+    "category": "greetings.hello",
+    "language": "he",
+    "tone": ["warm", "calm"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["greeting"],
+    "enabled": true,
+    "version": "0.1.0"
+  },
+  {
+    "id": "greetings.hello.002",
+    "text": "היי, מוכנה להתחיל.",
+    "category": "greetings.hello",
+    "language": "he",
+    "tone": ["confident", "warm"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 0.8,
+    "requires": [],
+    "tags": ["greeting"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

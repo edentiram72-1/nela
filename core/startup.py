@@ -28,8 +28,11 @@ from brain.planner import Planner
 from core.config import AppConfig
 from core.events import EventBus
 from core.logger import configure_logging
+from core.response import NelaResponseAdapter
+from language.engine import HebrewLanguageEngine, LanguageEngine
 from memory.long_term import LongTermMemory
 from memory.short_term import ShortTermMemory
+from voice.providers.factory import create_speech_provider
 
 
 @dataclass
@@ -40,6 +43,8 @@ class NelaRuntime:
     dispatcher: AgentDispatcher
     context: ContextEngine
     memory: MemoryManager
+    language: LanguageEngine
+    response_adapter: NelaResponseAdapter
 
 
 def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
@@ -48,7 +53,9 @@ def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
 
     events = EventBus()
     dispatcher = AgentDispatcher(events=events)
-    _register_builtin_agents(dispatcher)
+    _register_builtin_agents(dispatcher, events, runtime_config)
+    language = HebrewLanguageEngine(personality_name=runtime_config.language_personality)
+    response_adapter = NelaResponseAdapter(language=language, dispatcher=dispatcher, config=runtime_config)
     context = ContextEngine()
     memory = MemoryManager(
         short_term=ShortTermMemory(),
@@ -72,10 +79,12 @@ def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
         dispatcher=dispatcher,
         context=context,
         memory=memory,
+        language=language,
+        response_adapter=response_adapter,
     )
 
 
-def _register_builtin_agents(dispatcher: AgentDispatcher) -> None:
+def _register_builtin_agents(dispatcher: AgentDispatcher, events: EventBus, config: AppConfig) -> None:
     for agent in (
         TerminalAgent(),
         BrowserAgent(),
@@ -87,7 +96,12 @@ def _register_builtin_agents(dispatcher: AgentDispatcher) -> None:
         ClaudeAgent(),
         CodexAgent(),
         AutomationAgent(),
-        VoiceAgent(),
+        VoiceAgent(
+            events=events,
+            provider=create_speech_provider(config.voice_provider),
+            enabled=config.enable_voice,
+            silent=config.voice_silent_mode,
+        ),
         VisionAgent(),
         MemoryAgent(),
         DesktopAgent(),

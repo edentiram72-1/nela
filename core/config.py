@@ -11,12 +11,17 @@ from pathlib import Path
 class AppConfig:
     """Environment-neutral runtime configuration."""
 
-    environment: str
-    log_level: str
-    data_dir: Path
-    plugin_dir: Path
-    enable_voice: bool
-    enable_vision: bool
+    environment: str = "development"
+    log_level: str = "INFO"
+    data_dir: Path = Path("./data")
+    plugin_dir: Path = Path("./plugins")
+    enable_voice: bool = False
+    enable_vision: bool = False
+    language_personality: str = "default"
+    voice_auto_speak_responses: bool = True
+    voice_silent_mode: bool = True
+    voice_provider: str = "macos_say"
+    voice_profile: str = "nela_default"
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -27,6 +32,11 @@ class AppConfig:
             plugin_dir=Path(os.getenv("NELA_PLUGIN_DIR", "./plugins")),
             enable_voice=_env_bool("NELA_ENABLE_VOICE", default=False),
             enable_vision=_env_bool("NELA_ENABLE_VISION", default=False),
+            language_personality=os.getenv("NELA_LANGUAGE_PERSONALITY", "default"),
+            voice_auto_speak_responses=_env_bool("NELA_VOICE_AUTO_SPEAK_RESPONSES", default=True),
+            voice_silent_mode=_env_bool("NELA_VOICE_SILENT_MODE", default=True),
+            voice_provider=os.getenv("NELA_VOICE_PROVIDER", "macos_say"),
+            voice_profile=os.getenv("NELA_VOICE_PROFILE", "nela_default"),
         )
 
 
@@ -35,4 +45,3 @@ def _env_bool(name: str, default: bool) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
-

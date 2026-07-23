@@ -366,6 +366,56 @@ python3 -m unittest discover -s tests
 כל הבדיקות עברו.
 ```
 
+## תשתית עברית וקול
+
+נוספה שכבת תגובה נפרדת אחרי ה-Brain.
+
+ה-Brain עדיין מייצר משמעות, החלטות ותכניות, ומאציל פעולות ל-Agents. הוא לא מכיל ניסוחים בעברית, לא כללי אישיות, ולא קוד ספציפי לספק קול.
+
+זרימה חדשה:
+
+```text
+קלט משתמש
+  |
+  v
+פלט סמנטי מה-Brain
+  |
+  v
+Language Engine
+  |
+  v
+טקסט עברי סופי
+  |
+  +--> UI
+  |
+  v
+Voice Agent
+```
+
+נוסף:
+
+- `language/`: מנוע שפה עברית מודולרי.
+- `language/hebrew/`: חבילת עברית התחלתית קטנה.
+- `language/personality/`: פרופילי העדפות נטענים לכללי האישיות שקלוד יגדיר.
+- `core/response.py`: התאמה בין פלט סמנטי של ה-Brain לבין תשובה עברית ודיבור אופציונלי.
+- `agents/voice/agent.py`: בסיס אמיתי לסוכן קול עם תור, עצירה, interruption, pause/resume, סטטוס, health check ותוצאות מובנות.
+- `voice/providers/`: ארכיטקטורת ספקי דיבור ניתנת להחלפה, כולל ספק macOS מקומי ו-Mock לבדיקות.
+- `docs/language_system.md`: תיעוד מערכת השפה.
+- `docs/voice_architecture.md`: תיעוד ארכיטקטורת הקול.
+
+אימות חבילות שפה:
+
+```bash
+python3 -m scripts.validate_language_packs
+```
+
+ברירת מחדל בטוחה לקול:
+
+- `NELA_VOICE_AUTO_SPEAK_RESPONSES=true`
+- `NELA_VOICE_SILENT_MODE=true`
+
+כך כל צינור השפה-לקול פעיל, אבל בלי השמעת אודיו בזמן פיתוח מוקדם.
+
 ## זרימת סקירה עם Claude
 
 אפשרות 1: קישורי GitHub.
@@ -375,7 +425,7 @@ python3 -m unittest discover -s tests
 הענף הנוכחי:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/feature/NELA-0011-visual-identity
+https://github.com/edentiram72-1/nela/tree/feature/NELA-language-voice-foundation
 ```
 
 אפשרות 2: יצירת review bundle.
@@ -444,6 +494,7 @@ ChatGPT אחראי על:
 ## מגבלות ידועות כרגע
 
 - Desktop Agent V1 יכול לשלוט במחזור חיים של אפליקציות macOS נתמכות. שאר הסוכנים עדיין placeholders בטוחים.
+- Hebrew Language Engine ו-Voice Agent Foundation הם כרגע תשתית ניסיונית. קלוד עדיין אחראי על תוכן השפה הסופי, התנהגות האישיות וכללי סגנון הקול.
 - ארטיפקטי הזהות הוויזואלית קיימים תחת `design/`, אבל חלון ה-Tkinter החי עדיין משתמש ב-placeholder לעין.
 - זיהוי כוונות הוא דטרמיניסטי ומבוסס חוקים.
 - Event Bus סינכרוני ופנימי לתהליך.

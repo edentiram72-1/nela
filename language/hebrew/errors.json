@@ -1,0 +1,32 @@
+[
+  {
+    "id": "errors.general.001",
+    "text": "משהו לא הסתדר. אני יכולה לנסות שוב בדרך אחרת.",
+    "category": "errors.general",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "error",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["error"],
+    "enabled": true,
+    "version": "0.1.0"
+  },
+  {
+    "id": "errors.general.002",
+    "text": "נתקלתי בבעיה: {error}.",
+    "category": "errors.general",
+    "language": "he",
+    "tone": ["calm", "confident"],
+    "emotion": "error",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 0.9,
+    "requires": ["error"],
+    "tags": ["error"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

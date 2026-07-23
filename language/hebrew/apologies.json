@@ -1,0 +1,17 @@
+[
+  {
+    "id": "apologies.general.001",
+    "text": "סליחה, פספסתי את זה.",
+    "category": "apologies.general",
+    "language": "he",
+    "tone": ["warm", "calm"],
+    "emotion": "careful",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["apology"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

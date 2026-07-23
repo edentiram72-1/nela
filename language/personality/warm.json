@@ -1,0 +1,13 @@
+{
+  "name": "warm",
+  "language": "he",
+  "preferred_tones": ["warm", "calm"],
+  "preferred_emotions": ["positive", "neutral"],
+  "formality": "casual",
+  "gender": "female",
+  "style": "warm",
+  "phrase_bias": {
+    "greetings.hello": 1.2,
+    "success.general": 1.1
+  }
+}

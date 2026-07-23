@@ -1,0 +1,17 @@
+[
+  {
+    "id": "farewells.goodbye.001",
+    "text": "בסדר, אני עוצרת כאן.",
+    "category": "farewells.goodbye",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "neutral",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["farewell"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

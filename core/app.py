@@ -28,35 +28,39 @@ def main() -> None:
     if args.once:
         turn = runtime.conversation.handle_text(args.once)
         print(_format_turn(turn))
+        print()
+        print("NELA Response")
+        print(runtime.response_adapter.render_and_maybe_speak(turn))
         return
 
-    _interactive_loop(runtime.conversation)
+    _interactive_loop(runtime)
 
 
-def _interactive_loop(conversation) -> None:
+def _interactive_loop(runtime) -> None:
     print("NELA OS is running. Type a request, or type 'exit' to stop.")
     while True:
         try:
             user_text = input("nela> ").strip()
         except (EOFError, KeyboardInterrupt):
             print()
-            conversation.end_conversation()
+            runtime.conversation.end_conversation()
             print("NELA stopped.")
             return
 
         if user_text.lower() in {"exit", "quit", "stop"}:
-            conversation.end_conversation()
+            runtime.conversation.end_conversation()
             print("NELA stopped.")
             return
         if not user_text:
             continue
 
         try:
-            turn = conversation.handle_text(user_text)
+            turn = runtime.conversation.handle_text(user_text)
         except ValueError as error:
             print(f"NELA needs clarification: {error}")
             continue
         print(_format_turn(turn))
+        print(runtime.response_adapter.render_and_maybe_speak(turn))
 
 
 def _format_turn(turn: ConversationTurn) -> str:
@@ -93,4 +97,3 @@ def _format_result(result: AgentResult) -> str:
 
 if __name__ == "__main__":
     main()
-
