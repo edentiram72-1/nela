@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.mock import MockAgent
 
 
-class BrowserAgent(BaseAgent):
+class BrowserAgent(MockAgent):
     name = "browser"
-
-    def execute(self, command: AgentCommand) -> AgentResult:
-        return AgentResult(False, "Browser control is not implemented yet.", {"command": command.action})
-
+    capability = "browser"

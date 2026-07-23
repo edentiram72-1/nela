@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.mock import MockAgent
 
 
-class GmailAgent(BaseAgent):
+class GmailAgent(MockAgent):
     name = "gmail"
-
-    def execute(self, command: AgentCommand) -> AgentResult:
-        return AgentResult(False, "Gmail integration is not implemented yet.", {"command": command.action})
-
+    capability = "gmail"

@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.mock import MockAgent
 
 
-class FilesAgent(BaseAgent):
+class FilesAgent(MockAgent):
     name = "files"
-
-    def execute(self, command: AgentCommand) -> AgentResult:
-        return AgentResult(False, "File operations are not implemented yet.", {"command": command.action})
-
+    capability = "file_system"

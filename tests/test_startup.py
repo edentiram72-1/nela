@@ -27,6 +27,8 @@ class StartupTests(unittest.TestCase):
         self.assertEqual(turn.intent.action, "PlayMedia")
         self.assertEqual(len(turn.plan.tasks), 4)
         self.assertIn("spotify", runtime.dispatcher.discover_agents())
+        self.assertIn("voice", runtime.dispatcher.discover_agents())
+        self.assertIn("memory", runtime.dispatcher.discover_agents())
         self.assertIn("claude", runtime.dispatcher.discover_agents())
 
 

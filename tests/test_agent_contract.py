@@ -13,8 +13,9 @@ class AgentContractTests(unittest.TestCase):
         self.assertEqual(agent.status(), AgentState.READY)
 
         result = agent.execute(AgentCommand(action="play"))
-        self.assertFalse(result.success)
-        self.assertIn("not implemented", result.message)
+        self.assertTrue(result.success)
+        self.assertTrue(result.data["mock"])
+        self.assertEqual(result.data["agent"], "spotify")
 
         self.assertTrue(agent.health_check().success)
         self.assertTrue(agent.stop().success)

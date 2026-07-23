@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.mock import MockAgent
 
 
-class CalendarAgent(BaseAgent):
+class CalendarAgent(MockAgent):
     name = "calendar"
-
-    def execute(self, command: AgentCommand) -> AgentResult:
-        return AgentResult(False, "Calendar integration is not implemented yet.", {"command": command.action})
-
+    capability = "calendar"

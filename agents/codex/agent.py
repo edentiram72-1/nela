@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.mock import MockAgent
 
 
-class CodexAgent(BaseAgent):
+class CodexAgent(MockAgent):
     name = "codex"
-
-    def execute(self, command: AgentCommand) -> AgentResult:
-        return AgentResult(False, "Codex automation is not implemented yet.", {"command": command.action})
-
+    capability = "codex"

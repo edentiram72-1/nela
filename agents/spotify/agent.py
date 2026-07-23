@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.mock import MockAgent
 
 
-class SpotifyAgent(BaseAgent):
+class SpotifyAgent(MockAgent):
     name = "spotify"
-
-    def execute(self, command: AgentCommand) -> AgentResult:
-        return AgentResult(False, "Spotify control is not implemented yet.", {"command": command.action})
-
+    capability = "music"

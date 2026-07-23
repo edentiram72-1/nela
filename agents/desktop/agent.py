@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.mock import MockAgent
 
 
-class DesktopAgent(BaseAgent):
+class DesktopAgent(MockAgent):
     name = "desktop"
-
-    def execute(self, command: AgentCommand) -> AgentResult:
-        return AgentResult(False, "Desktop control is not implemented yet.", {"command": command.action})
-
+    capability = "desktop_control"
