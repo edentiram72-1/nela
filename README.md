@@ -14,7 +14,7 @@ The Brain never executes external actions directly. Agents do the work. Modules 
 
 ## Current Status
 
-NELA OS is currently in **Phase 1: Build The Brain**.
+NELA OS is currently moving from **Phase 1: Build The Brain** into **Phase 2: Desktop UI Foundation**.
 
 The repository now contains a working foundation that can:
 
@@ -28,10 +28,13 @@ The repository now contains a working foundation that can:
 - Dispatch tasks to registered Agents through a shared contract.
 - Publish lifecycle events through an in-process Event Bus.
 - Use safe mock Agents for MVP validation while Desktop Agent V1 begins real macOS application lifecycle control.
+- Launch a modular desktop UI shell that connects user text input to the existing Brain.
 - Export Claude review bundles without creating a direct Claude connection.
 - Support GitHub-based collaboration between Codex, Claude, and ChatGPT.
 
 Desktop Agent V1 is the first real execution Agent. It is limited to safe macOS application lifecycle management. Browser, terminal, Spotify, Gmail, GitHub, voice, and vision control remain safe placeholders unless explicitly implemented later.
+
+The UI foundation intentionally does not define NELA's visual identity. Claude owns brand identity, Eye design, UI, UX, animations, and the design system. Codex provides the application shell, state management, Brain connection, theme tokens, and asset slots that Claude's design can plug into later.
 
 ## What Has Been Done
 
@@ -89,7 +92,9 @@ Important branches:
 - `main`: stable baseline.
 - `develop`: integration baseline.
 - `feature/NELA-0001-foundation-architecture`: initial foundation architecture and Phase 1 Brain.
-- `feature/NELA-0002-confirmation-deadlock`: current active hardening branch.
+- `feature/NELA-0002-confirmation-deadlock`: confirmation hardening branch.
+- `feature/NELA-0005-desktop-agent-v1`: first real Desktop Agent branch.
+- `feature/NELA-0006-ui-foundation`: current UI foundation branch.
 
 Claude does not connect directly to Codex or to the local machine. Claude reviews GitHub branches, direct blob links, pull request diffs, or generated Markdown review bundles.
 
@@ -307,6 +312,35 @@ Added and updated:
 
 Every significant change should update `docs/ai_handoff.md`.
 
+### 11. Phase 2 UI Foundation
+
+The desktop UI foundation lives under `ui/`.
+
+It provides infrastructure only:
+
+- `ui/app.py`: UI launch entry point.
+- `ui/window.py`: Tkinter desktop shell.
+- `ui/router.py`: routes UI text input into the existing Brain.
+- `ui/state.py`: UI state manager for chat, Eye state, Brain status, Agent activity, notifications, voice flags, and theme selection.
+- `ui/events.py`: subscribes to Brain events and maps them to UI state changes.
+- `ui/theme.py`: theme token system for dark, light, and future psychedelic themes.
+- `ui/animations.py`: state-based animation hooks.
+- `ui/components/`: placeholder components for chat, sidebar, status, voice, Eye, and settings.
+- `ui/assets/`: future Claude-provided logo, Eye SVG, animation, typography, and design assets.
+
+The NELA Eye is state-only for now. Supported states:
+
+- `IDLE`
+- `LISTENING`
+- `THINKING`
+- `SPEAKING`
+- `EXECUTING`
+- `SUCCESS`
+- `ERROR`
+- `SLEEPING`
+
+Claude can replace the placeholder Eye rendering with SVG and animation assets without changing the Brain connection.
+
 ## Repository Map
 
 | Path | Purpose |
@@ -314,6 +348,7 @@ Every significant change should update `docs/ai_handoff.md`.
 | `core/` | App startup, configuration, events, logging, and shared runtime primitives. |
 | `brain/` | Conversation orchestration, intent recognition, decisions, planning, context, memory orchestration, and dispatch coordination. |
 | `agents/` | Independent execution Agents and the shared Agent contract. |
+| `ui/` | Desktop UI shell, state manager, event bridge, theme tokens, animation hooks, and component placeholders. |
 | `memory/` | Short-term memory, long-term memory, vector storage, and user profile primitives. |
 | `voice/` | Wake word, microphone, speech-to-text, and text-to-speech interfaces. |
 | `vision/` | Screen capture, screen reading, OCR, and UI detection interfaces. |
@@ -347,6 +382,18 @@ One-shot plan inspection without dispatch:
 python3 -m core.app --once "Open Spotify and play my Night playlist" --no-dispatch
 ```
 
+Desktop UI shell:
+
+```bash
+python3 -m ui.app
+```
+
+Headless UI bootstrap check:
+
+```bash
+python3 -m ui.app --headless-smoke
+```
+
 Exit interactive mode:
 
 ```text
@@ -374,7 +421,7 @@ Send Claude direct links to branch, diff, or specific blob files.
 Current branch:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/feature/NELA-0005-desktop-agent-v1
+https://github.com/edentiram72-1/nela/tree/feature/NELA-0006-ui-foundation
 ```
 
 Option 2: generate a review bundle.
@@ -443,6 +490,7 @@ ChatGPT is responsible for:
 ## Current Known Limitations
 
 - Desktop Agent V1 can control supported macOS application lifecycle actions. Other Agents are safe mock placeholders and do not control real applications yet.
+- UI foundation uses placeholder visual components only. Claude has not provided the final logo, Eye SVG, palette, typography, spacing, or animations yet.
 - Intent recognition is deterministic and rule-based.
 - Event Bus is synchronous and in-process.
 - Long-term memory is in-memory only and not durable.
@@ -463,7 +511,7 @@ Before real external Agents are enabled:
 5. Simplify the dual memory path for `Remember` requests.
 6. Update diagrams to show the Decision Engine and Dispatcher explicitly.
 
-After Desktop Agent V1, continue safety hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
+Next UI work should wait for Claude's visual identity and design system assets. Codex should continue wiring infrastructure and safety layers without redesigning Claude-owned visuals.
 
 ## First Step For Any AI Assistant
 
