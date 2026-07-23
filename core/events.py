@@ -30,6 +30,9 @@ class EventTypes:
     MEMORY_UPDATED = "MemoryUpdated"
     MEMORY_RETRIEVED = "MemoryRetrieved"
     CONTEXT_UPDATED = "ContextUpdated"
+    CONFIRMATION_REQUESTED = "ConfirmationRequested"
+    CONFIRMATION_RESOLVED = "ConfirmationResolved"
+    CONFIRMATION_EXPIRED = "ConfirmationExpired"
     CONVERSATION_ENDED = "ConversationEnded"
 
 

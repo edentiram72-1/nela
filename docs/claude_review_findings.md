@@ -19,8 +19,8 @@ Pending confirmations are not resolved before new intent classification.
 
 Impact:
 
-- After the Brain asks a clarifying or confirmation question, a follow-up answer can be treated as a new message instead of resolving the pending confirmation.
-- The conversation can remain stuck in `WAIT`.
+- After the Brain asks a clarifying or confirmation question, a follow-up answer is treated as a new message instead of resolving the pending confirmation.
+- The conversation remains stuck in `WAIT` deterministically because `resolve_confirmation()` is never called.
 - Real users may be unable to approve, reject, or clarify sensitive tasks.
 
 Recommended fix:
@@ -180,11 +180,19 @@ Recommended fix:
 
 Remembering user preferences and long-term facts should use one explicit path.
 
+Additional observed issue:
+
+- `Remember` requests create a Plan with a task targeting a future `memory` Agent that is not registered, while durable memory writes also happen through `MemoryManager`. This creates misleading telemetry and should be cleaned up in a follow-up.
+
 Recommended fix:
 
 - Route durable memory updates through `MemoryManager`.
 - Emit `MemoryUpdated` events from one central place.
 - Add tests for remember/update/retrieve behavior.
+
+### M4: README Diagram Needs Current Brain Components
+
+The README architecture diagram should explicitly show the Decision Engine and Dispatcher so it matches the current Brain implementation.
 
 ## Recommended Execution Order
 

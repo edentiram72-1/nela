@@ -12,13 +12,15 @@ The Brain now supports text and voice-transcript input, structured intent recogn
 
 The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Current Agents are placeholders and expose the required lifecycle contract, but they do not yet control real applications or services.
 
+`NELA-0002-confirmation-deadlock` has been implemented on a dedicated branch. The Conversation Engine now routes pending confirmation answers before intent classification, supports affirmative and negative replies, re-asks once for unclear replies, cancels after repeated unclear replies, and expires stale confirmations after a configurable TTL.
+
 Claude collaboration is now supported through a generated review bundle. There is no direct Claude connection. Use `docs/claude_review_bundle.md` or regenerate it with `python3 -m scripts.export_claude_review_bundle`.
 
 NELA can now run from the command line. Use `python3 -m core.app` for an interactive text session or `python3 -m core.app --once "<request>" --no-dispatch` for a one-shot Brain summary.
 
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
-Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue is a confirmation deadlock where pending confirmations are not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
+Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
 
 ## Current Milestone
 
@@ -26,7 +28,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Active Branch
 
-`feature/NELA-0001-foundation-architecture`
+`feature/NELA-0002-confirmation-deadlock`
 
 ## Recently Modified Files
 
@@ -73,11 +75,12 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `voice/README.md`
 - `vision/README.md`
 - `tests/*`
+- `tests/test_conversation_confirmations.py`
 
 ## Pending Tasks
 
-- Open or finalize a GitHub Pull Request from `feature/NELA-0001-foundation-architecture` into `develop`. GitHub public access is working, but the browser PR form intermittently failed to render the full comparison.
-- Start `NELA-0002-confirmation-deadlock` and fix the pending-confirmation flow before adding real external Agents.
+- Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
+- Start `NELA-0003-dispatcher-timeout-retry-safety` after Claude reviews `NELA-0002`.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
 - Implement the first real Agent, preferably `desktop`, `terminal`, `browser`, or `files`.
@@ -97,6 +100,8 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - GitHub Pull Request creation through the Codex GitHub connector returned `403 Resource not accessible by integration`; use GitHub web UI or install/authenticate GitHub CLI if a PR must be opened from the local machine.
 - `docs/claude_review_bundle.md` is generated from the current branch and should be regenerated after meaningful architecture or code changes.
 - Claude review found several hardening gaps to address before real agents are trusted: dispatcher timeout/retry semantics, task idempotency, event bus subscriber isolation, intent matching precision, permission policy, and capability registry clarity.
+- `Remember` requests still create a Plan targeting a future `memory` Agent that is not registered. Memory is updated through `MemoryManager`, so this Plan path is telemetry-noisy and should be cleaned up in a follow-up.
+- README architecture diagrams do not yet show the Decision Engine and Dispatcher explicitly.
 
 ## Validation
 
@@ -107,6 +112,14 @@ python3 -m unittest discover -s tests
 ```
 
 Result: all tests passed.
+
+Latest validation for `NELA-0002-confirmation-deadlock`:
+
+```text
+python3 -m unittest discover -s tests
+```
+
+Result: 23 tests passed.
 
 Claude bundle generation:
 
@@ -142,22 +155,22 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Create task `NELA-0002-confirmation-deadlock` and harden the Brain confirmation workflow before implementing real external Agents.
+Create task `NELA-0003-dispatcher-timeout-retry-safety` and harden dispatcher execution semantics before implementing real external Agents.
 
 Scope:
 
-- Resolve pending confirmations before classifying a follow-up message as a new intent.
-- Add confirmation expiry or cancellation semantics.
-- Add tests for approval, rejection, unclear reply, and repeated follow-up behavior.
-- Keep all action execution delegated through Agents.
+- Track timeout per attempt.
+- Do not rewrite a successful result as failed after synchronous execution already completed.
+- Keep timeout metadata advisory until execution can become cancellable.
+- Add tests for slow success, timeout failure, and retry behavior.
 
-After `NELA-0002`, continue with dispatcher timeout/retry/idempotency hardening, then implement the first real Agent.
+After `NELA-0003`, continue with task idempotency hardening in `NELA-0004`.
 
 ## Notes For The Next AI Assistant
 
 - Do not create a direct communication channel with Claude or any other assistant.
 - Use GitHub as the collaboration layer.
-- For Claude review, share `https://github.com/edentiram72-1/nela/tree/feature/NELA-0001-foundation-architecture` and ask Claude to read `docs/claude_review_findings.md`, or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
+- For Claude review, share `https://github.com/edentiram72-1/nela/tree/feature/NELA-0002-confirmation-deadlock` and direct blob links, or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
 - Read `docs/architecture.md`, `docs/api.md`, and `docs/coding_rules.md` before changing code.
 - Keep the Brain agent-neutral.
 - Put execution logic inside Agents only.
