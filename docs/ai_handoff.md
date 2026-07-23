@@ -24,7 +24,7 @@ The following branches are included in `develop`:
 
 Integration Sprint 1 created backup branch `backup/develop-before-integration-20260723-050921`, verified branch inclusion, added Hebrew smoke-intent compatibility, mapped Voice speech events into UI Eye states, and generated `docs/integration_sprint_1_merge_report.md`.
 
-Repository stabilization documented untracked duplicate-suffix files in `docs/untracked_duplicate_files_report.md`. The duplicate files were inspected only and left untouched.
+Repository stabilization documented untracked duplicate-suffix files in `docs/untracked_duplicate_files_report.md`. The duplicate files were inspected only and left untouched. `develop` and backup branch `backup/develop-before-integration-20260723-050921` were pushed to GitHub through the configured SSH remote; `main` was not changed during this stabilization task.
 
 The consolidation includes:
 
@@ -164,7 +164,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Pending Tasks
 
-- Push consolidated `develop` and `backup/develop-before-integration-20260723-050921` to GitHub through the configured SSH remote.
+- Create a draft PR from `develop` to `main` through GitHub web UI or authenticated `gh`.
 - Do not merge further into `main` as part of Integration Sprint 1.
 - Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
@@ -207,7 +207,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Voice defaults to silent mode, so response-to-voice delegation is exercised without audio playback unless explicitly enabled.
 - The macOS `say` provider is the local MVP provider and treats provider submission as completion. It does not provide portable pause/resume.
 - Integration Sprint 1 found and fixed two compatibility gaps: Hebrew open-app smoke intent recognition, and Voice task completion overriding `SpeechCompleted -> IDLE`.
-- GitHub CLI (`gh`) is not installed in the current shell, so draft Pull Request creation must happen through GitHub web UI or after installing/authenticating `gh`.
+- GitHub CLI (`gh`) is not installed in the current shell, and the Codex GitHub connector returned `403 Resource not accessible by integration` when creating a draft PR. Draft Pull Request creation must happen through GitHub web UI or after installing/authenticating `gh`.
 - 94 untracked duplicate-suffix files exist locally and are documented in `docs/untracked_duplicate_files_report.md`; they were not staged or modified.
 
 ## Validation
@@ -347,8 +347,7 @@ Result: public HTTPS branch lookup succeeded.
 
 Finish the develop consolidation handoff:
 
-- Push consolidated `develop` through the configured SSH remote.
-- Push backup branch `backup/develop-before-integration-20260723-050921`.
+- Create a draft PR from `develop` to `main` through GitHub web UI or authenticated `gh`.
 - Send Claude direct blob links for `docs/ai_handoff.md`, `docs/ai_inbox.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
 
 After release, continue in this order:
