@@ -36,6 +36,10 @@ The root README now documents Desktop Agent V1, supported applications, safety l
 
 `NELA-0007-ai-inbox` has started on branch `feature/NELA-0007-ai-inbox`. `docs/ai_inbox.md` now acts as a shared GitHub inbox for Claude, Codex, and ChatGPT, and `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md` provides a GitHub Issue template for routing collaboration tasks.
 
+`NELA-0011-visual-identity` has started on branch `feature/NELA-0011-visual-identity`. Claude's Living Eye prototype, app icon, menu-bar icon, and design system were added as authoritative design artifacts. The existing UI Event Bridge now maps Brain events to the design-system Eye states, including `waiting`, `success`, `error`, and moment-state return to `idle` when a UI host provides scheduling.
+
+Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zip`, but that archive was not present in `/Users/edentiram/Downloads/files` or the current attachment directory. Memory integration is blocked until that zip is provided.
+
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
@@ -46,7 +50,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Active Branch
 
-`feature/NELA-0007-ai-inbox`
+`feature/NELA-0011-visual-identity`
 
 ## Recently Modified Files
 
@@ -90,6 +94,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `scripts/export_claude_review_bundle.py`
 - `docs/ai_handoff.md`
 - `docs/ai_inbox.md`
+- `docs/design_system.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
 - `memory/long_term.py`
@@ -123,6 +128,8 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `ui/events.py`
 - `ui/theme.py`
 - `ui/animations.py`
+- `ui/state.py`
+- `ui/window.py`
 - `ui/components/*`
 - `ui/chat/*`
 - `ui/sidebar/*`
@@ -135,11 +142,16 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `tests/test_ui_router.py`
 - `tests/test_ui_state.py`
 - `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md`
+- `design/nela_living_eye.html`
+- `design/nela_app_icon.svg`
+- `design/nela_menubar_icon.svg`
 
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
 - Push `feature/NELA-0007-ai-inbox` to GitHub.
+- Push `feature/NELA-0011-visual-identity` to GitHub and send Claude direct blob links for review.
+- Provide `nela-memory-subsystem.zip` so `feature/NELA-0012-memory-subsystem` can be created and tested separately.
 - Use `docs/ai_inbox.md` as the shared queue for Claude, Codex, and ChatGPT.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
@@ -157,6 +169,8 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
 - Live validation opened/foregrounded Finder only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
 - UI foundation intentionally has no Claude visual design yet. Eye, theme, animation, and component APIs expose states and tokens so Claude assets can be dropped in later without changing Brain architecture.
+- Living Eye artifacts are present, but the Tkinter shell still renders a placeholder Eye component. Embedding `design/nela_living_eye.html` into the live app needs a future UI host decision, such as WebView, Electron, or Tauri.
+- Memory subsystem integration is blocked because `nela-memory-subsystem.zip` was not provided with the current files.
 - The AI Inbox is repository-based only. It does not connect directly to Claude, Codex, or ChatGPT.
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
@@ -203,6 +217,15 @@ python3 -m ui.app --headless-smoke
 
 Result: 44 tests passed; headless UI bootstrap succeeded.
 
+Latest validation for `NELA-0011-visual-identity`:
+
+```text
+python3 -m unittest discover -s tests
+python3 -m ui.app --headless-smoke
+```
+
+Result: 45 tests passed; headless UI bootstrap succeeded; Claude Living Eye artifacts were copied into `design/`, `docs/design_system.md` was added, and UI event-state mapping tests passed.
+
 Window launch smoke:
 
 ```text
@@ -245,15 +268,15 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Send UI Foundation to Claude for infrastructure review using the `Ready For Claude` items in `docs/ai_inbox.md`. Claude should review the state contracts, Eye states, theme token system, animation hooks, component boundaries, and whether the structure is ready for Claude's brand identity, Eye SVG, UI/UX, and design system.
+Send Visual Identity integration to Claude for review. Claude should verify that `design/` artifacts were copied without restyling, `docs/design_system.md` is authoritative, and `UIEventBridge` maps Brain events to Eye states consistently with design-system section 10.
 
 Scope:
 
 - Keep visual design out of Codex-owned code.
-- Confirm Claude can replace placeholder components without Brain changes.
-- Confirm the UI event bridge maps Brain events to the expected Eye and status states.
+- Confirm the Living Eye can replace the placeholder Eye component without Brain changes.
+- Confirm whether the next UI host should be WebView, Electron, Tauri, or another native wrapper.
 
-After UI review, continue permission and idempotency hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
+After Visual Identity review, continue Memory subsystem integration when the missing zip is available, then continue permission and idempotency hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
 
 ## Notes For The Next AI Assistant
 

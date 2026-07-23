@@ -132,3 +132,29 @@ Related files:
 - `brain/context.py`
 - `core/events.py`
 - `tests/test_conversation_confirmations.py`
+
+### DEC-0006: Add Living Eye As The Authoritative Visual Identity Artifact
+
+**Date:** 2026-07-23
+**Status:** Accepted
+
+**Context:** Claude delivered the NELA visual identity package: a dependency-free Living Eye prototype, app icon, macOS menu-bar icon, and design system. The current Codex-owned UI shell is Tkinter-based and was intentionally built as infrastructure without final visual design.
+
+**Decision:** Store Claude's visual identity artifacts under `design/` and `docs/design_system.md` without restyling them. Keep the current Tkinter shell as the application infrastructure for now, but align `UIEventBridge` and `EyeState` with the design-system state contract so a future WebView/Electron/Tauri host can drive the Living Eye with the same Brain events.
+
+**Consequences:**
+
+- Claude's design system becomes the authoritative source for NELA's face, motion, icons, and visual identity.
+- Brain architecture remains unchanged; UI state follows Brain events through the existing Event Bus subscriber.
+- The current Tkinter placeholder does not render the full HTML/SVG Living Eye yet.
+- A future UI-hosting decision is still needed before embedding `design/nela_living_eye.html` into the live desktop shell.
+
+**Related files:**
+
+- `design/nela_living_eye.html`
+- `design/nela_app_icon.svg`
+- `design/nela_menubar_icon.svg`
+- `docs/design_system.md`
+- `ui/events.py`
+- `ui/state.py`
+- `ui/window.py`

@@ -16,9 +16,12 @@ class EyeState(str, Enum):
     THINKING = "thinking"
     SPEAKING = "speaking"
     EXECUTING = "executing"
+    WAITING = "waiting"
     SUCCESS = "success"
+    WARNING = "warning"
     ERROR = "error"
     SLEEPING = "sleeping"
+    OFFLINE = "offline"
 
 
 class MessageRole(str, Enum):

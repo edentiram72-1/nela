@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!--
+    NELA app icon — the eye at rest.
+    Static distillation of the living logo: aperture, aurora iris, round canine
+    pupil, high catchlight, one sacred ring. Reads at 16px because the shapes
+    are only four: squircle, almond, circle, spark.
+  -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="80%">
+      <stop offset="0%" stop-color="#1a1040"/>
+      <stop offset="60%" stop-color="#0c0722"/>
+      <stop offset="100%" stop-color="#070312"/>
+    </radialGradient>
+    <radialGradient id="iris" cx="50%" cy="42%" r="66%">
+      <stop offset="0%"  stop-color="#e8b45c"/>
+      <stop offset="45%" stop-color="#37b8a8"/>
+      <stop offset="78%" stop-color="#7a4fd0"/>
+      <stop offset="100%" stop-color="#2c1a66"/>
+    </radialGradient>
+    <radialGradient id="pupil" cx="42%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#140a22"/>
+      <stop offset="100%" stop-color="#03010a"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#37b8a8" stop-opacity=".5"/>
+      <stop offset="100%" stop-color="#37b8a8" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="squircle">
+      <path d="M256,28 C424,28 484,88 484,256 C484,424 424,484 256,484 C88,484 28,424 28,256 C28,88 88,28 256,28 Z"/>
+    </clipPath>
+    <clipPath id="almond">
+      <path d="M256,132 C346,132 406,196 420,256 C406,318 346,380 256,380 C166,380 106,318 92,256 C106,196 166,132 256,132 Z"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#squircle)">
+    <rect width="512" height="512" fill="url(#bg)"/>
+    <circle cx="256" cy="256" r="240" fill="url(#glow)"/>
+
+    <!-- single sacred ring -->
+    <circle cx="256" cy="256" r="212" fill="none" stroke="#5fd8c8" stroke-opacity=".35"
+            stroke-width="2.5" stroke-dasharray="3 14"/>
+
+    <!-- the eye -->
+    <g clip-path="url(#almond)">
+      <circle cx="256" cy="256" r="180" fill="url(#iris)"/>
+      <circle cx="196" cy="208" r="110" fill="#5fe8d8" opacity=".28"/>
+      <circle cx="322" cy="300" r="120" fill="#e8b45c" opacity=".22"/>
+      <circle cx="256" cy="256" r="86" fill="url(#pupil)"/>
+      <circle cx="256" cy="256" r="96" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="16"/>
+      <circle cx="222" cy="212" r="20" fill="#ffffff" opacity=".95"/>
+      <circle cx="298" cy="298" r="8"  fill="#ffffff" opacity=".5"/>
+    </g>
+
+    <!-- aperture rim -->
+    <path d="M256,132 C346,132 406,196 420,256 C406,318 346,380 256,380 C166,380 106,318 92,256 C106,196 166,132 256,132 Z"
+          fill="none" stroke="#5fd8c8" stroke-opacity=".6" stroke-width="4"/>
+  </g>
+</svg>

@@ -2,45 +2,71 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from core.events import Event, EventBus, EventTypes
 from ui.state import EyeState, UIStateManager
+
+EVENT_TO_EYE_STATE: dict[str, EyeState] = {
+    EventTypes.INPUT_RECEIVED: EyeState.LISTENING,
+    EventTypes.INTENT_RECOGNIZED: EyeState.THINKING,
+    EventTypes.DECISION_MADE: EyeState.THINKING,
+    EventTypes.TASK_DISPATCHED: EyeState.EXECUTING,
+    EventTypes.TASK_STARTED: EyeState.EXECUTING,
+    EventTypes.CONFIRMATION_REQUESTED: EyeState.WAITING,
+    EventTypes.TASK_COMPLETED: EyeState.SUCCESS,
+    EventTypes.TASK_FAILED: EyeState.ERROR,
+    EventTypes.AGENT_UNAVAILABLE: EyeState.ERROR,
+    EventTypes.CONVERSATION_ENDED: EyeState.IDLE,
+}
+
+MOMENT_STATES = {EyeState.SUCCESS, EyeState.WARNING, EyeState.ERROR}
 
 
 class UIEventBridge:
     """Subscribes to Brain events and updates UI state without changing Brain."""
 
-    def __init__(self, event_bus: EventBus, state: UIStateManager) -> None:
+    def __init__(
+        self,
+        event_bus: EventBus,
+        state: UIStateManager,
+        schedule_idle: Callable[[int, Callable[[], None]], object] | None = None,
+        moment_duration_ms: int = 3000,
+    ) -> None:
         self.event_bus = event_bus
         self.state = state
+        self.schedule_idle = schedule_idle
+        self.moment_duration_ms = moment_duration_ms
 
     def start(self) -> None:
         self.event_bus.subscribe("*", self.handle_event)
         self.state.set_brain_status("online")
 
     def handle_event(self, event: Event) -> None:
-        if event.type == EventTypes.INPUT_RECEIVED:
-            self.state.set_eye_state(EyeState.LISTENING)
-        elif event.type == EventTypes.INTENT_RECOGNIZED:
-            self.state.set_eye_state(EyeState.THINKING)
-        elif event.type == EventTypes.TASK_STARTED:
-            self.state.set_eye_state(EyeState.EXECUTING)
+        eye_state = EVENT_TO_EYE_STATE.get(event.type)
+        if eye_state is not None:
+            self._set_eye_state(eye_state)
+
+        if event.type in {EventTypes.TASK_DISPATCHED, EventTypes.TASK_STARTED}:
             self.state.add_agent_activity(
                 agent=str(event.payload.get("agent", "unknown")),
                 action=str(event.payload.get("task_id", "task")),
                 status="started",
             )
         elif event.type == EventTypes.TASK_COMPLETED:
-            self.state.set_eye_state(EyeState.SUCCESS)
             self.state.add_agent_activity(
                 agent=str(event.payload.get("agent", "unknown")),
                 action=str(event.payload.get("task_id", "task")),
                 status="completed",
             )
         elif event.type in {EventTypes.TASK_FAILED, EventTypes.AGENT_UNAVAILABLE}:
-            self.state.set_eye_state(EyeState.ERROR)
             self.state.add_notification("error", str(event.payload.get("message", event.type)))
         elif event.type == EventTypes.MEMORY_UPDATED:
             self.state.add_notification("info", "Memory updated.")
         elif event.type == EventTypes.CONVERSATION_ENDED:
-            self.state.set_eye_state(EyeState.IDLE)
             self.state.set_brain_status("idle")
+
+    def _set_eye_state(self, eye_state: EyeState) -> None:
+        self.state.set_eye_state(eye_state)
+        if self.schedule_idle and eye_state in MOMENT_STATES:
+            self.schedule_idle(self.moment_duration_ms, lambda: self.state.set_eye_state(EyeState.IDLE))
