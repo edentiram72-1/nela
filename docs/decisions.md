@@ -109,3 +109,26 @@ Related files:
 - `scripts/export_claude_review_bundle.py`
 - `docs/claude_review_bundle.md`
 - `docs/ai_handoff.md`
+
+### DEC-0005: Store Original Intent In Pending Confirmations
+
+**Date:** 2026-07-23
+**Status:** Accepted
+
+**Context:** `NELA-0002-confirmation-deadlock` fixes a deterministic deadlock where follow-up answers to confirmation questions were classified as new input before `resolve_confirmation()` could run. When a user confirms, the Brain must continue the original blocked request without storing a full Plan too early.
+
+**Decision:** Store the original `Intent` in `PendingConfirmation.metadata`. On affirmative confirmation, the Conversation Engine resolves the confirmation, marks that Intent as confirmed, and creates a fresh Plan from the original Intent. The Planner and Agent contract remain unchanged.
+
+**Consequences:**
+
+- The Brain can resume the blocked request after `yes`, `confirm`, or equivalent replies.
+- Plans are still created only after approval, reducing stale Plan state.
+- Confirmation answer routing stays in `ConversationEngine`; `DecisionEngine` remains pure.
+- Future durable confirmation storage will need serializable Intent metadata.
+
+**Related files:**
+
+- `brain/conversation.py`
+- `brain/context.py`
+- `core/events.py`
+- `tests/test_conversation_confirmations.py`

@@ -12,7 +12,6 @@ class AppCliTests(unittest.TestCase):
                 "core.app",
                 "--once",
                 "Open Spotify and play my Night playlist",
-                "--no-dispatch",
             ],
             check=False,
             capture_output=True,
@@ -23,9 +22,9 @@ class AppCliTests(unittest.TestCase):
         self.assertIn("NELA Brain", result.stdout)
         self.assertIn("Intent: PlayMedia", result.stdout)
         self.assertIn("Plan: 4 task(s)", result.stdout)
+        self.assertIn("ok:", result.stdout)
         self.assertEqual(result.stderr, "")
 
 
 if __name__ == "__main__":
     unittest.main()
-

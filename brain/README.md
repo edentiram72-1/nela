@@ -9,6 +9,7 @@ The Brain must never perform desktop, browser, file, service, or plugin actions 
 ## Responsibilities
 
 - Maintain conversation flow.
+- Resolve pending confirmation answers before new intent classification.
 - Preserve session context.
 - Recognize structured intent.
 - Decide whether to ask, wait, remember, or delegate.
@@ -35,6 +36,9 @@ The Brain must never perform desktop, browser, file, service, or plugin actions 
 - `InputReceived`
 - `IntentRecognized`
 - `DecisionMade`
+- `ConfirmationRequested`
+- `ConfirmationResolved`
+- `ConfirmationExpired`
 - `PlanCreated`
 - `TaskCreated`
 - `TaskDispatched`
@@ -60,5 +64,4 @@ The Brain must never perform desktop, browser, file, service, or plugin actions 
 - True parallel task execution.
 - Conditional expression evaluation.
 - Persistent task state.
-- User confirmation workflow.
-
+- Durable, policy-backed user confirmation workflow.

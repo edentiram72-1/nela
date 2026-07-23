@@ -13,8 +13,10 @@ from agents.desktop.agent import DesktopAgent
 from agents.files.agent import FilesAgent
 from agents.github.agent import GitHubAgent
 from agents.gmail.agent import GmailAgent
+from agents.memory.agent import MemoryAgent
 from agents.spotify.agent import SpotifyAgent
 from agents.terminal.agent import TerminalAgent
+from agents.voice.agent import VoiceAgent
 from agents.vision.agent import VisionAgent
 from brain.context import ContextEngine
 from brain.conversation import ConversationEngine
@@ -85,7 +87,9 @@ def _register_builtin_agents(dispatcher: AgentDispatcher) -> None:
         ClaudeAgent(),
         CodexAgent(),
         AutomationAgent(),
+        VoiceAgent(),
         VisionAgent(),
+        MemoryAgent(),
         DesktopAgent(),
     ):
         dispatcher.register_agent(agent)

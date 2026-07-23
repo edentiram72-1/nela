@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
@@ -69,6 +69,19 @@ class ContextEngine:
         self.pending_confirmations[confirmation.id] = confirmation
         return confirmation
 
+    def oldest_pending_confirmation(self) -> PendingConfirmation | None:
+        if not self.pending_confirmations:
+            return None
+        return min(self.pending_confirmations.values(), key=lambda confirmation: confirmation.created_at)
+
+    def update_confirmation_metadata(self, confirmation_id: str, metadata: dict[str, Any]) -> PendingConfirmation | None:
+        confirmation = self.pending_confirmations.get(confirmation_id)
+        if confirmation is None:
+            return None
+        updated = replace(confirmation, metadata=dict(metadata))
+        self.pending_confirmations[confirmation_id] = updated
+        return updated
+
     def resolve_confirmation(self, confirmation_id: str) -> None:
         self.pending_confirmations.pop(confirmation_id, None)
 
@@ -101,4 +114,3 @@ class ContextEngine:
             pending_confirmations=dict(self.pending_confirmations),
             session_state=dict(self.session_state),
         )
-

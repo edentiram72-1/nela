@@ -103,7 +103,7 @@ class IntentRouter:
 
     def _match_pattern(self, normalized: str) -> IntentPattern | None:
         for pattern in self._patterns:
-            if any(keyword in normalized for keyword in pattern.keywords):
+            if any(_contains_keyword(normalized, keyword) for keyword in pattern.keywords):
                 return pattern
         return None
 
@@ -150,6 +150,11 @@ def _extract_resource(text: str) -> str | None:
 
 def _looks_like_follow_up(normalized: str) -> bool:
     return normalized.startswith(("also ", "then ", "and ", "do that", "same "))
+
+
+def _contains_keyword(normalized: str, keyword: str) -> bool:
+    escaped = re.escape(_normalize(keyword))
+    return re.search(rf"(?<!\w){escaped}(?!\w)", normalized) is not None
 
 
 def _slug(value: str) -> str:
