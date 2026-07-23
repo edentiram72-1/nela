@@ -161,7 +161,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Pending Tasks
 
-- Push consolidated `develop` to GitHub after credentials are available.
+- Push consolidated `develop` to GitHub after credentials are available. Current push attempt failed because HTTPS credentials were unavailable and terminal prompts are disabled; SSH fetch previously failed with `Permission denied (publickey)`.
 - Do not merge further into `main` as part of Integration Sprint 1.
 - Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
@@ -341,7 +341,7 @@ Result: public HTTPS branch lookup succeeded.
 
 Finish the develop consolidation handoff:
 
-- Push consolidated `develop` after GitHub credentials are available.
+- Push consolidated `develop` after GitHub credentials are available. Latest local integration commit is `29b2468 Finalize integration sprint develop baseline`.
 - Send Claude direct blob links for `docs/ai_handoff.md`, `docs/ai_inbox.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
 
 After release, continue in this order:

@@ -200,12 +200,12 @@ The requested conceptual transition `IDLE -> THINKING -> SPEAKING -> IDLE` is pr
 ## Remaining Blockers
 
 - Memory subsystem integration is blocked until `nela-memory-subsystem.zip` is provided.
-- Push to GitHub may require HTTPS or SSH credentials; SSH fetch failed locally with `Permission denied (publickey)`.
+- Push to GitHub is blocked by credentials in the current shell. SSH fetch failed with `Permission denied (publickey)`, and HTTPS push failed with `could not read Username for 'https://github.com': terminal prompts disabled`.
 - Do not merge further into `main` as part of this sprint.
 
 ## Recommended Next Steps
 
-1. Push the updated `develop` branch after GitHub credentials are available.
+1. Push the updated `develop` branch after GitHub credentials are available. Latest local integration commit: `29b2468 Finalize integration sprint develop baseline`.
 2. Send Claude the merge report and direct blob links for `docs/ai_handoff.md`, `docs/integration_sprint_1_merge_report.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
 3. Continue with `NELA-0004-task-idempotency`.
 4. Integrate Memory only after the Claude Memory subsystem artifact is available.
