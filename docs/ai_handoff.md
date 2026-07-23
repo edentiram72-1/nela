@@ -30,6 +30,8 @@ The root README is now a full English project overview, and `README.he.md` provi
 
 Desktop lifecycle intents now route through the existing Brain flow without architecture changes. `OpenApplication`, `CloseApplication`, and `SwitchApplication` create Desktop Agent tasks through the Planner.
 
+The root README now documents Desktop Agent V1, supported applications, safety limits, known limitations, and the current feature branch.
+
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
@@ -113,7 +115,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
-- Finish `NELA-0005-desktop-agent-v1` documentation and final validation.
+- Finish `NELA-0005-desktop-agent-v1` final validation and push the feature branch to GitHub.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
