@@ -292,3 +292,30 @@ Related files:
 - `language/validator.py`
 - `core/response.py`
 - `tests/test_language_engine.py`
+
+### DEC-0013: Make The Permission Model The Agent Safety Spine
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** NELA is expected to evolve into a multi-agent system with Coding, Cybersecurity, Research, orchestration, runtime lifecycle, and future external-action Agents. These capabilities cannot be safe if every Agent invents its own approval, scope, retry, and refusal rules.
+
+**Decision:** Treat `docs/permission_model.md` as the shared safety spine for future Agents. Every Agent action must declare a static capability tier from `T0` through `T4`; the system must never infer tiers at runtime. Unknown or unclassifiable actions fail closed as `T4`. The permission model gates future Coding, Cyber, Research, Browser, Terminal, Files, and communication Agent capabilities before execution.
+
+**Consequences:**
+
+- `NELA-0006-permission-policy`, `NELA-0008-capability-registry`, `NELA-0004-task-idempotency`, `NELA-0007-event-bus-hardening`, and `NELA-0009-plan-executor` become Phase A prerequisites before advanced real Agents.
+- Cybersecurity capabilities remain defensive, authorized, and lab-isolated by design.
+- Relationship/trust state can change tone but must not lower a capability tier.
+- The Brain stays semantic and agent-neutral; the Dispatcher/Runtime boundary owns authorization before `agent.execute()`.
+- Future specifications should reference the shared permission model instead of duplicating safety rules.
+
+**Related files:**
+
+- `docs/permission_model.md`
+- `docs/nela_runtime_architecture.md`
+- `docs/coding_agent_spec.md`
+- `docs/cyber_agent_spec.md`
+- `docs/multi_agent_orchestration.md`
+- `docs/ai_system_roadmap.md`
+- `docs/ai_inbox.md`
