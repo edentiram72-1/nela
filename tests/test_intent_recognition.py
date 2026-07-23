@@ -19,7 +19,12 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.action, "GeneralRequest")
         self.assertLess(intent.confidence, 0.5)
 
+    def test_does_not_match_keywords_inside_other_words(self) -> None:
+        intent = IntentRouter().classify("Open display settings")
+
+        self.assertEqual(intent.action, "OpenApplication")
+        self.assertEqual(intent.application, "Display Settings")
+
 
 if __name__ == "__main__":
     unittest.main()
-

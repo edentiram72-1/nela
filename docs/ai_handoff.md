@@ -18,6 +18,8 @@ The MVP Brain Agent layer now includes registered placeholder Agents for Desktop
 
 `NELA-0003-dispatcher-timeout-retry-safety` has started. Dispatcher timing is now tracked per attempt, slow successful mock Agent results are not rewritten as timeout failures, failed attempts that exceed timeout metadata report timeout, and retry success is covered by unit tests.
 
+Intent matching now checks full keywords and phrases instead of arbitrary substrings, preventing false positives such as matching `play` inside `display`.
+
 Claude collaboration is now supported through a generated review bundle. There is no direct Claude connection. Use `docs/claude_review_bundle.md` or regenerate it with `python3 -m scripts.export_claude_review_bundle`.
 
 NELA can now run from the command line. Use `python3 -m core.app` for an interactive text session, `python3 -m core.app --once "<request>"` for a one-shot Brain run with mock dispatch, or add `--no-dispatch` to inspect the plan without sending tasks to Agents.
@@ -97,6 +99,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `tests/*`
 - `tests/test_conversation_confirmations.py`
 - `tests/test_dispatcher.py`
+- `tests/test_intent_recognition.py`
 
 ## Pending Tasks
 
