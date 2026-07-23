@@ -53,7 +53,7 @@ class IntentPattern:
 
 DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
     IntentPattern("Remember", ("remember", "save this", "learn this")),
-    IntentPattern("CloseApplication", ("close", "quit")),
+    IntentPattern("CloseApplication", ("close", "quit"), requires_confirmation=True),
     IntentPattern("SwitchApplication", ("switch to", "focus", "bring to front")),
     IntentPattern("StopTask", ("stop", "cancel"), requires_confirmation=True),
     IntentPattern("PlayMedia", ("play", "music", "playlist", "song")),

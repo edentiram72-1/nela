@@ -125,6 +125,20 @@ class ConversationConfirmationTests(unittest.TestCase):
         dispatched_events = [event for event in events.history() if event.type == EventTypes.TASK_DISPATCHED]
         self.assertGreaterEqual(len(dispatched_events), 2)
 
+    def test_close_application_requires_confirmation_then_dispatches_original_intent(self) -> None:
+        engine, events, context = make_engine()
+
+        first = engine.handle_text("close Finder")
+        second = engine.handle_text("yes")
+
+        self.assertEqual(first.decision.type, DecisionType.ASK_CLARIFICATION)
+        self.assertFalse(context.pending_confirmations)
+        self.assertEqual(second.intent.action, "CloseApplication")
+        self.assertIsNotNone(second.plan)
+        self.assertEqual(second.plan.tasks[0].action, "close_application")
+        self.assertEqual(second.plan.tasks[0].target_agent, "desktop")
+        self.assertIn(EventTypes.CONFIRMATION_RESOLVED, [event.type for event in events.history()])
+
 
 if __name__ == "__main__":
     unittest.main()

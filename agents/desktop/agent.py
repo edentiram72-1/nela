@@ -102,47 +102,53 @@ class DesktopAgent(BaseAgent):
     def execute(self, command: AgentCommand) -> AgentResult:
         started_at = time.monotonic()
         application_name = _application_from_payload(command)
-        spec = self._resolve_application(application_name)
-        if spec is None:
+        try:
+            spec = self._resolve_application(application_name)
+            if spec is None:
+                return self._result(
+                    success=False,
+                    message=f"Unsupported desktop application: {application_name or 'unknown'}.",
+                    action=command.action,
+                    application=application_name,
+                    started_at=started_at,
+                    extra={"supported_applications": self.supported_application_names()},
+                )
+
+            if command.action in {"launch_application", "ensure_application"}:
+                return self._launch_or_focus(spec, command.action, started_at)
+            if command.action in {"bring_to_front", "switch_application", "focus_application"}:
+                return self._bring_to_front(spec, command.action, started_at)
+            if command.action in {"is_application_running", "detect_application", "status_application"}:
+                return self._detect_running(spec, command.action, started_at)
+            if command.action == "wait_until_ready":
+                return self._wait_until_ready(spec, command, started_at)
+            if command.action in {"close_application", "quit_application"}:
+                return self._close_application(spec, command.action, started_at)
+
             return self._result(
                 success=False,
-                message=f"Unsupported desktop application: {application_name or 'unknown'}.",
+                message="Unsupported desktop lifecycle action.",
                 action=command.action,
-                application=application_name,
+                application=spec.canonical_name,
                 started_at=started_at,
-                extra={"supported_applications": self.supported_application_names()},
+                extra={
+                    "supported_actions": (
+                        "launch_application",
+                        "ensure_application",
+                        "bring_to_front",
+                        "switch_application",
+                        "focus_application",
+                        "is_application_running",
+                        "detect_application",
+                        "status_application",
+                        "wait_until_ready",
+                        "close_application",
+                        "quit_application",
+                    )
+                },
             )
-
-        if command.action in {"launch_application", "ensure_application"}:
-            return self._launch_or_focus(spec, command.action, started_at)
-        if command.action in {"bring_to_front", "switch_application", "focus_application"}:
-            return self._bring_to_front(spec, command.action, started_at)
-        if command.action in {"is_application_running", "detect_application", "status_application"}:
-            return self._detect_running(spec, command.action, started_at)
-        if command.action in {"close_application", "quit_application"}:
-            return self._close_application(spec, command.action, started_at)
-
-        return self._result(
-            success=False,
-            message="Unsupported desktop lifecycle action.",
-            action=command.action,
-            application=spec.canonical_name,
-            started_at=started_at,
-            extra={
-                "supported_actions": (
-                    "launch_application",
-                    "ensure_application",
-                    "bring_to_front",
-                    "switch_application",
-                    "focus_application",
-                    "is_application_running",
-                    "detect_application",
-                    "status_application",
-                    "close_application",
-                    "quit_application",
-                )
-            },
-        )
+        except subprocess.TimeoutExpired as error:
+            return self._timeout_failure(command, application_name, started_at, error)
 
     def health_check(self) -> AgentResult:
         result = super().health_check()
@@ -213,6 +219,30 @@ class DesktopAgent(BaseAgent):
             extra={"running": running, "bundle_id": spec.bundle_id},
         )
 
+    def _wait_until_ready(self, spec: ApplicationSpec, command: AgentCommand, started_at: float) -> AgentResult:
+        timeout_seconds = float(command.payload.get("timeout_seconds") or 10.0)
+        deadline = time.monotonic() + timeout_seconds
+        while time.monotonic() <= deadline:
+            if self._is_running(spec):
+                return self._result(
+                    success=True,
+                    message=f"{spec.canonical_name} is ready.",
+                    action="wait_until_ready",
+                    application=spec.canonical_name,
+                    started_at=started_at,
+                    extra={"running": True, "bundle_id": spec.bundle_id},
+                )
+            time.sleep(0.2)
+
+        return self._result(
+            success=False,
+            message=f"{spec.canonical_name} did not become ready before timeout.",
+            action="wait_until_ready",
+            application=spec.canonical_name,
+            started_at=started_at,
+            extra={"running": False, "bundle_id": spec.bundle_id, "timeout_seconds": timeout_seconds},
+        )
+
     def _close_application(self, spec: ApplicationSpec, action: str, started_at: float) -> AgentResult:
         if not self._is_running(spec):
             return self._result(
@@ -277,6 +307,25 @@ class DesktopAgent(BaseAgent):
                 "bundle_id": spec.bundle_id,
                 "returncode": command_result.returncode,
                 "stderr": command_result.stderr.strip(),
+            },
+        )
+
+    def _timeout_failure(
+        self,
+        command: AgentCommand,
+        application_name: str | None,
+        started_at: float,
+        error: subprocess.TimeoutExpired,
+    ) -> AgentResult:
+        return self._result(
+            success=False,
+            message=f"Desktop command timed out while running {command.action}.",
+            action=command.action,
+            application=application_name,
+            started_at=started_at,
+            extra={
+                "error": "TimeoutExpired",
+                "timeout_seconds": error.timeout,
             },
         )
 

@@ -44,6 +44,13 @@ class FlakyAgent(BaseAgent):
         return AgentResult(True, "ok after retry")
 
 
+class CrashingAgent(BaseAgent):
+    name = "crashing"
+
+    def execute(self, command: AgentCommand) -> AgentResult:
+        raise RuntimeError("boom")
+
+
 class DispatcherTests(unittest.TestCase):
     def test_registers_discovers_and_dispatches_agent(self) -> None:
         events = EventBus()
@@ -123,6 +130,20 @@ class DispatcherTests(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(agent.calls, 2)
         self.assertIn(EventTypes.TASK_COMPLETED, [event.type for event in events.history()])
+
+    def test_agent_exception_becomes_task_failure(self) -> None:
+        events = EventBus()
+        dispatcher = AgentDispatcher(events)
+        dispatcher.register_agent(CrashingAgent())
+
+        result = dispatcher.dispatch(
+            Task(description="Crash task", action="run", target_agent="crashing"),
+            plan_id="plan-1",
+        )
+
+        self.assertFalse(result.success)
+        self.assertIn("RuntimeError", result.message)
+        self.assertIn(EventTypes.TASK_FAILED, [event.type for event in events.history()])
 
 
 if __name__ == "__main__":

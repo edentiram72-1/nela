@@ -31,6 +31,12 @@ class FakeDesktopRunner:
         return subprocess.CompletedProcess(argv, 99, "", "unexpected command")
 
 
+class TimeoutDesktopRunner(FakeDesktopRunner):
+    def run(self, argv: tuple[str, ...], timeout: float) -> subprocess.CompletedProcess[str]:
+        self.calls.append(argv)
+        raise subprocess.TimeoutExpired(argv, timeout)
+
+
 class DesktopAgentTests(unittest.TestCase):
     def test_launch_existing_supported_app(self) -> None:
         runner = FakeDesktopRunner()
@@ -96,6 +102,28 @@ class DesktopAgentTests(unittest.TestCase):
             ("/usr/bin/osascript", "-e", 'tell application id "com.spotify.client" to quit'),
             runner.calls,
         )
+
+    def test_wait_until_ready_reports_running_app(self) -> None:
+        runner = FakeDesktopRunner(running_processes={"Spotify"})
+        agent = DesktopAgent(runner=runner)
+
+        result = agent.execute(
+            AgentCommand(action="wait_until_ready", payload={"application": "Spotify", "timeout_seconds": 1})
+        )
+
+        self.assertTrue(result.success)
+        self.assertEqual(result.data["action"], "wait_until_ready")
+        self.assertTrue(result.data["running"])
+
+    def test_timeout_expired_returns_structured_failure(self) -> None:
+        runner = TimeoutDesktopRunner()
+        agent = DesktopAgent(runner=runner)
+
+        result = agent.execute(AgentCommand(action="launch_application", payload={"application": "Spotify"}))
+
+        self.assertFalse(result.success)
+        self.assertEqual(result.data["error"], "TimeoutExpired")
+        self.assertEqual(result.data["action"], "launch_application")
 
     def test_lifecycle_and_health_check(self) -> None:
         agent = DesktopAgent(runner=FakeDesktopRunner())

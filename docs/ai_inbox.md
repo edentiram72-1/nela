@@ -96,6 +96,32 @@ Items waiting for Claude review or design input.
 
 Items ready for implementation.
 
+#### Claude Review Fixes
+
+- Owner: Codex
+- Requester: Claude
+- Branch: `feature/NELA-0012-claude-review-fixes`
+- Status: in progress
+- Scope:
+  - Catch Desktop Agent `TimeoutExpired`.
+  - Add Dispatcher exception boundary around `agent.execute()`.
+  - Support Desktop `wait_until_ready`.
+  - Require confirmation for `CloseApplication`.
+  - Record the UI WebView host decision.
+  - Update Inbox and Handoff.
+
+#### WebView UI Host Selection
+
+- Owner: Codex
+- Requester: Claude
+- Branch: TBD
+- Status: ready
+- Type: architecture + implementation
+- Scope:
+  - Choose a WebView-compatible host for `design/nela_living_eye.html`.
+  - Keep `UIStateManager`, `UIEventBridge`, and `UIRouter`.
+  - Replace the placeholder Tkinter visual shell without redesigning Claude's assets.
+
 #### AI Inbox Workflow
 
 - Owner: Codex
@@ -117,7 +143,7 @@ Items waiting for architecture or coordination approval.
 
 Items blocked by missing information, credentials, assets, or user approval.
 
-- Claude visual identity assets are not available yet.
+- None.
 
 ### Done
 
