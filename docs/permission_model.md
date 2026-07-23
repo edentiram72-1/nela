@@ -5,8 +5,9 @@ classified into exactly one capability tier, and the tier decides what happens
 before, during, and after. No agent implements its own safety rules — they all
 call the same engine described here.
 
-Status: specification. No code in this task. Targets the existing event-driven
-Brain without modifying it: the engine is a new module the dispatcher consults.
+Status: Sprint 2 implementation exists in `permissions/`; this document remains
+the long-term policy model. See `docs/permission_engine.md` for the implemented
+runtime surface and current limits.
 
 Related: `permission_model` was flagged as required-before-real-agents in
 `docs/claude_review_findings.md` (H3) and is a hard prerequisite for every

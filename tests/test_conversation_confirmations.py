@@ -15,10 +15,18 @@ from brain.planner import Planner
 from core.events import EventBus, EventTypes
 from memory.long_term import LongTermMemory
 from memory.short_term import ShortTermMemory
+from permissions import AgentManifest, Capability, PermissionTier
 
 
 class EchoAgent(BaseAgent):
     name = "echo"
+    permission_manifest = AgentManifest(
+        agent="echo",
+        capabilities=(
+            Capability("echo", PermissionTier.T1),
+            Capability("dangerous_echo", PermissionTier.T2, requires_confirmation=True),
+        ),
+    )
 
     def execute(self, command: AgentCommand) -> AgentResult:
         return AgentResult(True, "echo ok", {"action": command.action})

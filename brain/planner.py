@@ -84,7 +84,7 @@ class Planner:
                     description=f"Request application close: {intent.application or 'requested application'}",
                     action="close_application",
                     target_agent="desktop",
-                    payload={"application": intent.application},
+                    payload={"application": intent.application, "confirmed": intent.parameters.get("confirmed", False)},
                     timeout_seconds=20.0,
                 )
             )
@@ -120,6 +120,7 @@ class Planner:
                         "text": intent.raw_text,
                         "application": intent.application,
                         "resource": intent.resource,
+                        "confirmed": intent.parameters.get("confirmed", False),
                     },
                 )
             )

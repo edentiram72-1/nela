@@ -9,19 +9,29 @@ from agents.base import AgentCommand, AgentResult, AgentState, BaseAgent
 from agents.registry import AgentRegistry
 from brain.planner import Task
 from core.events import Event, EventBus, EventTypes
+from permissions import AuthenticatedUser, PermissionEngine, PermissionRequest
 
 
 class AgentDispatcher:
     """Delegates tasks to registered Agents while publishing lifecycle events."""
 
-    def __init__(self, events: EventBus, registry: AgentRegistry | None = None) -> None:
+    def __init__(
+        self,
+        events: EventBus,
+        registry: AgentRegistry | None = None,
+        permission_engine: PermissionEngine | None = None,
+        authenticated_user: AuthenticatedUser | None = None,
+    ) -> None:
         self.events = events
         self.registry = registry or AgentRegistry()
+        self.permission_engine = permission_engine or PermissionEngine(events=events)
+        self.authenticated_user = authenticated_user or self.permission_engine.default_user
         self.cancelled_tasks: set[str] = set()
         self.logger = logging.getLogger("nela.agents")
 
     def register_agent(self, agent: BaseAgent) -> None:
         self.registry.register(agent)
+        self.permission_engine.register_agent(agent)
         self.events.publish(
             Event(
                 type=EventTypes.AGENT_STATUS_CHANGED,
@@ -33,6 +43,7 @@ class AgentDispatcher:
     def unregister_agent(self, name: str) -> bool:
         removed = self.registry.unregister(name)
         if removed:
+            self.permission_engine.unregister_agent(name)
             self.events.publish(
                 Event(
                     type=EventTypes.AGENT_STATUS_CHANGED,
@@ -69,6 +80,20 @@ class AgentDispatcher:
         if not agent:
             return self._agent_unavailable(task, plan_id, f"Agent '{task.target_agent}' is not registered.")
 
+        permission_request = PermissionRequest(
+            agent=task.target_agent,
+            action=task.action,
+            payload=task.payload,
+            task_id=task.id,
+            plan_id=plan_id,
+            user=self.authenticated_user,
+            confirmed=bool(task.payload.get("confirmed", False)),
+            scoped_session_id=_optional_string(task.payload.get("scoped_session_id")),
+        )
+        permission = self.permission_engine.authorize(permission_request)
+        if not permission.granted:
+            return self._permission_denied(task, plan_id, permission.reason, permission.to_dict())
+
         self.events.publish(
             Event(
                 type=EventTypes.TASK_DISPATCHED,
@@ -104,6 +129,7 @@ class AgentDispatcher:
                     "plan_id": plan_id,
                     "timeout_seconds": task.timeout_seconds,
                 },
+                id=permission_request.command_id,
             )
             try:
                 last_result = agent.execute(command)
@@ -139,6 +165,7 @@ class AgentDispatcher:
                 )
 
             if last_result.success:
+                self.permission_engine.record_action_result(permission_request, last_result, permission)
                 self.events.publish(
                     Event(
                         type=EventTypes.TASK_COMPLETED,
@@ -158,6 +185,7 @@ class AgentDispatcher:
                 time.sleep(task.retry_policy.backoff_seconds)
 
         self.logger.error("task_failed task_id=%s agent=%s", task.id, task.target_agent)
+        self.permission_engine.record_action_result(permission_request, last_result, permission)
         self.events.publish(
             Event(
                 type=EventTypes.TASK_FAILED,
@@ -189,6 +217,25 @@ class AgentDispatcher:
         )
         return result
 
+    def _permission_denied(self, task: Task, plan_id: str, message: str, details: dict[str, object]) -> AgentResult:
+        result = AgentResult(False, message, {"task_id": task.id, "plan_id": plan_id, **details})
+        if details.get("decision") == "confirmation_required":
+            return result
+        self.events.publish(
+            Event(
+                type=EventTypes.TASK_FAILED,
+                source="brain.dispatcher",
+                payload={
+                    "plan_id": plan_id,
+                    "task_id": task.id,
+                    "agent": task.target_agent,
+                    "message": message,
+                    "permission": details,
+                },
+            )
+        )
+        return result
+
     def _cancelled(self, task: Task, plan_id: str) -> AgentResult:
         result = AgentResult(False, "Task was cancelled.", {"task_id": task.id, "plan_id": plan_id})
         self.events.publish(
@@ -199,3 +246,7 @@ class AgentDispatcher:
             )
         )
         return result
+
+
+def _optional_string(value: object) -> str | None:
+    return str(value) if value else None

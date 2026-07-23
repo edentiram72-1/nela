@@ -319,3 +319,37 @@ Related files:
 - `docs/multi_agent_orchestration.md`
 - `docs/ai_system_roadmap.md`
 - `docs/ai_inbox.md`
+
+### DEC-0014: Gate Agent Execution At The Dispatcher Boundary
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** Sprint 2 requires a Permission Engine that becomes the single
+gateway before every Agent execution without redesigning the Brain or building
+new real Agents.
+
+**Decision:** Implement `permissions/` as an independent subsystem and integrate
+it at `AgentDispatcher.dispatch()`. The Dispatcher authorizes each task before
+publishing execution lifecycle events or calling `agent.execute()`. Agents
+declare allowed actions through manifests; unknown actions fail closed as `T4`.
+
+**Consequences:**
+
+- The Brain remains semantic and agent-neutral.
+- Agent-specific permission checks are avoided.
+- Built-in and future Agents use the same T0-T4 gate, audit log, scoped session,
+  confirmation, kill switch, and lock mode semantics.
+- T2/T3 confirmation still flows through the existing conversation confirmation
+  system; the Permission Engine does not create a second user-dialog system.
+- Advanced scope validation, durable audit storage, rollback, and in-flight
+  cancellation remain future hardening work.
+
+**Related files:**
+
+- `permissions/`
+- `brain/dispatcher.py`
+- `brain/planner.py`
+- `core/events.py`
+- `docs/permission_engine.md`
+- `tests/test_permission_engine.py`

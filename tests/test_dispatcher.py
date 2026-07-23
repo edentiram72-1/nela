@@ -5,10 +5,18 @@ from agents.base import AgentCommand, AgentResult, BaseAgent
 from brain.dispatcher import AgentDispatcher
 from brain.planner import RetryPolicy, Task
 from core.events import EventBus, EventTypes
+from permissions import AgentManifest, Capability, PermissionTier
 
 
 class EchoAgent(BaseAgent):
     name = "echo"
+    permission_manifest = AgentManifest(
+        agent="echo",
+        capabilities=(
+            Capability("echo", PermissionTier.T1),
+            Capability("sensitive_echo", PermissionTier.T2, requires_confirmation=True),
+        ),
+    )
 
     def execute(self, command: AgentCommand) -> AgentResult:
         return AgentResult(True, "ok", {"action": command.action})
@@ -16,6 +24,7 @@ class EchoAgent(BaseAgent):
 
 class SlowSuccessAgent(BaseAgent):
     name = "slow_success"
+    permission_manifest = AgentManifest(agent="slow_success", capabilities=(Capability("run", PermissionTier.T1),))
 
     def execute(self, command: AgentCommand) -> AgentResult:
         time.sleep(0.01)
@@ -24,6 +33,7 @@ class SlowSuccessAgent(BaseAgent):
 
 class SlowFailureAgent(BaseAgent):
     name = "slow_failure"
+    permission_manifest = AgentManifest(agent="slow_failure", capabilities=(Capability("run", PermissionTier.T1),))
 
     def execute(self, command: AgentCommand) -> AgentResult:
         time.sleep(0.01)
@@ -32,6 +42,7 @@ class SlowFailureAgent(BaseAgent):
 
 class FlakyAgent(BaseAgent):
     name = "flaky"
+    permission_manifest = AgentManifest(agent="flaky", capabilities=(Capability("run", PermissionTier.T1),))
 
     def __init__(self) -> None:
         super().__init__()
@@ -46,6 +57,7 @@ class FlakyAgent(BaseAgent):
 
 class CrashingAgent(BaseAgent):
     name = "crashing"
+    permission_manifest = AgentManifest(agent="crashing", capabilities=(Capability("run", PermissionTier.T1),))
 
     def execute(self, command: AgentCommand) -> AgentResult:
         raise RuntimeError("boom")
@@ -144,6 +156,52 @@ class DispatcherTests(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("RuntimeError", result.message)
         self.assertIn(EventTypes.TASK_FAILED, [event.type for event in events.history()])
+
+    def test_denies_action_missing_from_manifest_before_execution(self) -> None:
+        events = EventBus()
+        dispatcher = AgentDispatcher(events)
+        dispatcher.register_agent(EchoAgent())
+
+        result = dispatcher.dispatch(
+            Task(
+                description="Blocked task",
+                action="unknown_echo",
+                target_agent="echo",
+                retry_policy=RetryPolicy(max_attempts=1),
+            ),
+            plan_id="plan-1",
+        )
+
+        event_types = [event.type for event in events.history()]
+        self.assertFalse(result.success)
+        self.assertEqual(result.data["tier"], PermissionTier.T4.value)
+        self.assertIn(EventTypes.PERMISSION_DENIED, event_types)
+        self.assertNotIn(EventTypes.TASK_STARTED, event_types)
+
+    def test_t2_action_requires_confirmation_payload(self) -> None:
+        events = EventBus()
+        dispatcher = AgentDispatcher(events)
+        dispatcher.register_agent(EchoAgent())
+
+        blocked = dispatcher.dispatch(
+            Task(description="Sensitive echo", action="sensitive_echo", target_agent="echo"),
+            plan_id="plan-1",
+        )
+        allowed = dispatcher.dispatch(
+            Task(
+                description="Sensitive echo",
+                action="sensitive_echo",
+                target_agent="echo",
+                payload={"confirmed": True},
+            ),
+            plan_id="plan-1",
+        )
+
+        self.assertFalse(blocked.success)
+        self.assertEqual(blocked.data["decision"], "confirmation_required")
+        self.assertTrue(allowed.success)
+        self.assertIn(EventTypes.PERMISSION_REQUESTED, [event.type for event in events.history()])
+        self.assertIn(EventTypes.PERMISSION_GRANTED, [event.type for event in events.history()])
 
 
 if __name__ == "__main__":
