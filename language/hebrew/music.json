@@ -1,0 +1,17 @@
+[
+  {
+    "id": "music.play.success.001",
+    "text": "מפעילה את {resource}.",
+    "category": "music.play.success",
+    "language": "he",
+    "tone": ["warm", "calm"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": ["resource"],
+    "tags": ["music", "success"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

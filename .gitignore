@@ -16,7 +16,8 @@ Thumbs.db
 *.key
 
 # Runtime outputs
-logs/
+logs/*.log
+!logs/.gitkeep
 tmp/
 temp/
 dist/
@@ -30,3 +31,8 @@ venv/
 __pycache__/
 *.pyc
 
+# Local data
+data/
+
+# Generated review bundles
+docs/claude_review_bundle.md

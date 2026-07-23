@@ -10,6 +10,7 @@
 6. Never modify unrelated code.
 7. Add tests whenever practical.
 8. Record major structural changes in `docs/decisions.md`.
+9. Use review bundles or GitHub pull requests for Claude collaboration; do not create a direct Claude connection.
 
 ## Branch Naming
 
@@ -38,6 +39,10 @@ Fix planner task ordering test
 - Do not introduce circular dependencies.
 - Do not rewrite completed modules without a documented reason.
 - Prefer small interfaces over large shared abstractions.
+- The Brain must not execute desktop, browser, file, service, or plugin actions directly.
+- Agent-specific behavior belongs in Agents, not in `brain/`.
+- Communication between major modules should happen through Events.
+- New Agents must implement the shared contract in `agents/base.py`.
 
 ## Documentation Rules
 
@@ -60,6 +65,10 @@ Add tests when practical for:
 - Planner behavior.
 - Memory retrieval.
 - Terminal and browser safety boundaries.
+- Intent recognition.
+- Decision logic.
+- Context state.
+- Agent dispatch behavior.
 
 If tests are not added, explain why in `docs/ai_handoff.md`.
 
@@ -81,6 +90,7 @@ If tests are not added, explain why in `docs/ai_handoff.md`.
 - Find edge cases.
 - Improve UX ideas.
 - Never rewrite completed modules without justification.
+- Review `docs/claude_review_bundle.md` or a GitHub pull request when local file access is not available.
 
 ### ChatGPT
 
@@ -88,4 +98,3 @@ If tests are not added, explain why in `docs/ai_handoff.md`.
 - Design new systems.
 - Coordinate development.
 - Approve major structural changes.
-

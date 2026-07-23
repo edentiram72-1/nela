@@ -1,0 +1,62 @@
+[
+  {
+    "id": "desktop.open.success.001",
+    "text": "פותחת את {application}.",
+    "category": "desktop.open.success",
+    "language": "he",
+    "tone": ["calm", "confident"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": ["application"],
+    "tags": ["desktop", "success"],
+    "enabled": true,
+    "version": "0.1.0"
+  },
+  {
+    "id": "desktop.open.success.002",
+    "text": "הפעלתי את {application}.",
+    "category": "desktop.open.success",
+    "language": "he",
+    "tone": ["warm", "confident"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 0.8,
+    "requires": ["application"],
+    "tags": ["desktop", "success"],
+    "enabled": true,
+    "version": "0.1.0"
+  },
+  {
+    "id": "desktop.open.failure.001",
+    "text": "לא הצלחתי לפתוח את {application}.",
+    "category": "desktop.open.failure",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "error",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": ["application"],
+    "tags": ["desktop", "error"],
+    "enabled": true,
+    "version": "0.1.0"
+  },
+  {
+    "id": "desktop.close.success.001",
+    "text": "סגרתי את {application}.",
+    "category": "desktop.close.success",
+    "language": "he",
+    "tone": ["calm", "confident"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": ["application"],
+    "tags": ["desktop", "success"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

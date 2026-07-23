@@ -1,0 +1,17 @@
+[
+  {
+    "id": "automation.general.001",
+    "text": "מכינה את האוטומציה.",
+    "category": "automation.general",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "thinking",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["automation"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

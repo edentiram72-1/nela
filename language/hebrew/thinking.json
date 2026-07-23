@@ -1,0 +1,17 @@
+[
+  {
+    "id": "thinking.default.001",
+    "text": "בודקת את זה רגע.",
+    "category": "thinking.default",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "thinking",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["thinking"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

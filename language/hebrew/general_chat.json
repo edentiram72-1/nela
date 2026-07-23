@@ -1,0 +1,17 @@
+[
+  {
+    "id": "general_chat.response.001",
+    "text": "{message}",
+    "category": "general_chat.response",
+    "language": "he",
+    "tone": ["neutral"],
+    "emotion": "neutral",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": ["message"],
+    "tags": ["chat"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

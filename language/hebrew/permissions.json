@@ -1,0 +1,17 @@
+[
+  {
+    "id": "permissions.request.001",
+    "text": "כדי להמשיך, אני צריכה אישור לבצע את הפעולה הזאת.",
+    "category": "permissions.request",
+    "language": "he",
+    "tone": ["calm", "confident"],
+    "emotion": "careful",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["permission"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

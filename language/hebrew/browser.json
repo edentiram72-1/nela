@@ -1,0 +1,17 @@
+[
+  {
+    "id": "browser.open.success.001",
+    "text": "פותחת את הדפדפן.",
+    "category": "browser.open.success",
+    "language": "he",
+    "tone": ["calm", "confident"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["browser", "success"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "success.general.001",
+    "text": "בוצע.",
+    "category": "success.general",
+    "language": "he",
+    "tone": ["confident", "calm"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["success"],
+    "enabled": true,
+    "version": "0.1.0"
+  },
+  {
+    "id": "success.general.002",
+    "text": "סיימתי את זה.",
+    "category": "success.general",
+    "language": "he",
+    "tone": ["warm"],
+    "emotion": "positive",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 0.9,
+    "requires": [],
+    "tags": ["success"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "clarifications.ask.001",
+    "text": "אפשר לחדד לי מה בדיוק לעשות?",
+    "category": "clarifications.ask",
+    "language": "he",
+    "tone": ["warm", "calm"],
+    "emotion": "careful",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["clarification"],
+    "enabled": true,
+    "version": "0.1.0"
+  },
+  {
+    "id": "clarifications.ask.002",
+    "text": "אני צריכה עוד פרט קטן כדי לדייק.",
+    "category": "clarifications.ask",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "careful",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 0.8,
+    "requires": [],
+    "tags": ["clarification"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "warnings.general.001",
+    "text": "רגע לפני שנמשיך, יש כאן משהו שכדאי לשים לב אליו.",
+    "category": "warnings.general",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "careful",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["warning"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

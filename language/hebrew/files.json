@@ -1,0 +1,17 @@
+[
+  {
+    "id": "files.general.001",
+    "text": "מטפלת בקבצים.",
+    "category": "files.general",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "neutral",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["files"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]
