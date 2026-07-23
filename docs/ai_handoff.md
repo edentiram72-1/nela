@@ -143,7 +143,7 @@ Latest validation for `NELA-0002-confirmation-deadlock`:
 python3 -m unittest discover -s tests
 ```
 
-Result: 23 tests passed.
+Result: 27 tests passed.
 
 Claude bundle generation:
 
