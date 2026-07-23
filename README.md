@@ -14,7 +14,7 @@ The Brain never executes external actions directly. Agents do the work. Modules 
 
 ## Current Status
 
-NELA OS is currently moving from **Phase 1: Build The Brain** into **Phase 2: Desktop UI Foundation**.
+NELA OS has completed its first consolidated foundation release candidate: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
 
 The repository now contains a working foundation that can:
 
@@ -90,14 +90,18 @@ https://github.com/edentiram72-1/nela
 
 Important branches:
 
-- `main`: stable baseline.
-- `develop`: integration baseline.
+- `main`: stable release baseline.
+- `develop`: integration baseline for the next release.
 - `feature/NELA-0001-foundation-architecture`: initial foundation architecture and Phase 1 Brain.
 - `feature/NELA-0002-confirmation-deadlock`: confirmation hardening branch.
 - `feature/NELA-0005-desktop-agent-v1`: first real Desktop Agent branch.
 - `feature/NELA-0006-ui-foundation`: UI foundation branch.
 - `feature/NELA-0007-ai-inbox`: AI collaboration inbox branch.
 - `feature/NELA-0011-visual-identity`: Claude Living Eye and design system branch.
+- `feature/NELA-0012-claude-review-fixes`: Claude review fixes branch.
+- `feature/NELA-language-voice-foundation`: Hebrew language and voice foundation branch.
+
+The feature branches above have been consolidated into `develop` and are intended to be released through `main`.
 
 Claude does not connect directly to Codex or to the local machine. Claude reviews GitHub branches, direct blob links, pull request diffs, or generated Markdown review bundles.
 
@@ -498,10 +502,10 @@ Option 1: use GitHub links.
 
 Send Claude direct links to branch, diff, or specific blob files.
 
-Current branch:
+Current integration branch:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/feature/NELA-language-voice-foundation
+https://github.com/edentiram72-1/nela/tree/develop
 ```
 
 Option 2: generate a review bundle.

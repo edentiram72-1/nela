@@ -6,55 +6,48 @@ Every significant change must update this file before handoff.
 
 ## Current Project Status
 
-Phase 1 Brain foundation has been implemented on top of the initial collaboration skeleton.
+Phase 1 Brain foundation and the first integration wave have been consolidated into `develop`.
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
-The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Most Agents are safe mock placeholders. Desktop Agent V1 is now in progress as the first real execution Agent, limited to safe macOS application lifecycle management.
+The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Most external integrations remain safe placeholders. Desktop Agent V1 is the first real execution Agent and is limited to safe macOS application lifecycle management.
 
-`NELA-0002-confirmation-deadlock` has been implemented on a dedicated branch. The Conversation Engine now routes pending confirmation answers before intent classification, supports affirmative and negative replies, re-asks once for unclear replies, cancels after repeated unclear replies, and expires stale confirmations after a configurable TTL.
+The following branches have been merged into `develop`:
 
-The MVP Brain Agent layer now includes registered placeholder Agents for Desktop, Terminal, Browser, Voice, Vision, Memory, Spotify, and File System. Extra collaboration and integration placeholders remain registered for automation, calendar, Gmail, GitHub, Claude, and Codex.
+- `feature/NELA-0002-confirmation-deadlock`
+- `feature/NELA-0005-desktop-agent-v1`
+- `feature/NELA-0006-ui-foundation`
+- `feature/NELA-0007-ai-inbox`
+- `feature/NELA-0011-visual-identity`
+- `feature/NELA-0012-claude-review-fixes`
+- `feature/NELA-language-voice-foundation`
 
-`NELA-0003-dispatcher-timeout-retry-safety` has started. Dispatcher timing is now tracked per attempt, slow successful mock Agent results are not rewritten as timeout failures, failed attempts that exceed timeout metadata report timeout, and retry success is covered by unit tests.
+The consolidation includes:
 
-Intent matching now checks full keywords and phrases instead of arbitrary substrings, preventing false positives such as matching `play` inside `display`.
+- Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
+- Safe mock Agents for MVP dispatch.
+- Dispatcher timeout/retry hardening for the current synchronous execution model.
+- Deterministic keyword/phrase intent matching, avoiding substring false positives.
+- Desktop Agent V1 for known macOS app lookup, running detection, launch/focus, foreground switching, graceful close, structured results, and health reporting.
+- A modular UI foundation with state management, event bridge, router, theme tokens, animation hooks, and a temporary Tkinter shell.
+- `docs/ai_inbox.md` and a GitHub Issue template for AI collaboration tasks.
+- Claude's Living Eye visual identity artifacts under `design/` and the authoritative design-system document under `docs/design_system.md`.
+- Claude review fixes for Desktop timeout handling, Dispatcher exception isolation, Desktop `wait_until_ready`, `CloseApplication` confirmation, WebView-compatible UI host decision, and Inbox/Handoff cleanup.
+- A standalone Hebrew Language Engine and Voice Agent Foundation. Phrase selection lives in `language/`, final response rendering lives in `core/response.py`, and speech playback lives in the `voice/` provider layer plus `agents/voice/agent.py`.
 
-Claude collaboration is now supported through a generated review bundle. There is no direct Claude connection. Use `docs/claude_review_bundle.md` or regenerate it with `python3 -m scripts.export_claude_review_bundle`.
+Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
-NELA can now run from the command line. Use `python3 -m core.app` for an interactive text session, `python3 -m core.app --once "<request>"` for a one-shot Brain run with mock dispatch, or add `--no-dispatch` to inspect the plan without sending tasks to Agents.
+GitHub is the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`.
 
-The root README is now a full English project overview, and `README.he.md` provides a full Hebrew version. Both summarize the architecture, completed work, GitHub/Claude collaboration flow, current limitations, and next recommended tasks.
-
-`NELA-0005-desktop-agent-v1` has started on branch `feature/NELA-0005-desktop-agent-v1`. The Desktop mock has been replaced with a macOS lifecycle Agent that supports known application lookup, running detection, launch/focus, foreground switching, graceful close, structured results, and health reporting. Unit tests use a fake command runner and do not open or close real applications.
-
-Desktop lifecycle intents now route through the existing Brain flow without architecture changes. `OpenApplication`, `CloseApplication`, and `SwitchApplication` create Desktop Agent tasks through the Planner.
-
-The root README now documents Desktop Agent V1, supported applications, safety limits, known limitations, and the current feature branch.
-
-`NELA-0006-ui-foundation` has started on branch `feature/NELA-0006-ui-foundation`. A modular desktop UI foundation now exists under `ui/` to host Claude's future visual design without redesigning the interface. It includes UI state management, theme tokens, animation hooks, Brain event integration, a router from text input to the existing Brain, a Tkinter window shell, chat/status/sidebar/voice/eye/settings component placeholders, and tests for state, routing, and headless app bootstrap.
-
-`NELA-0007-ai-inbox` has started on branch `feature/NELA-0007-ai-inbox`. `docs/ai_inbox.md` now acts as a shared GitHub inbox for Claude, Codex, and ChatGPT, and `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md` provides a GitHub Issue template for routing collaboration tasks.
-
-`NELA-0011-visual-identity` has started on branch `feature/NELA-0011-visual-identity`. Claude's Living Eye prototype, app icon, menu-bar icon, and design system were added as authoritative design artifacts. The existing UI Event Bridge now maps Brain events to the design-system Eye states, including `waiting`, `success`, `error`, and moment-state return to `idle` when a UI host provides scheduling.
-
-`NELA-0012-claude-review-fixes` has started on branch `feature/NELA-0012-claude-review-fixes`. It addresses Claude's high-priority review findings for Desktop Agent and UI Foundation: Desktop Agent catches `subprocess.TimeoutExpired`, Dispatcher catches unexpected Agent exceptions, Desktop Agent supports `wait_until_ready`, `CloseApplication` now requires confirmation, UI theme tokens align with Claude's design system, `DEC-0007` records the WebView-compatible host decision, and `docs/ai_inbox.md` no longer claims the visual identity assets are unavailable.
-
-Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zip`, but that archive was not present in `/Users/edentiram/Downloads/files` or the current attachment directory. Memory integration is blocked until that zip is provided.
-
-GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
-
-Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
-
-`NELA-language-voice-foundation` has started on branch `feature/NELA-language-voice-foundation`. It adds a standalone Hebrew Language Engine and Voice Agent Foundation. The Brain still produces semantic turns and delegates actions; phrase selection lives in `language/`, final response rendering lives in `core/response.py`, and speech playback lives in the `voice/` provider layer plus `agents/voice/agent.py`. Claude still owns final personality, Hebrew tone, emotional behavior, and future language-pack content.
+Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zip`, but that archive was not present in `/Users/edentiram/Downloads`, `/Users/edentiram/Downloads/files`, or the current attachment directory. Memory subsystem integration is blocked until that zip is provided.
 
 ## Current Milestone
 
-**Phase 1: Build The Brain + Hebrew Response And Voice Foundation**
+**Phase 1 integration release: Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**
 
 ## Active Branch
 
-`feature/NELA-language-voice-foundation`
+`develop`
 
 ## Recently Modified Files
 
@@ -163,22 +156,25 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Pending Tasks
 
-- Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
-- Push `feature/NELA-0007-ai-inbox` to GitHub.
-- Push `feature/NELA-0012-claude-review-fixes` to GitHub and send Claude direct blob links for review.
-- Push `feature/NELA-language-voice-foundation` to GitHub and send Claude `docs/language_system.md`, `docs/voice_architecture.md`, and the `language/` seed pack for content/architecture review.
-- Provide `nela-memory-subsystem.zip` so `feature/NELA-0012-memory-subsystem` can be created and tested separately.
+- Push consolidated `develop` to GitHub.
+- Merge consolidated `develop` into `main` for the first stable foundation release.
+- Tag the stable foundation release after validation.
+- Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
 - Use `docs/ai_inbox.md` as the shared queue for Claude, Codex, and ChatGPT.
-- Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
+- Continue `NELA-0004-task-idempotency` before enabling real side effects.
+- Continue `NELA-0006-permission-policy` before implementing Browser Agent, Terminal Agent, Files Agent, or communication Agents with real side effects.
+- Continue `NELA-0007-event-bus-hardening` with subscriber isolation, bounded history, and trace/correlation conventions.
+- Continue `NELA-0008-capability-registry` so Planner/Dispatcher can reason about Agent capabilities and availability.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
 - Try the desktop UI shell with `python3 -m ui.app` on a machine with a graphical session.
-- Send `NELA-0006-ui-foundation` to Claude for UI infrastructure review before Claude supplies visual assets.
+- Send consolidated `develop` or `main` direct blob links to Claude for release verification.
+- Ask Claude to review `docs/language_system.md`, `docs/voice_architecture.md`, and `language/` before expanding the Hebrew personality pack.
+- Choose and implement a WebView-compatible host for the Living Eye.
 - Add a durable persistence backend for long-term memory.
 - Add a real plugin loader for `plugins/`.
 - Add true concurrent execution for `TaskMode.PARALLEL`.
 - Add condition evaluation for `TaskMode.CONDITIONAL`.
-- Add a user confirmation workflow for sensitive tasks.
 - Ask Claude to replace or expand the seed Hebrew language pack and personality profiles. Codex should not invent NELA's final personality.
 
 ## Known Issues
@@ -196,7 +192,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - Task timeout metadata is handled per attempt, but synchronous Agent execution still cannot interrupt a blocking Agent while it is running.
 - GitHub Pull Request creation through the Codex GitHub connector returned `403 Resource not accessible by integration`; use GitHub web UI or install/authenticate GitHub CLI if a PR must be opened from the local machine.
 - `docs/claude_review_bundle.md` is generated from the current branch and should be regenerated after meaningful architecture or code changes.
-- Claude review found several hardening gaps to address before real agents are trusted: dispatcher timeout/retry semantics, task idempotency, event bus subscriber isolation, intent matching precision, permission policy, and capability registry clarity.
+- Claude review found several hardening gaps to address before real agents are trusted: task idempotency, event bus subscriber isolation, permission policy, capability registry clarity, and future confidence scoring for intent matching.
 - `Remember` requests create a Plan targeting the registered mock `memory` Agent while durable memory also updates through `MemoryManager`; this dual path should be simplified before durable persistence work.
 - README architecture diagrams do not yet show the Decision Engine and Dispatcher explicitly.
 - Hebrew Language Engine and Voice Agent Foundation are experimental. The current Hebrew pack is a small seed pack for validation, not the final NELA personality.
@@ -205,13 +201,26 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Validation
 
-Last validation run:
+Latest consolidation validation on `develop`:
 
 ```text
 python3 -m unittest discover -s tests
+python3 -m ui.app --headless-smoke
+python3 -m scripts.validate_language_packs
 ```
 
-Result: all tests passed.
+Result: 63 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed.
+
+Integration validation history:
+
+- Baseline `origin/develop` after PR #1: 18 tests passed.
+- After merging `feature/NELA-0002-confirmation-deadlock`: 27 tests passed.
+- After merging `feature/NELA-0005-desktop-agent-v1`: 38 tests passed.
+- After merging `feature/NELA-0006-ui-foundation`: 44 tests passed; headless UI bootstrap succeeded.
+- After merging `feature/NELA-0007-ai-inbox`: 44 tests passed; headless UI bootstrap succeeded.
+- After merging `feature/NELA-0011-visual-identity`: 45 tests passed; headless UI bootstrap succeeded.
+- After merging `feature/NELA-0012-claude-review-fixes`: 49 tests passed; headless UI bootstrap succeeded.
+- After merging `feature/NELA-language-voice-foundation`: 63 tests passed; headless UI bootstrap succeeded; language pack validation passed.
 
 Latest validation for `NELA-0002-confirmation-deadlock`:
 
@@ -310,16 +319,21 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Send the Hebrew Language Engine and Voice Agent Foundation to Claude for review. Claude should verify that the infrastructure supports future personality and Hebrew language-pack work without forcing Codex-authored personality decisions.
+Finish the release consolidation:
 
-Scope:
+- Push consolidated `develop`.
+- Merge `develop` into `main`.
+- Tag the stable foundation release.
+- Send Claude direct blob links for `docs/ai_handoff.md`, `docs/ai_inbox.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
 
-- Review `docs/language_system.md` and `docs/voice_architecture.md`.
-- Review the `language/hebrew/` seed pack only as starter content.
-- Replace or expand language/personality content through data files, not Brain code.
-- Confirm whether additional Hebrew grammar metadata is needed before richer phrase packs are written.
+After release, continue in this order:
 
-After Claude language review, continue Memory subsystem integration when the missing zip is available, then continue permission and idempotency hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
+1. `NELA-0004-task-idempotency`
+2. `NELA-0006-permission-policy`
+3. `NELA-0007-event-bus-hardening`
+4. `NELA-0008-capability-registry`
+5. WebView-compatible Living Eye host
+6. Memory subsystem integration after `nela-memory-subsystem.zip` is provided
 
 ## Notes For The Next AI Assistant
 

@@ -14,7 +14,7 @@ NELA OS היא תשתית למערכת הפעלה מבוססת בינה מלאכ
 
 ## מצב נוכחי
 
-NELA OS עוברת כרגע מ-**Phase 1: Build The Brain** אל תשתית UI ודסקטופ ראשונית.
+NELA OS השלימה מועמד ראשון לשחרור מאוחד: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
 
 במאגר קיימת עכשיו תשתית עובדת שיכולה:
 
@@ -90,14 +90,18 @@ https://github.com/edentiram72-1/nela
 
 ענפים חשובים:
 
-- `main`: בסיס יציב.
-- `develop`: בסיס אינטגרציה.
+- `main`: בסיס שחרור יציב.
+- `develop`: בסיס אינטגרציה לשחרור הבא.
 - `feature/NELA-0001-foundation-architecture`: ארכיטקטורת foundation ו-Brain ראשוני.
 - `feature/NELA-0002-confirmation-deadlock`: ענף תיקון האישורים.
 - `feature/NELA-0005-desktop-agent-v1`: Desktop Agent ראשון.
 - `feature/NELA-0006-ui-foundation`: תשתית UI.
 - `feature/NELA-0007-ai-inbox`: inbox לשיתוף פעולה בין AI.
 - `feature/NELA-0011-visual-identity`: Living Eye ומערכת עיצוב של Claude.
+- `feature/NELA-0012-claude-review-fixes`: תיקוני סקירת Claude.
+- `feature/NELA-language-voice-foundation`: תשתית עברית וקול.
+
+ענפי הפיצ'רים האלה אוחדו לתוך `develop` ומיועדים להשתחרר דרך `main`.
 
 קלוד לא מתחבר ישירות ל-Codex או למחשב המקומי. קלוד סוקר ענפים ב-GitHub, קישורי blob ישירים, diff של Pull Request, או חבילת Markdown שנוצרת לסקירה.
 
@@ -422,10 +426,10 @@ python3 -m scripts.validate_language_packs
 
 שולחים לקלוד קישור ישיר לענף, diff או קובצי blob ספציפיים.
 
-הענף הנוכחי:
+ענף האינטגרציה הנוכחי:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/feature/NELA-language-voice-foundation
+https://github.com/edentiram72-1/nela/tree/develop
 ```
 
 אפשרות 2: יצירת review bundle.

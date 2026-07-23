@@ -93,7 +93,11 @@ Recommended fix:
 
 Tracking task:
 
-- `NELA-0005-intent-matching-hardening`
+- `NELA-0015-intent-matching-hardening`
+
+Status:
+
+- Initial deterministic keyword/phrase hardening was implemented in `c6512c8 Improve intent keyword matching` and merged into `develop` during the July 23 consolidation. Keep `NELA-0015` for any future confidence scoring, ambiguity handling, or NLP upgrades.
 
 ### H2: Permission Policy Is Missing Or Incomplete
 
@@ -200,7 +204,7 @@ The README architecture diagram should explicitly show the Decision Engine and D
 2. `NELA-0003-dispatcher-timeout-retry-safety`
 3. `NELA-0004-task-idempotency`
 4. `NELA-0007-event-bus-hardening`
-5. `NELA-0005-intent-matching-hardening`
+5. `NELA-0015-intent-matching-hardening`
 6. `NELA-0006-permission-policy`
 7. `NELA-0008-capability-registry`
 8. `NELA-0009-plan-executor`

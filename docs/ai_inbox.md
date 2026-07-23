@@ -63,52 +63,60 @@ Items that need triage.
 
 Items waiting for Claude review or design input.
 
-#### UI Foundation Review
+#### Consolidated Foundation Release Review
 
 - Owner: Claude
 - Requester: Codex
-- Branch: `feature/NELA-0006-ui-foundation`
+- Branch: `develop`, then `main` after release merge
 - Status: ready
-- Focus: Review UI infrastructure only. Do not redesign inside this branch.
+- Focus: Verify that the consolidated foundation matches the intended architecture and that no direct Claude integration was introduced.
 - Links:
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0006-ui-foundation/ui/state.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0006-ui-foundation/ui/events.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0006-ui-foundation/ui/router.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0006-ui-foundation/ui/theme.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0006-ui-foundation/ui/window.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0006-ui-foundation/tests/test_ui_state.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0006-ui-foundation/docs/ai_handoff.md
+  - https://github.com/edentiram72-1/nela/blob/develop/docs/ai_handoff.md
+  - https://github.com/edentiram72-1/nela/blob/develop/docs/ai_inbox.md
+  - https://github.com/edentiram72-1/nela/blob/develop/docs/architecture.md
+  - https://github.com/edentiram72-1/nela/blob/develop/docs/claude_review_findings.md
+  - https://github.com/edentiram72-1/nela/blob/develop/docs/decisions.md
 
-#### Desktop Agent V1 Safety Review
+#### Hebrew Language And Voice Foundation Review
 
 - Owner: Claude
 - Requester: Codex
-- Branch: `feature/NELA-0005-desktop-agent-v1`
+- Branch: `develop`, then `main` after release merge
 - Status: ready
-- Focus: Review macOS lifecycle safety, supported app boundaries, and whether real side effects are appropriately constrained.
+- Focus: Review language/personality infrastructure and Hebrew pack extensibility. Claude owns final tone and personality; Codex should keep Brain code semantic and phrase-free.
 - Links:
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0005-desktop-agent-v1/agents/desktop/agent.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0005-desktop-agent-v1/tests/test_desktop_agent.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0005-desktop-agent-v1/brain/planner.py
-  - https://github.com/edentiram72-1/nela/blob/feature/NELA-0005-desktop-agent-v1/docs/ai_handoff.md
+  - https://github.com/edentiram72-1/nela/blob/develop/docs/language_system.md
+  - https://github.com/edentiram72-1/nela/blob/develop/docs/voice_architecture.md
+  - https://github.com/edentiram72-1/nela/tree/develop/language
 
 ### Ready For Codex
 
 Items ready for implementation.
 
-#### Claude Review Fixes
+#### Task Idempotency
 
 - Owner: Codex
 - Requester: Claude
-- Branch: `feature/NELA-0012-claude-review-fixes`
-- Status: in progress
+- Branch: TBD
+- Status: ready
+- Type: architecture + implementation + tests
 - Scope:
-  - Catch Desktop Agent `TimeoutExpired`.
-  - Add Dispatcher exception boundary around `agent.execute()`.
-  - Support Desktop `wait_until_ready`.
-  - Require confirmation for `CloseApplication`.
-  - Record the UI WebView host decision.
-  - Update Inbox and Handoff.
+  - Add idempotency metadata to `Task` and `AgentCommand`.
+  - Prevent automatic retries for non-idempotent or unknown side-effecting tasks.
+  - Use command IDs as idempotency keys where Agents support them.
+  - Add tests before enabling real Terminal, Browser, Files, or communication Agents.
+
+#### Permission Policy
+
+- Owner: Codex
+- Requester: Claude
+- Branch: TBD
+- Status: ready
+- Type: architecture + implementation + tests
+- Scope:
+  - Add a central policy layer for destructive, external, private-data, system-setting, and communication actions.
+  - Keep confirmation behavior consistent across Agents.
+  - Avoid Agent-specific permission logic inside the Brain.
 
 #### WebView UI Host Selection
 
@@ -122,17 +130,6 @@ Items ready for implementation.
   - Keep `UIStateManager`, `UIEventBridge`, and `UIRouter`.
   - Replace the placeholder Tkinter visual shell without redesigning Claude's assets.
 
-#### AI Inbox Workflow
-
-- Owner: Codex
-- Requester: User
-- Branch: `feature/NELA-0007-ai-inbox`
-- Status: done
-- Scope:
-  - Add this inbox document.
-  - Add GitHub Issue template for AI collaboration inbox items.
-  - Update handoff and documentation.
-
 ### Ready For ChatGPT
 
 Items waiting for architecture or coordination approval.
@@ -143,13 +140,27 @@ Items waiting for architecture or coordination approval.
 
 Items blocked by missing information, credentials, assets, or user approval.
 
-- None.
+#### Memory Subsystem Deliverable
+
+- Owner: Codex
+- Requester: Claude/User
+- Branch: TBD
+- Status: blocked
+- Type: implementation
+- Blocker: `nela-memory-subsystem.zip` was not found in `/Users/edentiram/Downloads`, `/Users/edentiram/Downloads/files`, or the current attachment directory.
+- Next action: User provides the zip, then Codex creates a dedicated memory subsystem branch and validates it separately.
 
 ### Done
 
 Completed inbox items.
 
 - AI Inbox Workflow: `docs/ai_inbox.md` and GitHub Issue template created.
+- UI Foundation: merged into `develop`.
+- Desktop Agent V1: merged into `develop`.
+- Living Eye Visual Identity: merged into `develop`.
+- Claude Review Fixes: merged into `develop`.
+- Hebrew Language And Voice Foundation: merged into `develop`.
+- Confirmation Deadlock Fix: merged into `develop`.
 
 ## Inbox Item Template
 

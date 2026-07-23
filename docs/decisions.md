@@ -211,3 +211,26 @@ Related files:
 - `core/response.py`
 - `docs/language_system.md`
 - `docs/voice_architecture.md`
+
+### DEC-0009: Consolidate Foundation Feature Branches Through Develop
+
+**Date:** 2026-07-23
+**Status:** Accepted
+
+**Context:** NELA OS had several linear feature branches covering the Brain foundation, confirmation handling, Desktop Agent V1, UI foundation, AI Inbox, Living Eye visual identity, Claude review fixes, and Hebrew language/voice foundation. Keeping the working baseline split across many branches made it harder for Claude, ChatGPT, and Codex to review the same current state.
+
+**Decision:** Use `develop` as the integration branch for the first foundation release, merge the completed feature branches into it, validate the combined system, then merge `develop` into `main` as the stable baseline.
+
+**Consequences:**
+
+- GitHub becomes easier to use as the shared source of truth.
+- Claude can review `develop` or `main` instead of chasing multiple feature branches.
+- Future work should start from `develop` after the release merge.
+- Blocked work, such as the missing memory subsystem zip, remains outside the release until its source artifact is available.
+
+**Related files:**
+
+- `docs/ai_handoff.md`
+- `docs/ai_inbox.md`
+- `README.md`
+- `README.he.md`
