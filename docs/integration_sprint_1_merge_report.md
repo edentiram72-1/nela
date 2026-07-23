@@ -25,6 +25,48 @@ Result:
 - SSH fetch failed because the local GitHub SSH key was not accepted.
 - HTTPS fetch succeeded without changing the configured remote URL.
 
+## Repository Stabilization Sync
+
+Status: in progress.
+
+Current branch:
+
+```text
+develop
+```
+
+Local integration commits verified:
+
+```text
+29b2468 Finalize integration sprint develop baseline
+231cd27 Document integration push blocker
+```
+
+Backup branch verified:
+
+```text
+backup/develop-before-integration-20260723-050921
+```
+
+GitHub access method:
+
+- `gh` is not installed in the current shell.
+- The configured remote is SSH: `git@github.com:edentiram72-1/nela.git`.
+- Push synchronization should use the existing repository SSH configuration. Do not print or request credentials.
+
+Untracked duplicate file report:
+
+```text
+docs/untracked_duplicate_files_report.md
+```
+
+Duplicate file summary:
+
+- 94 duplicate-suffix untracked files inspected.
+- 91 are byte-for-byte identical to likely originals.
+- 3 are different, but appear to be older copies missing current tracked changes rather than copies containing unique additions.
+- No duplicate file was deleted, moved, renamed, staged, or committed.
+
 ## Branch Inclusion Check
 
 All completed feature branches are included in `develop`:
@@ -200,12 +242,12 @@ The requested conceptual transition `IDLE -> THINKING -> SPEAKING -> IDLE` is pr
 ## Remaining Blockers
 
 - Memory subsystem integration is blocked until `nela-memory-subsystem.zip` is provided.
-- Push to GitHub is blocked by credentials in the current shell. SSH fetch failed with `Permission denied (publickey)`, and HTTPS push failed with `could not read Username for 'https://github.com': terminal prompts disabled`.
+- Draft Pull Request creation from the local shell is blocked because `gh` is not installed. Create the draft PR through GitHub web UI or install/authenticate GitHub CLI.
 - Do not merge further into `main` as part of this sprint.
 
 ## Recommended Next Steps
 
-1. Push the updated `develop` branch after GitHub credentials are available. Latest local integration commit: `29b2468 Finalize integration sprint develop baseline`.
+1. Push the updated `develop` branch and backup branch through the configured SSH remote.
 2. Send Claude the merge report and direct blob links for `docs/ai_handoff.md`, `docs/integration_sprint_1_merge_report.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
 3. Continue with `NELA-0004-task-idempotency`.
 4. Integrate Memory only after the Claude Memory subsystem artifact is available.

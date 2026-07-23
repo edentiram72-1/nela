@@ -24,6 +24,8 @@ The following branches are included in `develop`:
 
 Integration Sprint 1 created backup branch `backup/develop-before-integration-20260723-050921`, verified branch inclusion, added Hebrew smoke-intent compatibility, mapped Voice speech events into UI Eye states, and generated `docs/integration_sprint_1_merge_report.md`.
 
+Repository stabilization documented untracked duplicate-suffix files in `docs/untracked_duplicate_files_report.md`. The duplicate files were inspected only and left untouched.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -101,6 +103,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/language_system.md`
 - `docs/voice_architecture.md`
 - `docs/integration_sprint_1_merge_report.md`
+- `docs/untracked_duplicate_files_report.md`
 - `docs/design_system.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
@@ -161,7 +164,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Pending Tasks
 
-- Push consolidated `develop` to GitHub after credentials are available. Current push attempt failed because HTTPS credentials were unavailable and terminal prompts are disabled; SSH fetch previously failed with `Permission denied (publickey)`.
+- Push consolidated `develop` and `backup/develop-before-integration-20260723-050921` to GitHub through the configured SSH remote.
 - Do not merge further into `main` as part of Integration Sprint 1.
 - Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
@@ -204,6 +207,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Voice defaults to silent mode, so response-to-voice delegation is exercised without audio playback unless explicitly enabled.
 - The macOS `say` provider is the local MVP provider and treats provider submission as completion. It does not provide portable pause/resume.
 - Integration Sprint 1 found and fixed two compatibility gaps: Hebrew open-app smoke intent recognition, and Voice task completion overriding `SpeechCompleted -> IDLE`.
+- GitHub CLI (`gh`) is not installed in the current shell, so draft Pull Request creation must happen through GitHub web UI or after installing/authenticating `gh`.
+- 94 untracked duplicate-suffix files exist locally and are documented in `docs/untracked_duplicate_files_report.md`; they were not staged or modified.
 
 ## Validation
 
@@ -213,9 +218,10 @@ Latest consolidation validation on `develop`:
 python3 -m unittest discover -s tests
 python3 -m ui.app --headless-smoke
 python3 -m scripts.validate_language_packs
+python3 -m core.app --once "נלה, תפתחי את Spotify"
 ```
 
-Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed.
+Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed; Hebrew Spotify CLI smoke returned a Hebrew NELA response.
 
 Latest Integration Sprint 1 smoke:
 
@@ -341,7 +347,8 @@ Result: public HTTPS branch lookup succeeded.
 
 Finish the develop consolidation handoff:
 
-- Push consolidated `develop` after GitHub credentials are available. Latest local integration commit is `29b2468 Finalize integration sprint develop baseline`.
+- Push consolidated `develop` through the configured SSH remote.
+- Push backup branch `backup/develop-before-integration-20260723-050921`.
 - Send Claude direct blob links for `docs/ai_handoff.md`, `docs/ai_inbox.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
 
 After release, continue in this order:
