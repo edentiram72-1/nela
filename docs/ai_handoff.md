@@ -6,13 +6,13 @@ Every significant change must update this file before handoff.
 
 ## Current Project Status
 
-Phase 1 Brain foundation and the first integration wave have been consolidated into `develop`.
+Phase 1 Brain foundation and Integration Sprint 1 have been consolidated into `develop`.
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
 The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Most external integrations remain safe placeholders. Desktop Agent V1 is the first real execution Agent and is limited to safe macOS application lifecycle management.
 
-The following branches have been merged into `develop`:
+The following branches are included in `develop`:
 
 - `feature/NELA-0002-confirmation-deadlock`
 - `feature/NELA-0005-desktop-agent-v1`
@@ -21,6 +21,8 @@ The following branches have been merged into `develop`:
 - `feature/NELA-0011-visual-identity`
 - `feature/NELA-0012-claude-review-fixes`
 - `feature/NELA-language-voice-foundation`
+
+Integration Sprint 1 created backup branch `backup/develop-before-integration-20260723-050921`, verified branch inclusion, added Hebrew smoke-intent compatibility, mapped Voice speech events into UI Eye states, and generated `docs/integration_sprint_1_merge_report.md`.
 
 The consolidation includes:
 
@@ -43,7 +45,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Phase 1 integration release: Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**
+**Integration Sprint 1: stable develop baseline for Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**
 
 ## Active Branch
 
@@ -98,6 +100,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/ai_inbox.md`
 - `docs/language_system.md`
 - `docs/voice_architecture.md`
+- `docs/integration_sprint_1_merge_report.md`
 - `docs/design_system.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
@@ -149,6 +152,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `tests/test_language_engine.py`
 - `tests/test_voice_agent.py`
 - `tests/test_language_voice_integration.py`
+- `tests/test_intent_recognition.py`
+- `tests/test_ui_state.py`
 - `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md`
 - `design/nela_living_eye.html`
 - `design/nela_app_icon.svg`
@@ -156,9 +161,9 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Pending Tasks
 
-- Push consolidated `develop` to GitHub.
-- Merge consolidated `develop` into `main` for the first stable foundation release.
-- Tag the stable foundation release after validation.
+- Push consolidated `develop` to GitHub after credentials are available.
+- Do not merge further into `main` as part of Integration Sprint 1.
+- Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
 - Use `docs/ai_inbox.md` as the shared queue for Claude, Codex, and ChatGPT.
 - Continue `NELA-0004-task-idempotency` before enabling real side effects.
@@ -198,6 +203,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Hebrew Language Engine and Voice Agent Foundation are experimental. The current Hebrew pack is a small seed pack for validation, not the final NELA personality.
 - Voice defaults to silent mode, so response-to-voice delegation is exercised without audio playback unless explicitly enabled.
 - The macOS `say` provider is the local MVP provider and treats provider submission as completion. It does not provide portable pause/resume.
+- Integration Sprint 1 found and fixed two compatibility gaps: Hebrew open-app smoke intent recognition, and Voice task completion overriding `SpeechCompleted -> IDLE`.
 
 ## Validation
 
@@ -209,7 +215,21 @@ python3 -m ui.app --headless-smoke
 python3 -m scripts.validate_language_packs
 ```
 
-Result: 63 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed.
+Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed.
+
+Latest Integration Sprint 1 smoke:
+
+```text
+Input: נלה, תפתחי את Spotify
+intent=OpenApplication
+application=Spotify
+plan_tasks=1
+response=הפעלתי את Spotify.
+ui_displayed=True
+voice_spoken=True
+eye_log=idle>listening>thinking>executing>success>executing>speaking>idle
+eye_final=idle
+```
 
 Integration validation history:
 
@@ -319,11 +339,9 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Finish the release consolidation:
+Finish the develop consolidation handoff:
 
-- Push consolidated `develop`.
-- Merge `develop` into `main`.
-- Tag the stable foundation release.
+- Push consolidated `develop` after GitHub credentials are available.
 - Send Claude direct blob links for `docs/ai_handoff.md`, `docs/ai_inbox.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
 
 After release, continue in this order:

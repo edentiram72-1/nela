@@ -14,7 +14,7 @@ The Brain never executes external actions directly. Agents do the work. Modules 
 
 ## Current Status
 
-NELA OS has completed its first consolidated foundation release candidate: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
+NELA OS has completed **Integration Sprint 1** for the consolidated `develop` baseline: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
 
 The repository now contains a working foundation that can:
 
@@ -31,6 +31,7 @@ The repository now contains a working foundation that can:
 - Launch a modular desktop UI shell that connects user text input to the existing Brain.
 - Export Claude review bundles without creating a direct Claude connection.
 - Support GitHub-based collaboration between Codex, Claude, and ChatGPT.
+- Process the Hebrew smoke input `נלה, תפתחי את Spotify` through Brain, Planner, Hebrew response rendering, UI display, Voice Agent delegation, and Eye state transitions.
 
 Desktop Agent V1 is the first real execution Agent. It is limited to safe macOS application lifecycle management. Browser, terminal, Spotify, Gmail, GitHub, voice, and vision control remain safe placeholders unless explicitly implemented later.
 
@@ -101,7 +102,7 @@ Important branches:
 - `feature/NELA-0012-claude-review-fixes`: Claude review fixes branch.
 - `feature/NELA-language-voice-foundation`: Hebrew language and voice foundation branch.
 
-The feature branches above have been consolidated into `develop` and are intended to be released through `main`.
+The feature branches above have been consolidated into `develop`. Integration Sprint 1 does not merge further into `main`.
 
 Claude does not connect directly to Codex or to the local machine. Claude reviews GitHub branches, direct blob links, pull request diffs, or generated Markdown review bundles.
 
@@ -494,6 +495,22 @@ Current validation status:
 
 ```text
 All tests passed.
+```
+
+Latest Integration Sprint 1 validation:
+
+```text
+python3 -m scripts.validate_language_packs
+python3 -m unittest discover -s tests
+python3 -m ui.app --headless-smoke
+```
+
+Result: 66 tests passed, the Hebrew language pack is valid, and the headless UI bootstrap succeeds.
+
+Merge report:
+
+```text
+docs/integration_sprint_1_merge_report.md
 ```
 
 ## Claude Review Workflow

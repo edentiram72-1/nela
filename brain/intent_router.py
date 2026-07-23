@@ -52,14 +52,14 @@ class IntentPattern:
 
 
 DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
-    IntentPattern("Remember", ("remember", "save this", "learn this")),
-    IntentPattern("CloseApplication", ("close", "quit"), requires_confirmation=True),
-    IntentPattern("SwitchApplication", ("switch to", "focus", "bring to front")),
-    IntentPattern("StopTask", ("stop", "cancel"), requires_confirmation=True),
-    IntentPattern("PlayMedia", ("play", "music", "playlist", "song")),
-    IntentPattern("OpenApplication", ("open", "launch", "start")),
-    IntentPattern("Search", ("search", "find", "look up")),
-    IntentPattern("CreateItem", ("create", "make", "draft", "write")),
+    IntentPattern("Remember", ("remember", "save this", "learn this", "תזכרי", "תזכור", "תשמרי")),
+    IntentPattern("CloseApplication", ("close", "quit", "תסגרי", "סגרי", "לסגור"), requires_confirmation=True),
+    IntentPattern("SwitchApplication", ("switch to", "focus", "bring to front", "תעברי", "לעבור אל")),
+    IntentPattern("StopTask", ("stop", "cancel", "עצור", "תעצרי", "בטלי"), requires_confirmation=True),
+    IntentPattern("PlayMedia", ("play", "music", "playlist", "song", "תנגני", "מוזיקה", "פלייליסט", "שיר")),
+    IntentPattern("OpenApplication", ("open", "launch", "start", "תפתחי", "פתחי", "לפתוח")),
+    IntentPattern("Search", ("search", "find", "look up", "חפשי", "תחפשי", "מצא")),
+    IntentPattern("CreateItem", ("create", "make", "draft", "write", "צרי", "תכתבי", "כתבי")),
 )
 
 
@@ -123,6 +123,13 @@ def _detect_priority(normalized: str) -> Priority:
 
 
 def _extract_application(text: str) -> str | None:
+    hebrew_match = re.search(
+        r"(?:תפתחי|פתחי|לפתוח|תסגרי|סגרי|לסגור|תעברי|לעבור)\s+(?:את|אל|ל)?\s*([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if hebrew_match:
+        return _title_name(_trim_application_name(hebrew_match.group(1).strip()))
     match = re.search(
         r"\b(?:open|launch|start|close|quit|focus)\s+([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
         text,

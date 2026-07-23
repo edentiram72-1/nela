@@ -234,3 +234,27 @@ Related files:
 - `docs/ai_inbox.md`
 - `README.md`
 - `README.he.md`
+
+### DEC-0010: Speech Events Own Voice Eye State Transitions
+
+**Date:** 2026-07-23
+**Status:** Accepted
+
+**Context:** Integration Sprint 1 required the end-to-end flow `Brain -> Language Engine -> UI -> Voice Agent` to drive the Eye through speaking states. The Voice Agent publishes both speech lifecycle events and normal Dispatcher task lifecycle events. If the UI treats the Voice Agent's `TaskCompleted` as a generic success state, it can override `SpeechCompleted -> IDLE`.
+
+**Decision:** The UI Event Bridge treats `SpeechStarted`, `SpeechCompleted`, and `SpeechFailed` as the authoritative events for voice-output Eye state. `TaskCompleted` from the `voice` Agent does not override the Eye state after speech completion.
+
+**Consequences:**
+
+- Voice output maps cleanly to `SPEAKING`, `IDLE`, and `ERROR`.
+- The same Voice Agent can still participate in Dispatcher task lifecycle telemetry.
+- Non-voice task completion still maps to `SUCCESS`.
+- Future UI hosts can animate the Living Eye from speech events without depending on provider-specific voice code.
+
+**Related files:**
+
+- `ui/events.py`
+- `ui/state.py`
+- `core/events.py`
+- `agents/voice/agent.py`
+- `tests/test_ui_state.py`

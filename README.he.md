@@ -14,7 +14,7 @@ NELA OS היא תשתית למערכת הפעלה מבוססת בינה מלאכ
 
 ## מצב נוכחי
 
-NELA OS השלימה מועמד ראשון לשחרור מאוחד: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
+NELA OS השלימה את **Integration Sprint 1** עבור baseline מאוחד בענף `develop`: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
 
 במאגר קיימת עכשיו תשתית עובדת שיכולה:
 
@@ -32,6 +32,7 @@ NELA OS השלימה מועמד ראשון לשחרור מאוחד: **Phase 1 Br
 - להחזיק את ה-Living Eye של קלוד כארטיפקט העיצוב הרשמי תחת `design/`.
 - לייצא חבילת סקירה לקלוד בלי ליצור חיבור ישיר לקלוד.
 - לתמוך בשיתוף פעולה דרך GitHub בין Codex, Claude ו-ChatGPT.
+- להעביר את קלט ה-smoke בעברית `נלה, תפתחי את Spotify` דרך Brain, Planner, יצירת תשובה בעברית, הצגה ב-UI, האצלה ל-Voice Agent ומעברי Eye.
 
 Desktop Agent V1 הוא הסוכן האמיתי הראשון, והוא מוגבל לניהול מחזור חיים של אפליקציות macOS נתמכות. דפדפן, טרמינל, Spotify, Gmail, GitHub, קול וראייה נשארים placeholders בטוחים אלא אם ימומשו במפורש בהמשך.
 
@@ -101,7 +102,7 @@ https://github.com/edentiram72-1/nela
 - `feature/NELA-0012-claude-review-fixes`: תיקוני סקירת Claude.
 - `feature/NELA-language-voice-foundation`: תשתית עברית וקול.
 
-ענפי הפיצ'רים האלה אוחדו לתוך `develop` ומיועדים להשתחרר דרך `main`.
+ענפי הפיצ'רים האלה אוחדו לתוך `develop`. במסגרת Integration Sprint 1 לא מבצעים merge נוסף ל-`main`.
 
 קלוד לא מתחבר ישירות ל-Codex או למחשב המקומי. קלוד סוקר ענפים ב-GitHub, קישורי blob ישירים, diff של Pull Request, או חבילת Markdown שנוצרת לסקירה.
 
@@ -368,6 +369,22 @@ python3 -m unittest discover -s tests
 
 ```text
 כל הבדיקות עברו.
+```
+
+וולידציית Integration Sprint 1 האחרונה:
+
+```text
+python3 -m scripts.validate_language_packs
+python3 -m unittest discover -s tests
+python3 -m ui.app --headless-smoke
+```
+
+תוצאה: 66 בדיקות עברו, חבילת העברית תקינה, ו-bootstrap של UI במצב headless הצליח.
+
+דוח האינטגרציה:
+
+```text
+docs/integration_sprint_1_merge_report.md
 ```
 
 ## תשתית עברית וקול

@@ -17,6 +17,9 @@ EVENT_TO_EYE_STATE: dict[str, EyeState] = {
     EventTypes.TASK_COMPLETED: EyeState.SUCCESS,
     EventTypes.TASK_FAILED: EyeState.ERROR,
     EventTypes.AGENT_UNAVAILABLE: EyeState.ERROR,
+    EventTypes.SPEECH_STARTED: EyeState.SPEAKING,
+    EventTypes.SPEECH_COMPLETED: EyeState.IDLE,
+    EventTypes.SPEECH_FAILED: EyeState.ERROR,
     EventTypes.CONVERSATION_ENDED: EyeState.IDLE,
 }
 
@@ -43,7 +46,7 @@ class UIEventBridge:
         self.state.set_brain_status("online")
 
     def handle_event(self, event: Event) -> None:
-        eye_state = EVENT_TO_EYE_STATE.get(event.type)
+        eye_state = None if _is_voice_task_completion(event) else EVENT_TO_EYE_STATE.get(event.type)
         if eye_state is not None:
             self._set_eye_state(eye_state)
 
@@ -63,6 +66,13 @@ class UIEventBridge:
             self.state.add_notification("error", str(event.payload.get("message", event.type)))
         elif event.type == EventTypes.MEMORY_UPDATED:
             self.state.add_notification("info", "Memory updated.")
+        elif event.type == EventTypes.SPEECH_STARTED:
+            self.state.set_voice_output(True)
+        elif event.type == EventTypes.SPEECH_COMPLETED:
+            self.state.set_voice_output(False)
+        elif event.type == EventTypes.SPEECH_FAILED:
+            self.state.set_voice_output(False)
+            self.state.add_notification("error", str(event.payload.get("error", event.type)))
         elif event.type == EventTypes.CONVERSATION_ENDED:
             self.state.set_brain_status("idle")
 
@@ -70,3 +80,7 @@ class UIEventBridge:
         self.state.set_eye_state(eye_state)
         if self.schedule_idle and eye_state in MOMENT_STATES:
             self.schedule_idle(self.moment_duration_ms, lambda: self.state.set_eye_state(EyeState.IDLE))
+
+
+def _is_voice_task_completion(event: Event) -> bool:
+    return event.type == EventTypes.TASK_COMPLETED and event.payload.get("agent") == "voice"

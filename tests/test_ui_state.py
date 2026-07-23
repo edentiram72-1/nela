@@ -67,6 +67,37 @@ class UIStateTests(unittest.TestCase):
         scheduled[0][1]()
         self.assertEqual(state.state.eye_state, EyeState.IDLE)
 
+    def test_event_bridge_maps_voice_events_to_eye_states(self) -> None:
+        bus = EventBus()
+        state = UIStateManager()
+        bridge = UIEventBridge(bus, state)
+
+        bridge.start()
+        bus.publish(Event(type=EventTypes.SPEECH_STARTED, source="test"))
+        self.assertEqual(state.state.eye_state, EyeState.SPEAKING)
+        self.assertTrue(state.state.voice_output_active)
+
+        bus.publish(Event(type=EventTypes.SPEECH_COMPLETED, source="test"))
+        self.assertEqual(state.state.eye_state, EyeState.IDLE)
+        self.assertFalse(state.state.voice_output_active)
+
+        bus.publish(Event(type=EventTypes.SPEECH_FAILED, source="test", payload={"error": "voice failed"}))
+        self.assertEqual(state.state.eye_state, EyeState.ERROR)
+        self.assertFalse(state.state.voice_output_active)
+        self.assertEqual(state.state.notifications[-1].message, "voice failed")
+
+    def test_voice_task_completion_does_not_override_speech_completed_idle(self) -> None:
+        bus = EventBus()
+        state = UIStateManager()
+        bridge = UIEventBridge(bus, state)
+
+        bridge.start()
+        bus.publish(Event(type=EventTypes.SPEECH_STARTED, source="test"))
+        bus.publish(Event(type=EventTypes.SPEECH_COMPLETED, source="test"))
+        bus.publish(Event(type=EventTypes.TASK_COMPLETED, source="test", payload={"agent": "voice", "task_id": "speech"}))
+
+        self.assertEqual(state.state.eye_state, EyeState.IDLE)
+
 
 if __name__ == "__main__":
     unittest.main()
