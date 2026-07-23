@@ -81,7 +81,6 @@ class AgentDispatcher:
             agent.initialize()
 
         attempts = 0
-        started_at = time.monotonic()
         last_result = AgentResult(False, "Task was not executed.")
         while attempts < task.retry_policy.max_attempts:
             attempts += 1
@@ -96,6 +95,7 @@ class AgentDispatcher:
                 )
             )
 
+            attempt_started_at = time.monotonic()
             command = AgentCommand(
                 action=task.action,
                 payload={
@@ -106,9 +106,20 @@ class AgentDispatcher:
                 },
             )
             last_result = agent.execute(command)
-            elapsed = time.monotonic() - started_at
-            if task.timeout_seconds is not None and elapsed > task.timeout_seconds:
+            elapsed = time.monotonic() - attempt_started_at
+            timed_out = task.timeout_seconds is not None and elapsed > task.timeout_seconds
+            if timed_out and not last_result.success:
                 last_result = AgentResult(False, "Task timed out.", {"elapsed_seconds": elapsed})
+            elif timed_out:
+                last_result = AgentResult(
+                    True,
+                    last_result.message,
+                    {
+                        **last_result.data,
+                        "elapsed_seconds": elapsed,
+                        "timeout_exceeded": True,
+                    },
+                )
 
             if last_result.success:
                 self.events.publish(

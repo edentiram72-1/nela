@@ -16,6 +16,8 @@ The Brain does not perform external actions directly. It delegates Tasks to regi
 
 The MVP Brain Agent layer now includes registered placeholder Agents for Desktop, Terminal, Browser, Voice, Vision, Memory, Spotify, and File System. Extra collaboration and integration placeholders remain registered for automation, calendar, Gmail, GitHub, Claude, and Codex.
 
+`NELA-0003-dispatcher-timeout-retry-safety` has started. Dispatcher timing is now tracked per attempt, slow successful mock Agent results are not rewritten as timeout failures, failed attempts that exceed timeout metadata report timeout, and retry success is covered by unit tests.
+
 Claude collaboration is now supported through a generated review bundle. There is no direct Claude connection. Use `docs/claude_review_bundle.md` or regenerate it with `python3 -m scripts.export_claude_review_bundle`.
 
 NELA can now run from the command line. Use `python3 -m core.app` for an interactive text session, `python3 -m core.app --once "<request>"` for a one-shot Brain run with mock dispatch, or add `--no-dispatch` to inspect the plan without sending tasks to Agents.
@@ -94,11 +96,12 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `vision/README.md`
 - `tests/*`
 - `tests/test_conversation_confirmations.py`
+- `tests/test_dispatcher.py`
 
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
-- Start `NELA-0003-dispatcher-timeout-retry-safety`.
+- Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
 - Implement the first real Agent, preferably `desktop`, `terminal`, `browser`, or `files`, after dispatcher safety and permission policy are in place.
@@ -114,7 +117,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
 - Long-term memory is in-memory only and does not persist after restart.
-- Task timeout metadata exists, but synchronous Agent execution cannot interrupt a blocking Agent yet.
+- Task timeout metadata is handled per attempt, but synchronous Agent execution still cannot interrupt a blocking Agent while it is running.
 - GitHub Pull Request creation through the Codex GitHub connector returned `403 Resource not accessible by integration`; use GitHub web UI or install/authenticate GitHub CLI if a PR must be opened from the local machine.
 - `docs/claude_review_bundle.md` is generated from the current branch and should be regenerated after meaningful architecture or code changes.
 - Claude review found several hardening gaps to address before real agents are trusted: dispatcher timeout/retry semantics, task idempotency, event bus subscriber isolation, intent matching precision, permission policy, and capability registry clarity.
@@ -173,16 +176,15 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Create task `NELA-0003-dispatcher-timeout-retry-safety` and harden dispatcher execution semantics before implementing real external Agents.
+Continue dispatcher safety hardening before implementing real external Agents.
 
 Scope:
 
-- Track timeout per attempt.
-- Do not rewrite a successful result as failed after synchronous execution already completed.
+- Add task idempotency metadata before retrying side-effectful tasks.
+- Add permission policy for terminal, desktop, browser, file, and account actions.
 - Keep timeout metadata advisory until execution can become cancellable.
-- Add tests for slow success, timeout failure, and retry behavior.
 
-After `NELA-0003`, continue with task idempotency hardening in `NELA-0004`.
+After dispatcher safety, continue with event bus subscriber isolation and intent matching precision.
 
 ## Notes For The Next AI Assistant
 
