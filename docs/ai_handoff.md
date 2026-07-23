@@ -10,7 +10,7 @@ Phase 1 Brain foundation has been implemented on top of the initial collaboratio
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
-The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Current Agents are safe mock placeholders: they expose the required lifecycle contract, pass health checks, accept delegated commands, and return mock success results without controlling real applications or services.
+The Brain does not perform external actions directly. It delegates Tasks to registered Agents. Most Agents are safe mock placeholders. Desktop Agent V1 is now in progress as the first real execution Agent, limited to safe macOS application lifecycle management.
 
 `NELA-0002-confirmation-deadlock` has been implemented on a dedicated branch. The Conversation Engine now routes pending confirmation answers before intent classification, supports affirmative and negative replies, re-asks once for unclear replies, cancels after repeated unclear replies, and expires stale confirmations after a configurable TTL.
 
@@ -26,6 +26,8 @@ NELA can now run from the command line. Use `python3 -m core.app` for an interac
 
 The root README is now a full English project overview, and `README.he.md` provides a full Hebrew version. Both summarize the architecture, completed work, GitHub/Claude collaboration flow, current limitations, and next recommended tasks.
 
+`NELA-0005-desktop-agent-v1` has started on branch `feature/NELA-0005-desktop-agent-v1`. The Desktop mock has been replaced with a macOS lifecycle Agent that supports known application lookup, running detection, launch/focus, foreground switching, graceful close, structured results, and health reporting. Unit tests use a fake command runner and do not open or close real applications.
+
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
@@ -36,7 +38,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Active Branch
 
-`feature/NELA-0002-confirmation-deadlock`
+`feature/NELA-0005-desktop-agent-v1`
 
 ## Recently Modified Files
 
@@ -101,12 +103,14 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `vision/README.md`
 - `tests/*`
 - `tests/test_conversation_confirmations.py`
+- `tests/test_desktop_agent.py`
 - `tests/test_dispatcher.py`
 - `tests/test_intent_recognition.py`
 
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
+- Finish `NELA-0005-desktop-agent-v1` integration so app lifecycle requests route to Desktop Agent through the existing Brain and Planner flow.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
@@ -119,7 +123,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Known Issues
 
-- Agents are placeholders and return safe mock success results; they do not perform real external actions.
+- Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
 - Long-term memory is in-memory only and does not persist after restart.
