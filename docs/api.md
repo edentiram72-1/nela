@@ -41,6 +41,26 @@ Purpose: Process a voice transcript using the same Brain path as text input.
 
 Returns: `ConversationTurn`
 
+## Runtime CLI
+
+### `python3 -m core.app`
+
+Module: `core/app.py`
+Status: Experimental
+
+Purpose: Start an interactive text session with the NELA Brain.
+
+### `python3 -m core.app --once "<request>"`
+
+Module: `core/app.py`
+Status: Experimental
+
+Purpose: Process one user request and print the structured Brain summary.
+
+Optional flag:
+
+- `--no-dispatch`: create the plan but do not send tasks to Agents.
+
 ### `IntentRouter.classify(text, context=None)`
 
 Module: `brain/intent_router.py`

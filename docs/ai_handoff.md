@@ -14,6 +14,8 @@ The Brain does not perform external actions directly. It delegates Tasks to regi
 
 Claude collaboration is now supported through a generated review bundle. There is no direct Claude connection. Use `docs/claude_review_bundle.md` or regenerate it with `python3 -m scripts.export_claude_review_bundle`.
 
+NELA can now run from the command line. Use `python3 -m core.app` for an interactive text session or `python3 -m core.app --once "<request>" --no-dispatch` for a one-shot Brain summary.
+
 ## Current Milestone
 
 **Phase 1: Build The Brain**
@@ -70,6 +72,7 @@ Claude collaboration is now supported through a generated review bundle. There i
 
 - Review whether this branch should be merged into `develop` before `main`.
 - Paste or upload `docs/claude_review_bundle.md` into Claude and capture review findings.
+- Try interactive NELA sessions through `python3 -m core.app`.
 - Create GitHub remote and push branches when the destination repository is known.
 - Implement the first real Agent, preferably `desktop`, `terminal`, `browser`, or `files`.
 - Add a durable persistence backend for long-term memory.
@@ -113,6 +116,14 @@ python3 -m core.app
 ```
 
 Result: runtime bootstrapped successfully.
+
+CLI one-shot smoke test:
+
+```text
+python3 -m core.app --once "Open Spotify and play my Night playlist" --no-dispatch
+```
+
+Result: Brain summary printed successfully.
 
 ## Suggested Next Task
 

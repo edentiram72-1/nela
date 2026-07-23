@@ -100,6 +100,20 @@ The event bus is defined in `core/events.py`.
 python -m core.app
 ```
 
+Run one request and print the Brain summary:
+
+```bash
+python3 -m core.app --once "Open Spotify and play my Night playlist" --no-dispatch
+```
+
+Run an interactive text session:
+
+```bash
+python3 -m core.app
+```
+
+In interactive mode, type `exit` to stop NELA.
+
 ## Run Tests
 
 ```bash
