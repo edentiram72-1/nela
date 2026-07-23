@@ -1,0 +1,12 @@
+{
+  "name": "psychedelic",
+  "language": "he",
+  "preferred_tones": ["psychedelic", "warm", "calm"],
+  "preferred_emotions": ["positive", "thinking", "neutral"],
+  "formality": "casual",
+  "gender": "female",
+  "style": "psychedelic",
+  "phrase_bias": {
+    "thinking.default": 1.1
+  }
+}

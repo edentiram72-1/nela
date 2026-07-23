@@ -46,13 +46,15 @@ GitHub is now the shared collaboration layer. The public repository is `https://
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
 
+`NELA-language-voice-foundation` has started on branch `feature/NELA-language-voice-foundation`. It adds a standalone Hebrew Language Engine and Voice Agent Foundation. The Brain still produces semantic turns and delegates actions; phrase selection lives in `language/`, final response rendering lives in `core/response.py`, and speech playback lives in the `voice/` provider layer plus `agents/voice/agent.py`. Claude still owns final personality, Hebrew tone, emotional behavior, and future language-pack content.
+
 ## Current Milestone
 
-**Phase 1: Build The Brain**
+**Phase 1: Build The Brain + Hebrew Response And Voice Foundation**
 
 ## Active Branch
 
-`feature/NELA-0012-claude-review-fixes`
+`feature/NELA-language-voice-foundation`
 
 ## Recently Modified Files
 
@@ -65,7 +67,11 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `core/config.py`
 - `core/events.py`
 - `core/logger.py`
+- `core/response.py`
 - `core/startup.py`
+- `language/*`
+- `language/hebrew/*`
+- `language/personality/*`
 - `brain/conversation.py`
 - `brain/context.py`
 - `brain/decision.py`
@@ -94,8 +100,11 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `agents/voice/__init__.py`
 - `agents/vision/agent.py`
 - `scripts/export_claude_review_bundle.py`
+- `scripts/validate_language_packs.py`
 - `docs/ai_handoff.md`
 - `docs/ai_inbox.md`
+- `docs/language_system.md`
+- `docs/voice_architecture.md`
 - `docs/design_system.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
@@ -103,6 +112,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `memory/vector_store.py`
 - `memory/profile.py`
 - `voice/*`
+- `voice/providers/*`
 - `vision/*`
 - `docs/architecture.md`
 - `docs/api.md`
@@ -143,6 +153,9 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `tests/test_ui_app.py`
 - `tests/test_ui_router.py`
 - `tests/test_ui_state.py`
+- `tests/test_language_engine.py`
+- `tests/test_voice_agent.py`
+- `tests/test_language_voice_integration.py`
 - `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md`
 - `design/nela_living_eye.html`
 - `design/nela_app_icon.svg`
@@ -153,6 +166,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
 - Push `feature/NELA-0007-ai-inbox` to GitHub.
 - Push `feature/NELA-0012-claude-review-fixes` to GitHub and send Claude direct blob links for review.
+- Push `feature/NELA-language-voice-foundation` to GitHub and send Claude `docs/language_system.md`, `docs/voice_architecture.md`, and the `language/` seed pack for content/architecture review.
 - Provide `nela-memory-subsystem.zip` so `feature/NELA-0012-memory-subsystem` can be created and tested separately.
 - Use `docs/ai_inbox.md` as the shared queue for Claude, Codex, and ChatGPT.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
@@ -165,6 +179,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - Add true concurrent execution for `TaskMode.PARALLEL`.
 - Add condition evaluation for `TaskMode.CONDITIONAL`.
 - Add a user confirmation workflow for sensitive tasks.
+- Ask Claude to replace or expand the seed Hebrew language pack and personality profiles. Codex should not invent NELA's final personality.
 
 ## Known Issues
 
@@ -184,6 +199,9 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - Claude review found several hardening gaps to address before real agents are trusted: dispatcher timeout/retry semantics, task idempotency, event bus subscriber isolation, intent matching precision, permission policy, and capability registry clarity.
 - `Remember` requests create a Plan targeting the registered mock `memory` Agent while durable memory also updates through `MemoryManager`; this dual path should be simplified before durable persistence work.
 - README architecture diagrams do not yet show the Decision Engine and Dispatcher explicitly.
+- Hebrew Language Engine and Voice Agent Foundation are experimental. The current Hebrew pack is a small seed pack for validation, not the final NELA personality.
+- Voice defaults to silent mode, so response-to-voice delegation is exercised without audio playback unless explicitly enabled.
+- The macOS `say` provider is the local MVP provider and treats provider submission as completion. It does not provide portable pause/resume.
 
 ## Validation
 
@@ -239,6 +257,17 @@ python3 -m ui.app --headless-smoke
 
 Result: 49 tests passed; `close Finder` now asks for confirmation before planning; UI headless bootstrap succeeded.
 
+Latest validation for `NELA-language-voice-foundation`:
+
+```text
+python3 -m scripts.validate_language_packs
+python3 -m unittest discover -s tests
+python3 -m core.app --once "Open Spotify and play my Night playlist" --no-dispatch
+python3 -m ui.app --headless-smoke
+```
+
+Result: language pack valid; 63 tests passed; CLI printed a Hebrew `NELA Response`; headless UI bootstrap succeeded.
+
 Window launch smoke:
 
 ```text
@@ -281,15 +310,16 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Send Visual Identity integration to Claude for review. Claude should verify that `design/` artifacts were copied without restyling, `docs/design_system.md` is authoritative, and `UIEventBridge` maps Brain events to Eye states consistently with design-system section 10.
+Send the Hebrew Language Engine and Voice Agent Foundation to Claude for review. Claude should verify that the infrastructure supports future personality and Hebrew language-pack work without forcing Codex-authored personality decisions.
 
 Scope:
 
-- Keep visual design out of Codex-owned code.
-- Confirm the Living Eye can replace the placeholder Eye component without Brain changes.
-- Confirm whether the next UI host should be WebView, Electron, Tauri, or another native wrapper.
+- Review `docs/language_system.md` and `docs/voice_architecture.md`.
+- Review the `language/hebrew/` seed pack only as starter content.
+- Replace or expand language/personality content through data files, not Brain code.
+- Confirm whether additional Hebrew grammar metadata is needed before richer phrase packs are written.
 
-After Visual Identity review, continue Memory subsystem integration when the missing zip is available, then continue permission and idempotency hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
+After Claude language review, continue Memory subsystem integration when the missing zip is available, then continue permission and idempotency hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
 
 ## Notes For The Next AI Assistant
 
@@ -298,6 +328,8 @@ After Visual Identity review, continue Memory subsystem integration when the mis
 - For Claude review, share `docs/ai_inbox.md` direct blob links or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
 - Read `docs/architecture.md`, `docs/api.md`, and `docs/coding_rules.md` before changing code.
 - Keep the Brain agent-neutral.
+- Keep Hebrew phrasing and personality rules out of Brain modules.
+- Keep provider-specific voice code out of the Language Engine.
 - Put execution logic inside Agents only.
 - Register new Agents through `AgentDispatcher.register_agent()`.
 - Update this handoff file before stopping work.

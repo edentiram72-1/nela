@@ -30,8 +30,9 @@ class UIRouter:
             self.state.set_eye_state(EyeState.ERROR)
             raise
 
+        response_text = self.runtime.response_adapter.render_and_maybe_speak(turn)
         self.state.set_typing_indicator(False)
-        self.state.add_message(MessageRole.ASSISTANT, format_turn_markdown(turn))
+        self.state.add_message(MessageRole.ASSISTANT, response_text)
         return turn
 
     def start_streaming_response(self) -> str:

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "waiting.default.001",
+    "text": "אני ממתינה.",
+    "category": "waiting.default",
+    "language": "he",
+    "tone": ["calm"],
+    "emotion": "waiting",
+    "formality": "casual",
+    "gender": "female",
+    "weight": 1.0,
+    "requires": [],
+    "tags": ["waiting"],
+    "enabled": true,
+    "version": "0.1.0"
+  }
+]

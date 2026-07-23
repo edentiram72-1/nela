@@ -185,3 +185,29 @@ Related files:
 - `ui/events.py`
 - `ui/router.py`
 - `ui/theme.py`
+
+### DEC-0008: Separate Hebrew Language Rendering From Voice Playback
+
+**Date:** 2026-07-23
+**Status:** Accepted
+
+**Context:** Claude is designing NELA's personality, Hebrew tone, emotional behavior, and language framework. Codex needs to implement the technical foundation without inventing the final personality or hardcoding phrases inside the Brain.
+
+**Decision:** Add a standalone `language/` subsystem for loading, validating, selecting, and rendering Hebrew language-pack phrases. Add a `VoiceAgent` that speaks the rendered text through a replaceable provider. The Brain remains semantic and agent-neutral; `core/response.py` adapts Brain turns into Hebrew text and delegates speech through the Agent Dispatcher.
+
+**Consequences:**
+
+- Claude can expand language packs and personality profiles without changing Brain code.
+- UI and Voice receive the same rendered response text.
+- Provider-specific speech code stays under `voice/providers/`.
+- Voice output can run in silent mode for safe local development and tests.
+- Future personality decisions must update language/personality files and documentation rather than embedding wording in Brain modules.
+
+**Related files:**
+
+- `language/`
+- `agents/voice/agent.py`
+- `voice/providers/`
+- `core/response.py`
+- `docs/language_system.md`
+- `docs/voice_architecture.md`

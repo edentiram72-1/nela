@@ -30,7 +30,7 @@ class UIRouterTests(unittest.TestCase):
         self.assertEqual(turn.intent.action, "PlayMedia")
         self.assertEqual(state.state.messages[0].role, MessageRole.USER)
         self.assertEqual(state.state.messages[1].role, MessageRole.ASSISTANT)
-        self.assertIn("NELA Brain", state.state.messages[1].content)
+        self.assertRegex(state.state.messages[1].content, r"[\u0590-\u05ff]")
         self.assertFalse(state.state.typing_indicator)
 
     def test_streaming_response_hooks_update_assistant_message(self) -> None:

@@ -1,0 +1,10 @@
+{
+  "name": "default",
+  "language": "he",
+  "preferred_tones": ["warm", "calm"],
+  "preferred_emotions": ["neutral", "positive"],
+  "formality": "casual",
+  "gender": "female",
+  "style": "default",
+  "phrase_bias": {}
+}

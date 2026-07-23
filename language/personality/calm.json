@@ -1,0 +1,13 @@
+{
+  "name": "calm",
+  "language": "he",
+  "preferred_tones": ["calm", "warm"],
+  "preferred_emotions": ["neutral", "careful"],
+  "formality": "casual",
+  "gender": "female",
+  "style": "calm",
+  "phrase_bias": {
+    "errors.general": 1.1,
+    "permissions.request": 1.1
+  }
+}
