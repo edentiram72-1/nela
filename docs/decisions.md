@@ -292,3 +292,29 @@ Related files:
 - `language/validator.py`
 - `core/response.py`
 - `tests/test_language_engine.py`
+
+### DEC-0012: Use A Local Browser WebView Host For The Vertical Slice Demo
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** NELA needs one visible end-to-end desktop demo that shows Claude's animated Living Eye, accepts Hebrew text, routes through the existing Brain, displays the Hebrew response, delegates speech through `VoiceAgent`, and returns the Eye to `IDLE`. The existing Tkinter shell cannot faithfully render the authored HTML/SVG/CSS Living Eye. A production UI host decision is still open, but this task needs the smallest safe WebView-capable host without redesigning the Brain or Claude-owned visual asset.
+
+**Decision:** Add `nela_runtime`, a local browser-hosted vertical-slice runtime. It starts a localhost server, opens the default browser, embeds the existing `design/nela_living_eye.html`, and drives it with the existing `UIEventBridge` state mapping. The local browser acts as the WebView-capable host for this demo. The Brain, Planner, Dispatcher, Desktop Agent, Language Engine, and Voice Agent remain unchanged.
+
+**Consequences:**
+
+- The demo renders the real animated Living Eye without rewriting it as a static image.
+- No Electron, Tauri, or Python WebView dependency is added before the final production host decision.
+- The exact launch command is `python3 -m nela_runtime`.
+- The demo can be replaced later by a native WebView shell while keeping the same Brain and event-state contracts.
+- This is not a general web product and should not expand into Browser, Vision, Cyber, or advanced Coding features.
+
+**Related files:**
+
+- `nela_runtime/`
+- `design/nela_living_eye.html`
+- `ui/events.py`
+- `ui/router.py`
+- `docs/vertical_slice_demo.md`
+- `tests/test_vertical_slice_demo.py`

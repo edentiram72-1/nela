@@ -37,7 +37,7 @@ NELA OS השלימה את **Integration Sprint 1** עבור baseline מאוחד 
 
 Desktop Agent V1 הוא הסוכן האמיתי הראשון, והוא מוגבל לניהול מחזור חיים של אפליקציות macOS נתמכות. דפדפן, טרמינל, Spotify, Gmail, GitHub, קול וראייה נשארים placeholders בטוחים אלא אם ימומשו במפורש בהמשך.
 
-הזהות הוויזואלית של קלוד כבר נוספה כארטיפקט רשמי. חלון ה-Tkinter החי עדיין מציג placeholder לעין, עד שתתקבל החלטה איך לארח את prototype ה-HTML/SVG בתוך האפליקציה.
+הזהות הוויזואלית של קלוד כבר נוספה כארטיפקט רשמי. דמו ה-vertical slice מציג את ה-Living Eye המונפש דרך משטח WebView מקומי בדפדפן; חלון ה-Tkinter הישן עדיין מציג placeholder לעין.
 
 חבילת העברית והאישיות של Claude היא עכשיו מקור התוכן הרשמי של השפה. החבילה כוללת 117 ניסוחים בעברית, 31 קטגוריות ו-3 פרופילי אישיות. Codex אחראי על המנוע ושכבת התאימות; Claude אחראי על הטון, האישיות והתוכן.
 
@@ -361,6 +361,18 @@ python3 -m core.app --once "Open Spotify and play my Night playlist"
 
 ```bash
 python3 -m core.app --once "Open Spotify and play my Night playlist" --no-dispatch
+```
+
+דמו גלוי ראשון עם Living Eye:
+
+```bash
+python3 -m nela_runtime
+```
+
+דמו עם קול פעיל:
+
+```bash
+NELA_VOICE_SILENT_MODE=false python3 -m nela_runtime
 ```
 
 יציאה ממצב אינטראקטיבי:

@@ -36,7 +36,7 @@ The repository now contains a working foundation that can:
 
 Desktop Agent V1 is the first real execution Agent. It is limited to safe macOS application lifecycle management. Browser, terminal, Spotify, Gmail, GitHub, voice, and vision control remain safe placeholders unless explicitly implemented later.
 
-Claude's Living Eye visual identity has now been added as the authoritative design artifact. Codex still owns the application shell, state management, Brain connection, theme tokens, and event bridge. The live Tkinter shell still renders a placeholder Eye until a UI-hosting decision is made for embedding the HTML/SVG prototype.
+Claude's Living Eye visual identity has now been added as the authoritative design artifact. Codex still owns the application shell, state management, Brain connection, theme tokens, and event bridge. The vertical-slice demo renders the animated Living Eye through a local browser-hosted WebView surface; the older Tkinter shell still renders a placeholder Eye.
 
 Claude's Hebrew language and personality drop is now the authoritative language content source. The pack contains 117 Hebrew variants across 31 categories and 3 personality presets. Codex owns the engine and compatibility layer; Claude owns tone, personality, and phrase content.
 
@@ -431,6 +431,18 @@ Desktop UI shell:
 
 ```bash
 python3 -m ui.app
+```
+
+Visible vertical-slice demo:
+
+```bash
+python3 -m nela_runtime
+```
+
+Voice-enabled demo:
+
+```bash
+NELA_VOICE_SILENT_MODE=false python3 -m nela_runtime
 ```
 
 Headless UI bootstrap check:

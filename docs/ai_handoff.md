@@ -6,7 +6,7 @@ Every significant change must update this file before handoff.
 
 ## Current Project Status
 
-Phase 1 Brain foundation, Integration Sprint 1, and the Claude language/personality drop have been consolidated into `develop`.
+Phase 1 Brain foundation, Integration Sprint 1, the Claude language/personality drop, and the first vertical-slice desktop demo are now in progress from the current `develop` baseline.
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
@@ -28,6 +28,8 @@ Repository stabilization documented untracked duplicate-suffix files in `docs/un
 
 On 2026-07-24, `nela-language-drop-final.zip` was integrated into the language foundation. Claude's Hebrew personality documents, tone rules, conversation rules, pack schema, 117-phrase Hebrew pack, and 3 personality presets are now stored in the repository. The Language Engine supports Claude compatibility metadata while keeping Brain code semantic and phrase-free.
 
+`feature/NELA-vertical-slice-demo` adds the first visible end-to-end demo. It starts with `python3 -m nela_runtime`, serves a local browser-hosted interface, embeds the original animated `design/nela_living_eye.html`, accepts Hebrew text, routes through the existing Brain and `UIRouter`, displays the Hebrew response, delegates the same response to `VoiceAgent`, and drives the Eye back to `IDLE`.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -41,6 +43,7 @@ The consolidation includes:
 - Claude review fixes for Desktop timeout handling, Dispatcher exception isolation, Desktop `wait_until_ready`, `CloseApplication` confirmation, WebView-compatible UI host decision, and Inbox/Handoff cleanup.
 - A standalone Hebrew Language Engine and Voice Agent Foundation. Phrase selection lives in `language/`, final response rendering lives in `core/response.py`, and speech playback lives in the `voice/` provider layer plus `agents/voice/agent.py`.
 - Claude language system integration: `pack/categories/variants` pack shape, `speech_text`, `eye_state`, `gender_tier`, `min_stage`, session use counts, gender tag rendering, and personality `preset/params/pack_overrides` compatibility.
+- Vertical-slice demo runtime: `nela_runtime/`, local browser WebView host, Hebrew chat flow, Living Eye state updates, and mocked end-to-end integration coverage.
 
 Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
@@ -50,11 +53,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**v0.1-alpha foundation: Brain + Desktop/UI + Claude Hebrew Language/Personality + Voice Foundation**
+**Vertical Slice Demo: visible NELA flow with Living Eye, Hebrew Brain response, Desktop Agent, and Voice Agent**
 
 ## Active Branch
 
-`develop`
+`feature/NELA-vertical-slice-demo`
 
 ## Recently Modified Files
 
@@ -114,6 +117,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/language_compat_report.md`
 - `docs/claude_handoff_2026-07-24.md`
 - `docs/releases/v0.1-alpha.md`
+- `docs/vertical_slice_demo.md`
 - `docs/design_system.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
@@ -165,6 +169,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `tests/test_language_engine.py`
 - `tests/test_voice_agent.py`
 - `tests/test_language_voice_integration.py`
+- `tests/test_vertical_slice_demo.py`
 - `language/pack_schema.md`
 - `language/pack_format.py`
 - `tests/test_intent_recognition.py`
@@ -173,6 +178,9 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `design/nela_living_eye.html`
 - `design/nela_app_icon.svg`
 - `design/nela_menubar_icon.svg`
+- `nela_runtime/__init__.py`
+- `nela_runtime/__main__.py`
+- `nela_runtime/server.py`
 
 ## Pending Tasks
 
@@ -190,7 +198,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Try the desktop UI shell with `python3 -m ui.app` on a machine with a graphical session.
 - Send consolidated `develop` or `main` direct blob links to Claude for release verification.
 - Ask Claude to review `docs/claude_handoff_2026-07-24.md`, `docs/personality_bible.md`, `docs/hebrew_language_guide.md`, `docs/tone_of_voice.md`, `docs/conversation_rules.md`, `language/pack_schema.md`, and `language/hebrew/`.
-- Choose and implement a WebView-compatible host for the Living Eye.
+- Review `feature/NELA-vertical-slice-demo` and decide whether the local browser-hosted WebView demo should later move to Tauri, Electron, Python WebView, or another production shell.
 - Add a durable persistence backend for long-term memory.
 - Add a real plugin loader for `plugins/`.
 - Add true concurrent execution for `TaskMode.PARALLEL`.
@@ -200,10 +208,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 ## Known Issues
 
 - Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
-- Live validation opened/foregrounded Finder only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
+- Live validation has opened/foregrounded Finder and Spotify only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
 - UI foundation intentionally has no Claude visual design yet. Eye, theme, animation, and component APIs expose states and tokens so Claude assets can be dropped in later without changing Brain architecture.
-- Living Eye artifacts are present, but the Tkinter shell still renders a placeholder Eye component. Embedding `design/nela_living_eye.html` into the live app needs a future UI host decision, such as WebView, Electron, or Tauri.
+- Living Eye artifacts are rendered in the vertical-slice browser-hosted demo. The older Tkinter shell still renders a placeholder Eye component and remains temporary.
 - `DEC-0007` accepts that the production visual shell should use a WebView-compatible host. Tkinter remains temporary infrastructure only.
+- `DEC-0012` selects a local browser-hosted WebView host for the vertical slice demo only; the final production shell decision remains open.
 - Memory subsystem integration is blocked because `nela-memory-subsystem.zip` was not provided with the current files.
 - The AI Inbox is repository-based only. It does not connect directly to Claude, Codex, or ChatGPT.
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
@@ -232,9 +241,11 @@ python3 -m unittest discover -s tests
 python3 -m ui.app --headless-smoke
 python3 -m scripts.validate_language_packs
 python3 -m core.app --once "נלה, תפתחי את Spotify"
+python3 -m nela_runtime --headless-smoke
+python3 -m unittest tests.test_vertical_slice_demo
 ```
 
-Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed; Hebrew Spotify CLI smoke returned a Claude-pack Hebrew NELA response.
+Result: 68 tests passed; headless UI bootstrap succeeded; vertical-slice runtime bootstrap succeeded; Hebrew language pack validation passed; Hebrew Spotify CLI smoke returned a Claude-pack Hebrew NELA response and brought Spotify forward through the safe Desktop Agent.
 
 Latest Integration Sprint 1 smoke:
 
