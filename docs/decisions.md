@@ -158,3 +158,30 @@ Related files:
 - `ui/events.py`
 - `ui/state.py`
 - `ui/window.py`
+
+### DEC-0007: Host The Living Eye In A WebView-Compatible UI Backend
+
+**Date:** 2026-07-23
+**Status:** Accepted
+
+**Context:** Claude reviewed the UI foundation and confirmed that the state, router, and Event Bridge layers are correctly renderer-neutral. The blocking issue is the render backend: Tkinter cannot faithfully render the authored Living Eye, which depends on HTML, SVG filters such as `feTurbulence`, CSS variables, gradients, glow, font loading, and motion rules from `docs/design_system.md`.
+
+**Decision:** Keep `UIStateManager`, `UIEventBridge`, `UIRouter`, theme tokens, and animation hooks as Codex-owned infrastructure. Treat the current Tkinter shell as a temporary placeholder. The production visual shell should move to a WebView-compatible host that can load `design/nela_living_eye.html` directly and synchronize state through one state bridge. Candidate hosts include a lightweight Python WebView, Tauri, Electron, or another native wrapper that can embed the original HTML/SVG without redesigning it.
+
+**Consequences:**
+
+- Claude's visual identity remains authoritative and is not reimplemented as a degraded Tkinter canvas approximation.
+- Brain architecture remains unchanged because UI state is already event-driven.
+- Future UI work should replace `ui/window.py` and visual components, not `ui/state.py`, `ui/events.py`, or `ui/router.py`.
+- The `psychedelic` visual direction lives primarily inside the Living Eye. App chrome should remain quiet and token-driven.
+- A follow-up task must choose the concrete WebView host before building production UI components.
+
+**Related files:**
+
+- `design/nela_living_eye.html`
+- `docs/design_system.md`
+- `ui/window.py`
+- `ui/state.py`
+- `ui/events.py`
+- `ui/router.py`
+- `ui/theme.py`

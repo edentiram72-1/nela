@@ -30,6 +30,7 @@ class IntentRecognitionTests(unittest.TestCase):
 
         self.assertEqual(intent.action, "CloseApplication")
         self.assertEqual(intent.application, "Finder")
+        self.assertTrue(intent.requires_confirmation)
 
     def test_recognizes_switch_application_intent(self) -> None:
         intent = IntentRouter().classify("switch to Spotify")

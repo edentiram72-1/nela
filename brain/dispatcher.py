@@ -105,7 +105,24 @@ class AgentDispatcher:
                     "timeout_seconds": task.timeout_seconds,
                 },
             )
-            last_result = agent.execute(command)
+            try:
+                last_result = agent.execute(command)
+            except Exception as error:  # Defensive boundary for all current and future Agents.
+                elapsed = time.monotonic() - attempt_started_at
+                last_result = AgentResult(
+                    False,
+                    f"Agent '{task.target_agent}' raised {error.__class__.__name__}.",
+                    {
+                        "task_id": task.id,
+                        "plan_id": plan_id,
+                        "agent": task.target_agent,
+                        "error_type": error.__class__.__name__,
+                        "error": str(error),
+                        "elapsed_seconds": elapsed,
+                    },
+                )
+                self.logger.exception("agent_execute_failed task_id=%s agent=%s", task.id, task.target_agent)
+                break
             elapsed = time.monotonic() - attempt_started_at
             timed_out = task.timeout_seconds is not None and elapsed > task.timeout_seconds
             if timed_out and not last_result.success:
