@@ -34,7 +34,7 @@ The repository now contains a working foundation that can:
 
 Desktop Agent V1 is the first real execution Agent. It is limited to safe macOS application lifecycle management. Browser, terminal, Spotify, Gmail, GitHub, voice, and vision control remain safe placeholders unless explicitly implemented later.
 
-The UI foundation intentionally does not define NELA's visual identity. Claude owns brand identity, Eye design, UI, UX, animations, and the design system. Codex provides the application shell, state management, Brain connection, theme tokens, and asset slots that Claude's design can plug into later.
+Claude's Living Eye visual identity has now been added as the authoritative design artifact. Codex still owns the application shell, state management, Brain connection, theme tokens, and event bridge. The live Tkinter shell still renders a placeholder Eye until a UI-hosting decision is made for embedding the HTML/SVG prototype.
 
 ## What Has Been Done
 
@@ -95,7 +95,9 @@ Important branches:
 - `feature/NELA-0001-foundation-architecture`: initial foundation architecture and Phase 1 Brain.
 - `feature/NELA-0002-confirmation-deadlock`: confirmation hardening branch.
 - `feature/NELA-0005-desktop-agent-v1`: first real Desktop Agent branch.
-- `feature/NELA-0006-ui-foundation`: current UI foundation branch.
+- `feature/NELA-0006-ui-foundation`: UI foundation branch.
+- `feature/NELA-0007-ai-inbox`: AI collaboration inbox branch.
+- `feature/NELA-0011-visual-identity`: Claude Living Eye and design system branch.
 
 Claude does not connect directly to Codex or to the local machine. Claude reviews GitHub branches, direct blob links, pull request diffs, or generated Markdown review bundles.
 
@@ -329,20 +331,44 @@ It provides infrastructure only:
 - `ui/theme.py`: theme token system for dark, light, and future psychedelic themes.
 - `ui/animations.py`: state-based animation hooks.
 - `ui/components/`: placeholder components for chat, sidebar, status, voice, Eye, and settings.
-- `ui/assets/`: future Claude-provided logo, Eye SVG, animation, typography, and design assets.
+- `ui/assets/`: future runtime asset slots.
 
-The NELA Eye is state-only for now. Supported states:
+The live Tkinter NELA Eye is state-only for now. Supported states now align with Claude's design system:
 
 - `IDLE`
 - `LISTENING`
 - `THINKING`
 - `SPEAKING`
 - `EXECUTING`
+- `WAITING`
 - `SUCCESS`
+- `WARNING`
 - `ERROR`
 - `SLEEPING`
+- `OFFLINE`
 
-Claude can replace the placeholder Eye rendering with SVG and animation assets without changing the Brain connection.
+Claude can replace the placeholder Eye rendering with the Living Eye prototype without changing the Brain connection.
+
+### 12. Claude Visual Identity: Living Eye
+
+Claude delivered NELA's visual identity package. It has been placed in:
+
+- `design/nela_living_eye.html`: dependency-free animated Living Eye prototype.
+- `design/nela_app_icon.svg`: app and dock icon.
+- `design/nela_menubar_icon.svg`: macOS menu-bar template icon.
+- `docs/design_system.md`: authoritative design system for colors, typography, motion, states, icons, and UI rules.
+
+The Living Eye is driven by one state value. The current UI Event Bridge maps Brain events to Eye states according to the design system:
+
+- `InputReceived`: `listening`
+- `IntentRecognized`, `DecisionMade`: `thinking`
+- `TaskDispatched`, `TaskStarted`: `executing`
+- `ConfirmationRequested`: `waiting`
+- `TaskCompleted`: `success`
+- `TaskFailed`, `AgentUnavailable`: `error`
+- `ConversationEnded`: `idle`
+
+`success`, `warning`, and `error` are moment states. When a UI host provides scheduling, they return to `idle` after 3 seconds.
 
 ## Repository Map
 
@@ -352,12 +378,13 @@ Claude can replace the placeholder Eye rendering with SVG and animation assets w
 | `brain/` | Conversation orchestration, intent recognition, decisions, planning, context, memory orchestration, and dispatch coordination. |
 | `agents/` | Independent execution Agents and the shared Agent contract. |
 | `ui/` | Desktop UI shell, state manager, event bridge, theme tokens, animation hooks, and component placeholders. |
+| `design/` | Claude Living Eye prototype, app icon, and menu-bar icon. |
 | `memory/` | Short-term memory, long-term memory, vector storage, and user profile primitives. |
 | `voice/` | Wake word, microphone, speech-to-text, and text-to-speech interfaces. |
 | `vision/` | Screen capture, screen reading, OCR, and UI detection interfaces. |
 | `skills/` | Future reusable capabilities. |
 | `plugins/` | Future installable capability packages. |
-| `docs/` | Architecture, roadmap, API notes, coding rules, memory model, decisions, Claude findings, and handoff. |
+| `docs/` | Architecture, roadmap, API notes, coding rules, memory model, decisions, Claude findings, design system, and handoff. |
 | `prompts/` | Role prompts for Codex, Claude, and ChatGPT. |
 | `tests/` | Unit and integration tests. |
 | `scripts/` | Developer utilities, including Claude review bundle export. |
@@ -503,7 +530,7 @@ ChatGPT is responsible for:
 ## Current Known Limitations
 
 - Desktop Agent V1 can control supported macOS application lifecycle actions. Other Agents are safe mock placeholders and do not control real applications yet.
-- UI foundation uses placeholder visual components only. Claude has not provided the final logo, Eye SVG, palette, typography, spacing, or animations yet.
+- Claude's visual identity artifacts are present under `design/`, but the live Tkinter shell still uses a placeholder Eye component.
 - Intent recognition is deterministic and rule-based.
 - Event Bus is synchronous and in-process.
 - Long-term memory is in-memory only and not durable.
@@ -524,7 +551,7 @@ Before real external Agents are enabled:
 5. Simplify the dual memory path for `Remember` requests.
 6. Update diagrams to show the Decision Engine and Dispatcher explicitly.
 
-Next UI work should wait for Claude's visual identity and design system assets. Codex should continue wiring infrastructure and safety layers without redesigning Claude-owned visuals.
+Next UI work should decide how to host `design/nela_living_eye.html` in the live app, such as WebView, Electron, Tauri, or another native wrapper. Codex should continue wiring infrastructure and safety layers without redesigning Claude-owned visuals.
 
 ## First Step For Any AI Assistant
 

@@ -14,7 +14,7 @@ NELA OS היא תשתית למערכת הפעלה מבוססת בינה מלאכ
 
 ## מצב נוכחי
 
-NELA OS נמצאת כרגע ב-**Phase 1: Build The Brain**.
+NELA OS עוברת כרגע מ-**Phase 1: Build The Brain** אל תשתית UI ודסקטופ ראשונית.
 
 במאגר קיימת עכשיו תשתית עובדת שיכולה:
 
@@ -27,11 +27,15 @@ NELA OS נמצאת כרגע ב-**Phase 1: Build The Brain**.
 - לנהל שכבות זיכרון קצר-טווח וארוך-טווח.
 - לשלוח משימות לסוכנים רשומים דרך חוזה משותף.
 - לפרסם אירועי מחזור חיים דרך Event Bus פנימי.
-- להשתמש בסוכני mock בטוחים לצורך בדיקות MVP בלי לשלוט באמת באפליקציות.
+- להשתמש בסוכני mock בטוחים לצורך בדיקות MVP, כאשר Desktop Agent V1 מתחיל שליטה מוגבלת ובטוחה במחזור חיים של אפליקציות macOS.
+- להפעיל תשתית UI מודולרית שמחברת קלט טקסט ל-Brain הקיים.
+- להחזיק את ה-Living Eye של קלוד כארטיפקט העיצוב הרשמי תחת `design/`.
 - לייצא חבילת סקירה לקלוד בלי ליצור חיבור ישיר לקלוד.
 - לתמוך בשיתוף פעולה דרך GitHub בין Codex, Claude ו-ChatGPT.
 
-כרגע אין עדיין שליטה אמיתית בדסקטופ, דפדפן, טרמינל, Spotify, Gmail, GitHub, קול או ראייה. הסוכנים הקיימים הם placeholders בטוחים, אלא אם ימומשו במפורש בהמשך.
+Desktop Agent V1 הוא הסוכן האמיתי הראשון, והוא מוגבל לניהול מחזור חיים של אפליקציות macOS נתמכות. דפדפן, טרמינל, Spotify, Gmail, GitHub, קול וראייה נשארים placeholders בטוחים אלא אם ימומשו במפורש בהמשך.
+
+הזהות הוויזואלית של קלוד כבר נוספה כארטיפקט רשמי. חלון ה-Tkinter החי עדיין מציג placeholder לעין, עד שתתקבל החלטה איך לארח את prototype ה-HTML/SVG בתוך האפליקציה.
 
 ## מה נעשה עד עכשיו
 
@@ -89,7 +93,11 @@ https://github.com/edentiram72-1/nela
 - `main`: בסיס יציב.
 - `develop`: בסיס אינטגרציה.
 - `feature/NELA-0001-foundation-architecture`: ארכיטקטורת foundation ו-Brain ראשוני.
-- `feature/NELA-0002-confirmation-deadlock`: ענף ההקשחה הפעיל.
+- `feature/NELA-0002-confirmation-deadlock`: ענף תיקון האישורים.
+- `feature/NELA-0005-desktop-agent-v1`: Desktop Agent ראשון.
+- `feature/NELA-0006-ui-foundation`: תשתית UI.
+- `feature/NELA-0007-ai-inbox`: inbox לשיתוף פעולה בין AI.
+- `feature/NELA-0011-visual-identity`: Living Eye ומערכת עיצוב של Claude.
 
 קלוד לא מתחבר ישירות ל-Codex או למחשב המקומי. קלוד סוקר ענפים ב-GitHub, קישורי blob ישירים, diff של Pull Request, או חבילת Markdown שנוצרת לסקירה.
 
@@ -277,6 +285,27 @@ Intent matching עכשיו בודק מילים וביטויים מלאים במ�
 
 כל שינוי משמעותי צריך לעדכן את `docs/ai_handoff.md`.
 
+### 11. זהות ויזואלית: Living Eye
+
+קלוד סיפק את חבילת הזהות הוויזואלית של NELA. היא נשמרה במאגר בלי restyling:
+
+- `design/nela_living_eye.html`: prototype חי, מונפש ונטול תלויות של העין.
+- `design/nela_app_icon.svg`: אייקון אפליקציה ודוק.
+- `design/nela_menubar_icon.svg`: אייקון macOS menu-bar.
+- `docs/design_system.md`: מערכת העיצוב הרשמית לצבעים, טיפוגרפיה, תנועה, מצבים, אייקונים וכללי UI.
+
+ה-Living Eye מונע מערך מצב אחד. `UIEventBridge` ממפה אירועי Brain למצבי Eye לפי מערכת העיצוב:
+
+- `InputReceived`: `listening`
+- `IntentRecognized`, `DecisionMade`: `thinking`
+- `TaskDispatched`, `TaskStarted`: `executing`
+- `ConfirmationRequested`: `waiting`
+- `TaskCompleted`: `success`
+- `TaskFailed`, `AgentUnavailable`: `error`
+- `ConversationEnded`: `idle`
+
+המצבים `success`, `warning`, ו-`error` הם רגעיים. כאשר host של UI מספק תזמון, הם חוזרים ל-`idle` אחרי 3 שניות.
+
 ## מפת המאגר
 
 | נתיב | מטרה |
@@ -284,12 +313,14 @@ Intent matching עכשיו בודק מילים וביטויים מלאים במ�
 | `core/` | עליית אפליקציה, קונפיגורציה, אירועים, לוגים ותשתיות runtime משותפות. |
 | `brain/` | שיחה, זיהוי כוונות, החלטות, תכנון, הקשר, זיכרון והאצלת משימות. |
 | `agents/` | סוכני ביצוע עצמאיים וחוזה הסוכנים המשותף. |
+| `ui/` | תשתית חלון דסקטופ, state manager, event bridge, theme tokens ורכיבי placeholder. |
+| `design/` | Living Eye של קלוד, אייקון אפליקציה ואייקון menu-bar. |
 | `memory/` | זיכרון קצר-טווח, ארוך-טווח, vector store ופרופיל משתמש. |
 | `voice/` | Wake word, מיקרופון, speech-to-text ו-text-to-speech. |
 | `vision/` | צילום מסך, קריאת מסך, OCR וזיהוי UI. |
 | `skills/` | יכולות reusable עתידיות. |
 | `plugins/` | חבילות יכולת עתידיות להתקנה. |
-| `docs/` | ארכיטקטורה, roadmap, API, coding rules, memory model, decisions, Claude findings ו-handoff. |
+| `docs/` | ארכיטקטורה, roadmap, API, coding rules, memory model, decisions, Claude findings, design system ו-handoff. |
 | `prompts/` | פרומפטים לתפקידי Codex, Claude ו-ChatGPT. |
 | `tests/` | בדיקות יחידה ואינטגרציה. |
 | `scripts/` | כלי פיתוח, כולל יצוא חבילת סקירה לקלוד. |
@@ -344,7 +375,7 @@ python3 -m unittest discover -s tests
 הענף הנוכחי:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/feature/NELA-0002-confirmation-deadlock
+https://github.com/edentiram72-1/nela/tree/feature/NELA-0011-visual-identity
 ```
 
 אפשרות 2: יצירת review bundle.
@@ -412,7 +443,8 @@ ChatGPT אחראי על:
 
 ## מגבלות ידועות כרגע
 
-- הסוכנים הם mock placeholders בטוחים ולא שולטים עדיין באפליקציות אמיתיות.
+- Desktop Agent V1 יכול לשלוט במחזור חיים של אפליקציות macOS נתמכות. שאר הסוכנים עדיין placeholders בטוחים.
+- ארטיפקטי הזהות הוויזואלית קיימים תחת `design/`, אבל חלון ה-Tkinter החי עדיין משתמש ב-placeholder לעין.
 - זיהוי כוונות הוא דטרמיניסטי ומבוסס חוקים.
 - Event Bus סינכרוני ופנימי לתהליך.
 - זיכרון ארוך-טווח כרגע בזיכרון בלבד ולא נשמר לאורך זמן.
@@ -433,7 +465,7 @@ ChatGPT אחראי על:
 5. לפשט את הנתיב הכפול של בקשות `Remember`.
 6. לעדכן דיאגרמות כך שיציגו במפורש Decision Engine ו-Dispatcher.
 
-אחרי שכבות הבטיחות האלה, להתחיל מימוש של Agent אמיתי ראשון, כנראה Desktop, Terminal, Browser או Files.
+עבודת UI הבאה צריכה להכריע איך לארח את `design/nela_living_eye.html` באפליקציה החיה, למשל WebView, Electron, Tauri או wrapper native אחר. אחרי שכבות הבטיחות האלה, להמשיך בזהירות לסוכנים אמיתיים נוספים.
 
 ## צעד ראשון לכל עוזר AI
 

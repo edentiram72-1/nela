@@ -34,6 +34,15 @@ class UIStateTests(unittest.TestCase):
         bus.publish(Event(type=EventTypes.INTENT_RECOGNIZED, source="test"))
         self.assertEqual(state.state.eye_state, EyeState.THINKING)
 
+        bus.publish(Event(type=EventTypes.DECISION_MADE, source="test"))
+        self.assertEqual(state.state.eye_state, EyeState.THINKING)
+
+        bus.publish(Event(type=EventTypes.CONFIRMATION_REQUESTED, source="test"))
+        self.assertEqual(state.state.eye_state, EyeState.WAITING)
+
+        bus.publish(Event(type=EventTypes.TASK_DISPATCHED, source="test", payload={"task_id": "task-1"}))
+        self.assertEqual(state.state.eye_state, EyeState.EXECUTING)
+
         bus.publish(Event(type=EventTypes.TASK_STARTED, source="test", payload={"task_id": "task-1"}))
         self.assertEqual(state.state.eye_state, EyeState.EXECUTING)
 
@@ -43,6 +52,20 @@ class UIStateTests(unittest.TestCase):
         bus.publish(Event(type=EventTypes.TASK_FAILED, source="test", payload={"message": "failed"}))
         self.assertEqual(state.state.eye_state, EyeState.ERROR)
         self.assertEqual(state.state.notifications[-1].message, "failed")
+
+    def test_event_bridge_schedules_moment_states_back_to_idle(self) -> None:
+        scheduled: list[tuple[int, object]] = []
+        bus = EventBus()
+        state = UIStateManager()
+        bridge = UIEventBridge(bus, state, schedule_idle=lambda delay, callback: scheduled.append((delay, callback)))
+
+        bridge.start()
+        bus.publish(Event(type=EventTypes.TASK_COMPLETED, source="test", payload={"task_id": "task-1"}))
+
+        self.assertEqual(state.state.eye_state, EyeState.SUCCESS)
+        self.assertEqual(scheduled[0][0], 3000)
+        scheduled[0][1]()
+        self.assertEqual(state.state.eye_state, EyeState.IDLE)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="22" height="22">
+  <!--
+    NELA menu bar icon (macOS "template image").
+    Pure black shapes on transparency; macOS recolors it automatically for
+    light/dark menu bars. Only three shapes so it stays crisp at 16-22px.
+    Running state can be shown by swapping to a filled-pupil variant.
+  -->
+  <path d="M11,4.5 C15.6,4.5 18.9,7.9 19.7,11 C18.9,14.1 15.6,17.5 11,17.5 C6.4,17.5 3.1,14.1 2.3,11 C3.1,7.9 6.4,4.5 11,4.5 Z"
+        fill="none" stroke="#000" stroke-width="1.6"/>
+  <circle cx="11" cy="11" r="3.4" fill="#000"/>
+  <circle cx="9.7" cy="9.6" r="1.05" fill="#fff"/>
+</svg>
