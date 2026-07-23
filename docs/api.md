@@ -24,6 +24,8 @@ Status: Experimental
 
 Purpose: Process a text request through intent recognition, decision making, planning, memory, and optional delegation.
 
+If a confirmation is pending, the input is routed as a confirmation answer before new intent classification. Affirmative replies resume the original blocked Intent, negative replies cancel it, unclear replies are re-asked once, and expired confirmations are cleared on the next input.
+
 Returns: `ConversationTurn`
 
 Example:
@@ -200,6 +202,26 @@ Publish an event to matching subscribers.
 ### `EventBus.history()`
 
 Return in-memory event history for tests and diagnostics.
+
+Current Brain lifecycle events include:
+
+- `InputReceived`
+- `IntentRecognized`
+- `DecisionMade`
+- `ConfirmationRequested`
+- `ConfirmationResolved`
+- `ConfirmationExpired`
+- `PlanCreated`
+- `TaskCreated`
+- `TaskDispatched`
+- `TaskStarted`
+- `TaskCompleted`
+- `TaskFailed`
+- `TaskCancelled`
+- `AgentUnavailable`
+- `MemoryUpdated`
+- `MemoryRetrieved`
+- `ConversationEnded`
 
 ## Memory APIs
 
