@@ -115,7 +115,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
-- Finish `NELA-0005-desktop-agent-v1` final validation and push the feature branch to GitHub.
+- Push `feature/NELA-0005-desktop-agent-v1` to GitHub and send Claude direct blob links for review.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
@@ -129,6 +129,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 ## Known Issues
 
 - Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
+- Live validation opened/foregrounded Finder only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
 - Long-term memory is in-memory only and does not persist after restart.
@@ -157,6 +158,14 @@ python3 -m unittest discover -s tests
 
 Result: 27 tests passed.
 
+Latest validation for `NELA-0005-desktop-agent-v1`:
+
+```text
+python3 -m unittest discover -s tests
+```
+
+Result: 38 tests passed.
+
 Claude bundle generation:
 
 ```text
@@ -176,10 +185,10 @@ Result: runtime bootstrapped successfully.
 CLI one-shot smoke test:
 
 ```text
-python3 -m core.app --once "Open Spotify and play my Night playlist"
+python3 -m core.app --once "open Finder"
 ```
 
-Result: Brain summary printed successfully, created four media tasks, dispatched them to the registered `spotify` mock Agent, and returned four `ok` Agent results.
+Result: Brain summary printed successfully, created one Desktop task, dispatched it to the real Desktop Agent, and macOS brought Finder to the foreground.
 
 GitHub public access check:
 
@@ -191,7 +200,7 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Continue dispatcher safety hardening before implementing real external Agents.
+Send Desktop Agent V1 to Claude for architecture and safety review, then continue permission and idempotency hardening before implementing Browser Agent, Terminal Agent, or Files Agent.
 
 Scope:
 
