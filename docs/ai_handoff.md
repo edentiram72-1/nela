@@ -32,6 +32,8 @@ Desktop lifecycle intents now route through the existing Brain flow without arch
 
 The root README now documents Desktop Agent V1, supported applications, safety limits, known limitations, and the current feature branch.
 
+`NELA-0006-ui-foundation` has started on branch `feature/NELA-0006-ui-foundation`. A modular desktop UI foundation now exists under `ui/` to host Claude's future visual design without redesigning the interface. It includes UI state management, theme tokens, animation hooks, Brain event integration, a router from text input to the existing Brain, a Tkinter window shell, chat/status/sidebar/voice/eye/settings component placeholders, and tests for state, routing, and headless app bootstrap.
+
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
@@ -42,7 +44,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Active Branch
 
-`feature/NELA-0005-desktop-agent-v1`
+`feature/NELA-0006-ui-foundation`
 
 ## Recently Modified Files
 
@@ -111,11 +113,30 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `tests/test_dispatcher.py`
 - `tests/test_intent_recognition.py`
 - `tests/test_planner.py`
+- `ui/app.py`
+- `ui/window.py`
+- `ui/router.py`
+- `ui/state.py`
+- `ui/events.py`
+- `ui/theme.py`
+- `ui/animations.py`
+- `ui/components/*`
+- `ui/chat/*`
+- `ui/sidebar/*`
+- `ui/status/*`
+- `ui/voice/*`
+- `ui/eye/*`
+- `ui/settings/*`
+- `ui/assets/.gitkeep`
+- `tests/test_ui_app.py`
+- `tests/test_ui_router.py`
+- `tests/test_ui_state.py`
 
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
 - Push `feature/NELA-0005-desktop-agent-v1` to GitHub and send Claude direct blob links for review.
+- Finish `NELA-0006-ui-foundation` documentation, final validation, and GitHub push.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
@@ -130,6 +151,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 - Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
 - Live validation opened/foregrounded Finder only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
+- UI foundation intentionally has no Claude visual design yet. Eye, theme, animation, and component APIs expose states and tokens so Claude assets can be dropped in later without changing Brain architecture.
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
 - Long-term memory is in-memory only and does not persist after restart.
