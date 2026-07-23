@@ -197,6 +197,14 @@ python3 -m ui.app --headless-smoke
 
 Result: 44 tests passed; headless UI bootstrap succeeded.
 
+Window launch smoke:
+
+```text
+Instantiate NelaWindow, schedule root.destroy(), run Tk mainloop.
+```
+
+Result: Tkinter UI window launched and closed successfully.
+
 Claude bundle generation:
 
 ```text
