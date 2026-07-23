@@ -1,0 +1,446 @@
+# NELA OS
+
+[English](README.md) | עברית
+
+NELA OS היא תשתית למערכת הפעלה מבוססת בינה מלאכותית, בגישה של עוזר חכם לשולחן העבודה, בהשראת רעיון בסגנון JARVIS.
+
+הפרויקט נבנה כמערכת מודולרית ומבוססת אירועים, שיכולה להתפתח לשיחה קולית, זיכרון, שליטה במחשב, הבנת מסך, אוטומציה, תמיכה בתוספים, תיאום בין סוכנים, ואינטגרציה עתידית עם מובייל.
+
+## משימה
+
+לבנות שכבת הפעלה חכמה ותחזוקתית, שבה Brain מרכזי אחד מבין בקשות, חושב עליהן, יוצר תוכניות, זוכר הקשר, ומאציל ביצוע לסוכנים עצמאיים.
+
+ה-Brain לעולם לא מבצע פעולות חיצוניות בעצמו. הסוכנים עושים את העבודה. המודולים מתקשרים דרך אירועים ולא דרך תלות ישירה בין מודולים.
+
+## מצב נוכחי
+
+NELA OS נמצאת כרגע ב-**Phase 1: Build The Brain**.
+
+במאגר קיימת עכשיו תשתית עובדת שיכולה:
+
+- לעלות משורת הפקודה.
+- לקבל קלט טקסט או תמלול קול.
+- לסווג כוונה של משתמש למבנה נתונים מסודר.
+- להחליט האם לשאול, להמתין, לזכור, להאציל או לדחות.
+- ליצור תוכנית משימות.
+- לעקוב אחרי הקשר שיחה ומשימות רצות.
+- לנהל שכבות זיכרון קצר-טווח וארוך-טווח.
+- לשלוח משימות לסוכנים רשומים דרך חוזה משותף.
+- לפרסם אירועי מחזור חיים דרך Event Bus פנימי.
+- להשתמש בסוכני mock בטוחים לצורך בדיקות MVP בלי לשלוט באמת באפליקציות.
+- לייצא חבילת סקירה לקלוד בלי ליצור חיבור ישיר לקלוד.
+- לתמוך בשיתוף פעולה דרך GitHub בין Codex, Claude ו-ChatGPT.
+
+כרגע אין עדיין שליטה אמיתית בדסקטופ, דפדפן, טרמינל, Spotify, Gmail, GitHub, קול או ראייה. הסוכנים הקיימים הם placeholders בטוחים, אלא אם ימומשו במפורש בהמשך.
+
+## מה נעשה עד עכשיו
+
+### 1. מאגר מוכן לשיתוף פעולה
+
+המאגר אורגן כך שכמה עוזרי AI יוכלו לעבוד דרך GitHub כמקור אמת משותף.
+
+נוצרו ואורגנו:
+
+- `core/`
+- `brain/`
+- `agents/`
+- `memory/`
+- `voice/`
+- `vision/`
+- `skills/`
+- `plugins/`
+- `docs/`
+- `prompts/`
+- `tests/`
+- `scripts/`
+- `config/`
+- `assets/`
+- `logs/`
+
+נוספו מסמכי עבודה:
+
+- `docs/architecture.md`
+- `docs/roadmap.md`
+- `docs/api.md`
+- `docs/ai_handoff.md`
+- `docs/decisions.md`
+- `docs/coding_rules.md`
+- `docs/memory_model.md`
+- `docs/claude_review_findings.md`
+
+נוספו פרומפטים לתפקידי AI:
+
+- `prompts/codex.md`
+- `prompts/claude.md`
+- `prompts/chatgpt.md`
+
+### 2. שכבת שיתוף פעולה דרך GitHub
+
+GitHub הוא שכבת שיתוף הפעולה בין כל העוזרים.
+
+מאגר ציבורי:
+
+```text
+https://github.com/edentiram72-1/nela
+```
+
+ענפים חשובים:
+
+- `main`: בסיס יציב.
+- `develop`: בסיס אינטגרציה.
+- `feature/NELA-0001-foundation-architecture`: ארכיטקטורת foundation ו-Brain ראשוני.
+- `feature/NELA-0002-confirmation-deadlock`: ענף ההקשחה הפעיל.
+
+קלוד לא מתחבר ישירות ל-Codex או למחשב המקומי. קלוד סוקר ענפים ב-GitHub, קישורי blob ישירים, diff של Pull Request, או חבילת Markdown שנוצרת לסקירה.
+
+### 3. תשתית Phase 1 Brain
+
+מומשה תשתית Brain ראשונה.
+
+מודולים מרכזיים:
+
+- `brain/conversation.py`: ניהול זרימת השיחה.
+- `brain/intent_router.py`: זיהוי כוונה דטרמיניסטי.
+- `brain/decision.py`: קבלת החלטות.
+- `brain/planner.py`: הפיכת כוונה למשימות.
+- `brain/context.py`: מצב שיחה, משימות, דסקטופ ואישורים.
+- `brain/dispatcher.py`: האצלת משימות לסוכנים.
+- `brain/memory_manager.py`: ניהול זיכרון קצר-טווח וארוך-טווח.
+- `brain/reasoning.py`: תשתיות חשיבה.
+
+ה-Brain יכול לעבד בקשה בזרימה הבאה:
+
+```text
+קלט משתמש
+  |
+  v
+Conversation Engine
+  |
+  v
+Intent Router
+  |
+  v
+Decision Engine
+  |
+  v
+Planner
+  |
+  v
+Agent Dispatcher
+  |
+  v
+Agent
+```
+
+### 4. Runtime מבוסס אירועים
+
+נוספו תשתיות אירועים ב-`core/events.py`.
+
+אירועי מחזור החיים הנוכחיים כוללים:
+
+- `InputReceived`
+- `IntentRecognized`
+- `DecisionMade`
+- `ConfirmationRequested`
+- `ConfirmationResolved`
+- `ConfirmationExpired`
+- `PlanCreated`
+- `TaskCreated`
+- `TaskDispatched`
+- `TaskStarted`
+- `TaskCompleted`
+- `TaskFailed`
+- `TaskCancelled`
+- `AgentStatusChanged`
+- `AgentUnavailable`
+- `MemoryUpdated`
+- `MemoryRetrieved`
+- `ContextUpdated`
+- `ConversationEnded`
+
+ה-Event Bus כרגע סינכרוני ופנימי לתהליך. הקשחת מערכת האירועים היא משימת המשך.
+
+### 5. חוזה סוכנים וסוכני mock בטוחים
+
+כל הסוכנים חולקים חוזה אחיד מתוך `agents/base.py`:
+
+```python
+initialize()
+execute(command)
+stop()
+status()
+health_check()
+```
+
+סוכנים קיימים כ-placeholders או mock-backed:
+
+- Desktop
+- Terminal
+- Browser
+- Voice
+- Vision
+- Memory
+- Spotify
+- Files
+- Calendar
+- Gmail
+- GitHub
+- Codex
+- Claude
+- Automation
+
+הסוכנים האלה בודקים כרגע האצלה ומחזור חיים. הם לא מבצעים פעולות אמיתיות עם תופעות לוואי.
+
+### 6. זרימת סקירה עם Claude
+
+הוכנה עבודה עם קלוד ללא חיבור ישיר לקלוד.
+
+מומש:
+
+- `agents/claude/agent.py`
+- `scripts/export_claude_review_bundle.py`
+- זרימת יצירת review bundle
+- `docs/claude_review_findings.md`
+
+קלוד סקר את Phase 1 Brain וסימן את משימות ההקשחה הבאות:
+
+- `NELA-0002-confirmation-deadlock`
+- `NELA-0003-dispatcher-timeout-retry-safety`
+- `NELA-0004-task-idempotency`
+- הקשחת Event Bus
+- הקשחת Intent Matching
+- מדיניות הרשאות
+- Capability Registry
+- סמנטיקת Plan Execution
+
+### 7. NELA-0002: תיקון Confirmation Deadlock
+
+תוקן deadlock דטרמיניסטי בזרימת האישורים.
+
+הבעיה:
+
+- ה-Brain שאל שאלה לאישור.
+- תשובות המשך סווגו כקלט חדש.
+- `resolve_confirmation()` מעולם לא נקרא.
+- השיחה יכלה להיתקע ב-`WAIT`.
+
+ההתנהגות שמומשה:
+
+- אישורים פתוחים מטופלים לפני סיווג Intent חדש.
+- תשובות חיוביות כמו `yes`, `confirm`, `do it`, וגם מקבילות בעברית, ממשיכות את ה-Intent המקורי.
+- תשובות שליליות כמו `no`, `cancel`, וגם מקבילות בעברית, מבטלות את הפעולה.
+- תשובה לא ברורה נשאלת שוב פעם אחת.
+- תשובות לא ברורות חוזרות מבטלות את האישור.
+- אישורים שפג תוקפם מבוטלים אחרי TTL ניתן להגדרה.
+- נוספו אירועים למעקב אחר מחזור חיי אישור.
+
+החלטת ארכיטקטורה:
+
+- `DEC-0005`: שמירת ה-Intent המקורי בתוך `PendingConfirmation.metadata`, ואז יצירת Plan חדש אחרי אישור.
+
+### 8. הקשחת Dispatcher Timeout ו-Retry
+
+התחילה הקשחה של תזמון וניסיונות חוזרים ב-Dispatcher.
+
+התנהגות נוכחית:
+
+- timeout נמדד לכל ניסיון בנפרד.
+- תוצאה סינכרונית מוצלחת ואיטית לא נכתבת מחדש ככישלון אחרי שכבר הסתיימה.
+- ניסיון שנכשל ועבר את metadata של timeout מדווח כ-timeout.
+- הצלחה אחרי retry מכוסה בבדיקות.
+
+עבודה שנשארה:
+
+- להוסיף metadata של idempotency לפני שמאפשרים retry למשימות עם תופעות לוואי.
+- להשאיר timeout כמידע advisory עד שהביצוע יהיה ניתן לביטול אמיתי.
+
+### 9. שיפור Intent Matching
+
+Intent matching עכשיו בודק מילים וביטויים מלאים במקום תתי-מחרוזות אקראיות.
+
+זה מונע false positives כמו התאמה של `play` בתוך `display`.
+
+### 10. תיעוד ועקיבות
+
+נוספו ועודכנו:
+
+- תיעוד ארכיטקטורה
+- תיעוד API
+- roadmap
+- מודל זיכרון
+- coding rules
+- קובץ AI handoff
+- ממצאי Claude
+- החלטות ארכיטקטורה
+- README למודולים
+- תבניות GitHub ל-Issues ו-Pull Requests
+
+כל שינוי משמעותי צריך לעדכן את `docs/ai_handoff.md`.
+
+## מפת המאגר
+
+| נתיב | מטרה |
+| --- | --- |
+| `core/` | עליית אפליקציה, קונפיגורציה, אירועים, לוגים ותשתיות runtime משותפות. |
+| `brain/` | שיחה, זיהוי כוונות, החלטות, תכנון, הקשר, זיכרון והאצלת משימות. |
+| `agents/` | סוכני ביצוע עצמאיים וחוזה הסוכנים המשותף. |
+| `memory/` | זיכרון קצר-טווח, ארוך-טווח, vector store ופרופיל משתמש. |
+| `voice/` | Wake word, מיקרופון, speech-to-text ו-text-to-speech. |
+| `vision/` | צילום מסך, קריאת מסך, OCR וזיהוי UI. |
+| `skills/` | יכולות reusable עתידיות. |
+| `plugins/` | חבילות יכולת עתידיות להתקנה. |
+| `docs/` | ארכיטקטורה, roadmap, API, coding rules, memory model, decisions, Claude findings ו-handoff. |
+| `prompts/` | פרומפטים לתפקידי Codex, Claude ו-ChatGPT. |
+| `tests/` | בדיקות יחידה ואינטגרציה. |
+| `scripts/` | כלי פיתוח, כולל יצוא חבילת סקירה לקלוד. |
+| `config/` | ברירות מחדל ותבניות קונפיגורציה. |
+| `assets/` | צלילים, קולות ונכסי מדיה עתידיים. |
+| `logs/` | פלט לוגים בזמן ריצה. קבצי לוג לא נשמרים ב-Git. |
+
+## איך להריץ את NELA
+
+שיחה אינטראקטיבית בטקסט:
+
+```bash
+python3 -m core.app
+```
+
+הרצת Brain חד-פעמית עם mock dispatch:
+
+```bash
+python3 -m core.app --once "Open Spotify and play my Night playlist"
+```
+
+בדיקת Plan בלי dispatch לסוכנים:
+
+```bash
+python3 -m core.app --once "Open Spotify and play my Night playlist" --no-dispatch
+```
+
+יציאה ממצב אינטראקטיבי:
+
+```text
+exit
+```
+
+## איך להריץ בדיקות
+
+```bash
+python3 -m unittest discover -s tests
+```
+
+מצב ולידציה נוכחי:
+
+```text
+כל הבדיקות עברו.
+```
+
+## זרימת סקירה עם Claude
+
+אפשרות 1: קישורי GitHub.
+
+שולחים לקלוד קישור ישיר לענף, diff או קובצי blob ספציפיים.
+
+הענף הנוכחי:
+
+```text
+https://github.com/edentiram72-1/nela/tree/feature/NELA-0002-confirmation-deadlock
+```
+
+אפשרות 2: יצירת review bundle.
+
+```bash
+python3 -m scripts.export_claude_review_bundle
+```
+
+ואז מדביקים או מעלים:
+
+```text
+docs/claude_review_bundle.md
+```
+
+קלוד אמור לסקור ארכיטקטורה, סיכונים, תיעוד, מקרי קצה ובטיחות מימוש. קלוד לא אמור לשכתב מודולים שהושלמו ללא הצדקה.
+
+## חוקי שיתוף פעולה בין AI
+
+### Codex
+
+Codex אחראי על:
+
+- מימוש
+- תיקון באגים
+- בדיקות
+- ריפקטורינג
+- סנכרון תיעוד עם קוד
+
+Codex לא משנה ארכיטקטורה בלי תיעוד.
+
+### Claude
+
+Claude אחראי על:
+
+- סקירת ארכיטקטורה
+- סקירת תיעוד
+- מציאת מקרי קצה
+- הצעות UX
+- ניתוח סיכונים
+- הצעות ביצועים
+
+Claude סוקר דרך קישורי GitHub, Pull Requests או review bundles.
+
+### ChatGPT
+
+ChatGPT אחראי על:
+
+- הגדרת ארכיטקטורה
+- עיצוב מערכות
+- תיאום פיתוח
+- אישור שינויים מבניים גדולים
+
+## חוקי פיתוח
+
+- פיצ'ר אחד לכל ענף.
+- קומיטים קטנים.
+- לעדכן תיעוד עם כל פיצ'ר.
+- לשמור מודולים עצמאיים.
+- לא לשנות קוד לא קשור.
+- להוסיף בדיקות כשאפשר.
+- להשאיר לוגיקת ביצוע בתוך Agents.
+- להשאיר את ה-Brain ניטרלי לסוכנים.
+- לעדכן `docs/ai_handoff.md` לפני handoff.
+- לרשום החלטות מבניות משמעותיות ב-`docs/decisions.md`.
+
+## מגבלות ידועות כרגע
+
+- הסוכנים הם mock placeholders בטוחים ולא שולטים עדיין באפליקציות אמיתיות.
+- זיהוי כוונות הוא דטרמיניסטי ומבוסס חוקים.
+- Event Bus סינכרוני ופנימי לתהליך.
+- זיכרון ארוך-טווח כרגע בזיכרון בלבד ולא נשמר לאורך זמן.
+- timeout metadata לא יכול עדיין לעצור Agent סינכרוני תקוע.
+- retries עדיין צריכים idempotency metadata לפני שמאפשרים תופעות לוואי אמיתיות.
+- אין עדיין מדיניות הרשאות מרכזית.
+- אין עדיין plugin loader.
+- ביצוע parallel ו-conditional מיוצג במודל, אבל לא ממומש במלואו.
+
+## העבודה הבאה המומלצת
+
+לפני שמפעילים Agents אמיתיים:
+
+1. להוסיף metadata של idempotency למשימות.
+2. להוסיף מדיניות הרשאות ל-terminal, desktop, browser, files, accounts ופעולות תקשורת.
+3. להקשיח את Event Bus עם בידוד שגיאות ו-history מוגבל.
+4. לשפר metadata של capability registry.
+5. לפשט את הנתיב הכפול של בקשות `Remember`.
+6. לעדכן דיאגרמות כך שיציגו במפורש Decision Engine ו-Dispatcher.
+
+אחרי שכבות הבטיחות האלה, להתחיל מימוש של Agent אמיתי ראשון, כנראה Desktop, Terminal, Browser או Files.
+
+## צעד ראשון לכל עוזר AI
+
+1. לקרוא את `docs/ai_handoff.md`.
+2. לקרוא את `docs/architecture.md`.
+3. לקרוא את `docs/coding_rules.md`.
+4. לבדוק את הענף הפעיל ב-Git.
+5. לסקור קומיטים אחרונים.
+6. לאשר את המשימה הנוכחית ואת מודול היעד.
+7. לעדכן את `docs/ai_handoff.md` לפני עצירה.

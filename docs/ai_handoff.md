@@ -24,6 +24,8 @@ Claude collaboration is now supported through a generated review bundle. There i
 
 NELA can now run from the command line. Use `python3 -m core.app` for an interactive text session, `python3 -m core.app --once "<request>"` for a one-shot Brain run with mock dispatch, or add `--no-dispatch` to inspect the plan without sending tasks to Agents.
 
+The root README is now a full English project overview, and `README.he.md` provides a full Hebrew version. Both summarize the architecture, completed work, GitHub/Claude collaboration flow, current limitations, and next recommended tasks.
+
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
@@ -39,6 +41,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 ## Recently Modified Files
 
 - `README.md`
+- `README.he.md`
 - `.gitignore`
 - `.env.example`
 - `LICENSE`
