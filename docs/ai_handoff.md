@@ -6,7 +6,7 @@ Every significant change must update this file before handoff.
 
 ## Current Project Status
 
-Phase 1 Brain foundation, Integration Sprint 1, and the Claude language/personality drop have been consolidated into `develop`.
+Phase 1 Brain foundation, Integration Sprint 1, the Claude language/personality drop, and the multi-agent architecture specifications have been consolidated or staged from the current `develop` baseline.
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
@@ -28,6 +28,8 @@ Repository stabilization documented untracked duplicate-suffix files in `docs/un
 
 On 2026-07-24, `nela-language-drop-final.zip` was integrated into the language foundation. Claude's Hebrew personality documents, tone rules, conversation rules, pack schema, 117-phrase Hebrew pack, and 3 personality presets are now stored in the repository. The Language Engine supports Claude compatibility metadata while keeping Brain code semantic and phrase-free.
 
+On 2026-07-24, Claude's `nela-architecture.zip` deliverable was staged as repository documentation on `feature/NELA-architecture-specs`. This is specification-only work: no Coding Agent, Cyber Agent, Research Agent, advanced orchestration runtime, or new side-effecting capability was implemented.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -41,6 +43,7 @@ The consolidation includes:
 - Claude review fixes for Desktop timeout handling, Dispatcher exception isolation, Desktop `wait_until_ready`, `CloseApplication` confirmation, WebView-compatible UI host decision, and Inbox/Handoff cleanup.
 - A standalone Hebrew Language Engine and Voice Agent Foundation. Phrase selection lives in `language/`, final response rendering lives in `core/response.py`, and speech playback lives in the `voice/` provider layer plus `agents/voice/agent.py`.
 - Claude language system integration: `pack/categories/variants` pack shape, `speech_text`, `eye_state`, `gender_tier`, `min_stage`, session use counts, gender tag rendering, and personality `preset/params/pack_overrides` compatibility.
+- Multi-agent architecture specifications: shared T0-T4 permission model, runtime lifecycle architecture, Coding Agent spec, defensive Cyber Agent spec, multi-agent orchestration spec, and AI system roadmap.
 
 Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
@@ -50,11 +53,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**v0.1-alpha foundation: Brain + Desktop/UI + Claude Hebrew Language/Personality + Voice Foundation**
+**Architecture Specs: Permission Spine + Future Multi-Agent System**
 
 ## Active Branch
 
-`develop`
+`feature/NELA-architecture-specs`
 
 ## Recently Modified Files
 
@@ -114,6 +117,12 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/language_compat_report.md`
 - `docs/claude_handoff_2026-07-24.md`
 - `docs/releases/v0.1-alpha.md`
+- `docs/permission_model.md`
+- `docs/nela_runtime_architecture.md`
+- `docs/coding_agent_spec.md`
+- `docs/cyber_agent_spec.md`
+- `docs/multi_agent_orchestration.md`
+- `docs/ai_system_roadmap.md`
 - `docs/design_system.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
@@ -181,10 +190,13 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
 - Use `docs/ai_inbox.md` as the shared queue for Claude, Codex, and ChatGPT.
+- Treat Phase A Safety Spine as the next implementation gate before any advanced Agents.
 - Continue `NELA-0004-task-idempotency` before enabling real side effects.
 - Continue `NELA-0006-permission-policy` before implementing Browser Agent, Terminal Agent, Files Agent, or communication Agents with real side effects.
 - Continue `NELA-0007-event-bus-hardening` with subscriber isolation, bounded history, and trace/correlation conventions.
 - Continue `NELA-0008-capability-registry` so Planner/Dispatcher can reason about Agent capabilities and availability.
+- Continue `NELA-0009-plan-executor` before relying on parallel, conditional, cancellable, or async orchestration semantics.
+- Add `NELA-0016-audit-log-and-kill-switch` and `NELA-0017-agent-runtime-lifecycle` from `docs/ai_inbox.md`.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
 - Try the desktop UI shell with `python3 -m ui.app` on a machine with a graphical session.
@@ -222,6 +234,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - GitHub CLI (`gh`) is not installed in the current shell, and the Codex GitHub connector returned `403 Resource not accessible by integration` when creating a draft PR. Draft Pull Request creation must happen through GitHub web UI or after installing/authenticating `gh`.
 - 94 untracked duplicate-suffix files exist locally and are documented in `docs/untracked_duplicate_files_report.md`; they were not staged or modified.
 - The current Language Engine supports Claude metadata needed for loading and rendering, but the full anti-repetition, humor budget, time-of-day, relationship-stage memory wiring, and phrase event observability from `language/pack_schema.md` are not fully implemented yet.
+- `docs/permission_model.md`, `docs/nela_runtime_architecture.md`, `docs/coding_agent_spec.md`, `docs/cyber_agent_spec.md`, `docs/multi_agent_orchestration.md`, and `docs/ai_system_roadmap.md` are specifications only. Their runtime systems are not implemented yet.
+- Cybersecurity capabilities must remain blocked until the permission model, capability registry, audit logging, kill switch, and isolated lab architecture exist.
 
 ## Validation
 
@@ -234,7 +248,7 @@ python3 -m scripts.validate_language_packs
 python3 -m core.app --once "נלה, תפתחי את Spotify"
 ```
 
-Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed; Hebrew Spotify CLI smoke returned a Claude-pack Hebrew NELA response.
+Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed. This branch is specification-only and does not intentionally change runtime behavior.
 
 Latest Integration Sprint 1 smoke:
 

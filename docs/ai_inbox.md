@@ -93,6 +93,29 @@ Items waiting for Claude review or design input.
 
 Items ready for implementation.
 
+#### Phase A Safety Spine
+
+- Owner: Codex
+- Requester: Claude/User
+- Branch: TBD
+- Status: ready
+- Type: architecture + implementation + tests
+- Source specs:
+  - `docs/permission_model.md`
+  - `docs/nela_runtime_architecture.md`
+  - `docs/multi_agent_orchestration.md`
+  - `docs/ai_system_roadmap.md`
+- Goal: Implement the safety foundation before any new real Agents are added.
+- Ordered tasks:
+  - `NELA-0004-task-idempotency`: add idempotency metadata and retry policy.
+  - `NELA-0006-permission-policy`: implement the shared T0-T4 permission engine and reuse the existing confirmation flow.
+  - `NELA-0007-event-bus-hardening`: add subscriber isolation, bounded history, and correlation/trace conventions.
+  - `NELA-0008-capability-registry`: load declared Agent capability manifests; unknown actions fail closed.
+  - `NELA-0009-plan-executor`: move execution semantics toward async/cancellable plan execution.
+  - `NELA-0016-audit-log-and-kill-switch`: add append-only action audit records and global halt/revoke behavior.
+  - `NELA-0017-agent-runtime-lifecycle`: add runtime health, lifecycle, backpressure, and worker boundaries.
+- Safety note: Cyber, Coding, Research, Browser, Terminal, Files, and communication Agents must not gain new real side effects before the Safety Spine is implemented and tested.
+
 #### Task Idempotency
 
 - Owner: Codex
@@ -149,6 +172,17 @@ Items blocked by missing information, credentials, assets, or user approval.
 - Type: implementation
 - Blocker: `nela-memory-subsystem.zip` was not found in `/Users/edentiram/Downloads`, `/Users/edentiram/Downloads/files`, or the current attachment directory.
 - Next action: User provides the zip, then Codex creates a dedicated memory subsystem branch and validates it separately.
+
+#### Advanced Agent Implementation
+
+- Owner: Codex
+- Requester: Claude/User
+- Branch: TBD
+- Status: blocked
+- Type: implementation
+- Blocker: The Safety Spine is specification-only and not implemented yet.
+- Scope: Coding Agent, Cyber Agent, Research Agent, advanced orchestration, and any new real side-effecting Agent capabilities.
+- Next action: Complete Phase A Safety Spine first.
 
 ### Done
 
