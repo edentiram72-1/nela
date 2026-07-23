@@ -18,7 +18,7 @@ NELA can now run from the command line. Use `python3 -m core.app` for an interac
 
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
-Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The highest-priority issue is a confirmation deadlock where pending confirmations are not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
+Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue is a confirmation deadlock where pending confirmations are not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
 
 ## Current Milestone
 
@@ -62,6 +62,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `docs/architecture.md`
 - `docs/api.md`
 - `docs/coding_rules.md`
+- `docs/claude_review_findings.md`
 - `docs/decisions.md`
 - `docs/memory_model.md`
 - `docs/roadmap.md`
@@ -77,7 +78,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0001-foundation-architecture` into `develop`. GitHub public access is working, but the browser PR form intermittently failed to render the full comparison.
 - Start `NELA-0002-confirmation-deadlock` and fix the pending-confirmation flow before adding real external Agents.
-- Convert accepted Claude review findings into tracked issues or roadmap entries.
+- Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
 - Implement the first real Agent, preferably `desktop`, `terminal`, `browser`, or `files`.
 - Add a durable persistence backend for long-term memory.
@@ -156,7 +157,7 @@ After `NELA-0002`, continue with dispatcher timeout/retry/idempotency hardening,
 
 - Do not create a direct communication channel with Claude or any other assistant.
 - Use GitHub as the collaboration layer.
-- For Claude review, share `https://github.com/edentiram72-1/nela/tree/feature/NELA-0001-foundation-architecture` or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
+- For Claude review, share `https://github.com/edentiram72-1/nela/tree/feature/NELA-0001-foundation-architecture` and ask Claude to read `docs/claude_review_findings.md`, or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
 - Read `docs/architecture.md`, `docs/api.md`, and `docs/coding_rules.md` before changing code.
 - Keep the Brain agent-neutral.
 - Put execution logic inside Agents only.
