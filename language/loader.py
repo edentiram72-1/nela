@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from language.models import LanguagePack, PersonalityProfile, PhraseEntry
+from language.pack_format import language_file_entries
 from language.validator import validate_pack
 
 DEFAULT_LANGUAGE_PACK = Path(__file__).parent / "hebrew"
@@ -23,7 +24,7 @@ def load_language_pack(path: Path | str = DEFAULT_LANGUAGE_PACK) -> LanguagePack
     entries: list[PhraseEntry] = []
     for filename in manifest["files"]:
         raw = json.loads((pack_path / str(filename)).read_text(encoding="utf-8"))
-        phrase_items = raw.get("phrases", raw) if isinstance(raw, dict) else raw
+        phrase_items = language_file_entries(raw)
         entries.extend(PhraseEntry.from_dict(item) for item in phrase_items)
 
     return LanguagePack(

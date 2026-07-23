@@ -1,17 +1,35 @@
-[
-  {
-    "id": "thinking.default.001",
-    "text": "בודקת את זה רגע.",
-    "category": "thinking.default",
-    "language": "he",
-    "tone": ["calm"],
-    "emotion": "thinking",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["thinking"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "thinking",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "thinking": {
+      "description": "Processing / looking something up",
+      "eye_state": "thinking",
+      "variants": [
+        {
+          "id": "core.think.look",
+          "text": "רגע, מסתכלת.",
+          "weight": 1.5
+        },
+        {
+          "id": "core.think.check",
+          "text": "בודקת משהו."
+        },
+        {
+          "id": "core.think.sec",
+          "text": "שנייה אחת."
+        },
+        {
+          "id": "core.think.hmm",
+          "text": "רגע..."
+        },
+        {
+          "id": "core.think.digging",
+          "text": "חופרת רגע, זה שווה את זה.",
+          "min_stage": 2
+        }
+      ]
+    }
   }
-]
+}

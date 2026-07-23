@@ -25,10 +25,12 @@ class PhraseSelector:
         emotion: str | None = None,
         tags: tuple[str, ...] = (),
     ) -> PhraseEntry:
-        candidates = [entry for entry in pack.enabled_entries() if entry.category == category]
+        candidates = [entry for entry in pack.enabled_entries() if entry.category == category and self._is_eligible(entry, context)]
         if not candidates:
             prefix = category.rsplit(".", 1)[0]
-            candidates = [entry for entry in pack.enabled_entries() if entry.category.startswith(prefix)]
+            candidates = [
+                entry for entry in pack.enabled_entries() if entry.category.startswith(prefix) and self._is_eligible(entry, context)
+            ]
         if not candidates:
             selected = fallback_phrase(category, language=pack.language)
             context.remember_phrase(selected.id)
@@ -52,6 +54,15 @@ class PhraseSelector:
         selected = self._weighted_choice(pool, personality)
         context.remember_phrase(selected.id)
         return selected
+
+    def _is_eligible(self, entry: PhraseEntry, context: LanguageRuntimeContext) -> bool:
+        if entry.min_stage > context.relationship_stage:
+            return False
+        if context.use_count(entry.id) >= entry.max_per_session:
+            return False
+        if entry.gender_tier > 1 and context.gender not in {"m", "male", "masculine", "f", "female", "feminine"}:
+            return False
+        return True
 
     def _score(
         self,

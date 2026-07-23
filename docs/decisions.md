@@ -258,3 +258,37 @@ Related files:
 - `core/events.py`
 - `agents/voice/agent.py`
 - `tests/test_ui_state.py`
+
+### DEC-0011: Treat Claude Language Drop As Authoritative Content
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** Claude delivered `nela-language-drop-final.zip` with a complete Hebrew personality and language package: 117 Hebrew variants across 31 categories, 3 personality presets, conversation rules, tone rules, Hebrew language guidance, and a language-pack schema. The existing Codex language seed pack used a simpler list-based format and older category names.
+
+**Decision:** Store Claude's language and personality files as the authoritative content source. Keep the Brain semantic and phrase-free. Update the Language Engine compatibility layer so it can load Claude's `pack/categories/variants` format while preserving support for the earlier list-based internal pack shape where useful.
+
+**Consequences:**
+
+- Claude owns final Hebrew tone, personality, and phrase content through data files and documentation.
+- Codex owns the engine, validation, rendering, and integration points.
+- `core/response.py` maps semantic Brain outcomes to Claude categories such as `desktop.launch`, `media.play`, `learning.saved`, `success.short`, and `error.recovering`.
+- The engine now preserves Claude metadata such as `speech_text`, `eye_state`, `gender_tier`, `min_stage`, `max_per_session`, `cooldown_group`, `time_of_day`, `humor`, and personality `pack_overrides`.
+- Full schema behavior, including richer anti-repetition, humor budgeting, time-of-day filtering, memory-backed relationship stage, and phrase event observability, remains future work.
+
+**Related files:**
+
+- `docs/personality_bible.md`
+- `docs/hebrew_language_guide.md`
+- `docs/tone_of_voice.md`
+- `docs/conversation_rules.md`
+- `docs/language_compat_report.md`
+- `language/pack_schema.md`
+- `language/pack_format.py`
+- `language/loader.py`
+- `language/models.py`
+- `language/renderer.py`
+- `language/selector.py`
+- `language/validator.py`
+- `core/response.py`
+- `tests/test_language_engine.py`

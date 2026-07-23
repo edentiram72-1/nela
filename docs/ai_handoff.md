@@ -6,7 +6,7 @@ Every significant change must update this file before handoff.
 
 ## Current Project Status
 
-Phase 1 Brain foundation and Integration Sprint 1 have been consolidated into `develop`.
+Phase 1 Brain foundation, Integration Sprint 1, and the Claude language/personality drop have been consolidated into `develop`.
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
@@ -26,6 +26,8 @@ Integration Sprint 1 created backup branch `backup/develop-before-integration-20
 
 Repository stabilization documented untracked duplicate-suffix files in `docs/untracked_duplicate_files_report.md`. The duplicate files were inspected only and left untouched. `develop` and backup branch `backup/develop-before-integration-20260723-050921` were pushed to GitHub through the configured SSH remote; `main` was not changed during this stabilization task.
 
+On 2026-07-24, `nela-language-drop-final.zip` was integrated into the language foundation. Claude's Hebrew personality documents, tone rules, conversation rules, pack schema, 117-phrase Hebrew pack, and 3 personality presets are now stored in the repository. The Language Engine supports Claude compatibility metadata while keeping Brain code semantic and phrase-free.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -38,6 +40,7 @@ The consolidation includes:
 - Claude's Living Eye visual identity artifacts under `design/` and the authoritative design-system document under `docs/design_system.md`.
 - Claude review fixes for Desktop timeout handling, Dispatcher exception isolation, Desktop `wait_until_ready`, `CloseApplication` confirmation, WebView-compatible UI host decision, and Inbox/Handoff cleanup.
 - A standalone Hebrew Language Engine and Voice Agent Foundation. Phrase selection lives in `language/`, final response rendering lives in `core/response.py`, and speech playback lives in the `voice/` provider layer plus `agents/voice/agent.py`.
+- Claude language system integration: `pack/categories/variants` pack shape, `speech_text`, `eye_state`, `gender_tier`, `min_stage`, session use counts, gender tag rendering, and personality `preset/params/pack_overrides` compatibility.
 
 Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
@@ -47,7 +50,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Integration Sprint 1: stable develop baseline for Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**
+**v0.1-alpha foundation: Brain + Desktop/UI + Claude Hebrew Language/Personality + Voice Foundation**
 
 ## Active Branch
 
@@ -104,6 +107,13 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/voice_architecture.md`
 - `docs/integration_sprint_1_merge_report.md`
 - `docs/untracked_duplicate_files_report.md`
+- `docs/personality_bible.md`
+- `docs/hebrew_language_guide.md`
+- `docs/tone_of_voice.md`
+- `docs/conversation_rules.md`
+- `docs/language_compat_report.md`
+- `docs/claude_handoff_2026-07-24.md`
+- `docs/releases/v0.1-alpha.md`
 - `docs/design_system.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
@@ -155,6 +165,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `tests/test_language_engine.py`
 - `tests/test_voice_agent.py`
 - `tests/test_language_voice_integration.py`
+- `language/pack_schema.md`
+- `language/pack_format.py`
 - `tests/test_intent_recognition.py`
 - `tests/test_ui_state.py`
 - `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md`
@@ -177,7 +189,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Try interactive NELA sessions through `python3 -m core.app`.
 - Try the desktop UI shell with `python3 -m ui.app` on a machine with a graphical session.
 - Send consolidated `develop` or `main` direct blob links to Claude for release verification.
-- Ask Claude to review `docs/language_system.md`, `docs/voice_architecture.md`, and `language/` before expanding the Hebrew personality pack.
+- Ask Claude to review `docs/claude_handoff_2026-07-24.md`, `docs/personality_bible.md`, `docs/hebrew_language_guide.md`, `docs/tone_of_voice.md`, `docs/conversation_rules.md`, `language/pack_schema.md`, and `language/hebrew/`.
 - Choose and implement a WebView-compatible host for the Living Eye.
 - Add a durable persistence backend for long-term memory.
 - Add a real plugin loader for `plugins/`.
@@ -203,12 +215,13 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Claude review found several hardening gaps to address before real agents are trusted: task idempotency, event bus subscriber isolation, permission policy, capability registry clarity, and future confidence scoring for intent matching.
 - `Remember` requests create a Plan targeting the registered mock `memory` Agent while durable memory also updates through `MemoryManager`; this dual path should be simplified before durable persistence work.
 - README architecture diagrams do not yet show the Decision Engine and Dispatcher explicitly.
-- Hebrew Language Engine and Voice Agent Foundation are experimental. The current Hebrew pack is a small seed pack for validation, not the final NELA personality.
+- Hebrew Language Engine and Voice Agent Foundation are still foundation-stage, but the Hebrew pack is now Claude's authoritative content drop rather than the earlier Codex seed pack.
 - Voice defaults to silent mode, so response-to-voice delegation is exercised without audio playback unless explicitly enabled.
 - The macOS `say` provider is the local MVP provider and treats provider submission as completion. It does not provide portable pause/resume.
 - Integration Sprint 1 found and fixed two compatibility gaps: Hebrew open-app smoke intent recognition, and Voice task completion overriding `SpeechCompleted -> IDLE`.
 - GitHub CLI (`gh`) is not installed in the current shell, and the Codex GitHub connector returned `403 Resource not accessible by integration` when creating a draft PR. Draft Pull Request creation must happen through GitHub web UI or after installing/authenticating `gh`.
 - 94 untracked duplicate-suffix files exist locally and are documented in `docs/untracked_duplicate_files_report.md`; they were not staged or modified.
+- The current Language Engine supports Claude metadata needed for loading and rendering, but the full anti-repetition, humor budget, time-of-day, relationship-stage memory wiring, and phrase event observability from `language/pack_schema.md` are not fully implemented yet.
 
 ## Validation
 
@@ -221,7 +234,7 @@ python3 -m scripts.validate_language_packs
 python3 -m core.app --once "נלה, תפתחי את Spotify"
 ```
 
-Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed; Hebrew Spotify CLI smoke returned a Hebrew NELA response.
+Result: 66 tests passed; headless UI bootstrap succeeded; Hebrew language pack validation passed; Hebrew Spotify CLI smoke returned a Claude-pack Hebrew NELA response.
 
 Latest Integration Sprint 1 smoke:
 
@@ -348,16 +361,17 @@ Result: public HTTPS branch lookup succeeded.
 Finish the develop consolidation handoff:
 
 - Create a draft PR from `develop` to `main` through GitHub web UI or authenticated `gh`.
-- Send Claude direct blob links for `docs/ai_handoff.md`, `docs/ai_inbox.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
+- Send Claude direct blob links for `docs/claude_handoff_2026-07-24.md`, `docs/ai_handoff.md`, `docs/personality_bible.md`, `docs/hebrew_language_guide.md`, `docs/tone_of_voice.md`, `docs/conversation_rules.md`, `language/pack_schema.md`, `language/hebrew/`, and `language/personality/`.
 
 After release, continue in this order:
 
-1. `NELA-0004-task-idempotency`
-2. `NELA-0006-permission-policy`
-3. `NELA-0007-event-bus-hardening`
-4. `NELA-0008-capability-registry`
-5. WebView-compatible Living Eye host
-6. Memory subsystem integration after `nela-memory-subsystem.zip` is provided
+1. Memory subsystem integration after `nela-memory-subsystem.zip` is provided.
+2. WebView-compatible Living Eye host.
+3. Production voice provider behind the existing Voice Agent contract.
+4. `NELA-0004-task-idempotency`.
+5. `NELA-0006-permission-policy`.
+6. `NELA-0007-event-bus-hardening`.
+7. `NELA-0008-capability-registry`.
 
 ## Notes For The Next AI Assistant
 

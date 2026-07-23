@@ -14,7 +14,7 @@ class LanguageEngineTests(unittest.TestCase):
         pack = load_language_pack(DEFAULT_LANGUAGE_PACK)
 
         self.assertEqual(pack.language, "he")
-        self.assertIn("greetings.hello", pack.categories)
+        self.assertIn("greeting.day", pack.categories)
         self.assertGreater(len(pack.entries), 0)
 
     def test_validation_rejects_duplicate_ids(self) -> None:
@@ -52,7 +52,7 @@ class LanguageEngineTests(unittest.TestCase):
     def test_rendering_keeps_missing_variables_visible(self) -> None:
         engine = HebrewLanguageEngine(selector=PhraseSelector(seed=1))
 
-        text = engine.render_response("desktop.open.success", {})
+        text = engine.render_response("desktop.launch", {})
 
         self.assertIn("{application}", text)
 
@@ -67,22 +67,22 @@ class LanguageEngineTests(unittest.TestCase):
     def test_selector_avoids_immediate_repetition(self) -> None:
         engine = HebrewLanguageEngine(selector=PhraseSelector(seed=7))
 
-        first = engine.select_phrase("success.general")
-        second = engine.select_phrase("success.general")
+        first = engine.select_phrase("success.short")
+        second = engine.select_phrase("success.short")
 
         self.assertNotEqual(first.id, second.id)
 
     def test_personality_selection_prefers_requested_tone(self) -> None:
         engine = HebrewLanguageEngine(selector=PhraseSelector(seed=3))
 
-        phrase = engine.select_phrase("thinking.general", tone="calm")
+        phrase = engine.select_phrase("thinking")
 
-        self.assertIn("calm", phrase.tone)
+        self.assertEqual(phrase.eye_state, "thinking")
 
     def test_hebrew_output_for_known_response(self) -> None:
         engine = HebrewLanguageEngine(selector=PhraseSelector(seed=1))
 
-        text = engine.render_response("music.play.success", {"resource": "Night"})
+        text = engine.render_response("media.play", {"resource": "Night"})
 
         self.assertIn("Night", text)
         self.assertRegex(text, r"[\u0590-\u05ff]")

@@ -14,7 +14,7 @@ The Brain never executes external actions directly. Agents do the work. Modules 
 
 ## Current Status
 
-NELA OS has completed **Integration Sprint 1** for the consolidated `develop` baseline: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
+NELA OS has completed **Integration Sprint 1** for the consolidated `develop` baseline: **Phase 1 Brain Foundation + Desktop/UI + Claude Hebrew Language And Voice Foundation**.
 
 The repository now contains a working foundation that can:
 
@@ -29,6 +29,7 @@ The repository now contains a working foundation that can:
 - Publish lifecycle events through an in-process Event Bus.
 - Use safe mock Agents for MVP validation while Desktop Agent V1 begins real macOS application lifecycle control.
 - Launch a modular desktop UI shell that connects user text input to the existing Brain.
+- Render responses through Claude's authoritative Hebrew language/personality pack.
 - Export Claude review bundles without creating a direct Claude connection.
 - Support GitHub-based collaboration between Codex, Claude, and ChatGPT.
 - Process the Hebrew smoke input `נלה, תפתחי את Spotify` through Brain, Planner, Hebrew response rendering, UI display, Voice Agent delegation, and Eye state transitions.
@@ -36,6 +37,8 @@ The repository now contains a working foundation that can:
 Desktop Agent V1 is the first real execution Agent. It is limited to safe macOS application lifecycle management. Browser, terminal, Spotify, Gmail, GitHub, voice, and vision control remain safe placeholders unless explicitly implemented later.
 
 Claude's Living Eye visual identity has now been added as the authoritative design artifact. Codex still owns the application shell, state management, Brain connection, theme tokens, and event bridge. The live Tkinter shell still renders a placeholder Eye until a UI-hosting decision is made for embedding the HTML/SVG prototype.
+
+Claude's Hebrew language and personality drop is now the authoritative language content source. The pack contains 117 Hebrew variants across 31 categories and 3 personality presets. Codex owns the engine and compatibility layer; Claude owns tone, personality, and phrase content.
 
 ## What Has Been Done
 
@@ -72,6 +75,13 @@ Added collaboration documents:
 - `docs/coding_rules.md`
 - `docs/memory_model.md`
 - `docs/claude_review_findings.md`
+- `docs/personality_bible.md`
+- `docs/hebrew_language_guide.md`
+- `docs/tone_of_voice.md`
+- `docs/conversation_rules.md`
+- `docs/language_compat_report.md`
+- `docs/claude_handoff_2026-07-24.md`
+- `docs/releases/v0.1-alpha.md`
 
 Added AI role prompts:
 
@@ -601,7 +611,7 @@ ChatGPT is responsible for:
 ## Current Known Limitations
 
 - Desktop Agent V1 can control supported macOS application lifecycle actions. Other Agents are safe mock placeholders and do not control real applications yet.
-- Hebrew Language Engine and Voice Agent Foundation are experimental infrastructure. Claude still owns final language content, personality behavior, and voice style rules.
+- Hebrew Language Engine and Voice Agent Foundation are foundation-stage infrastructure. Claude's language drop is integrated as authoritative content, while full schema behavior still needs additional engine work.
 - Claude's visual identity artifacts are present under `design/`, but the live Tkinter shell still uses a placeholder Eye component.
 - Intent recognition is deterministic and rule-based.
 - Event Bus is synchronous and in-process.
@@ -623,7 +633,7 @@ Before real external Agents are enabled:
 5. Simplify the dual memory path for `Remember` requests.
 6. Update diagrams to show the Decision Engine and Dispatcher explicitly.
 
-Next UI work should decide how to host `design/nela_living_eye.html` in the live app, such as WebView, Electron, Tauri, or another native wrapper. Codex should continue wiring infrastructure and safety layers without redesigning Claude-owned visuals.
+Next milestone: integrate the Memory subsystem when the ZIP is available, then connect the Living Eye through a WebView-compatible host and move toward production voice. Codex should continue wiring infrastructure and safety layers without redesigning Claude-owned visuals.
 
 ## First Step For Any AI Assistant
 

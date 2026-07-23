@@ -7,9 +7,34 @@ from pathlib import Path
 from typing import Any
 
 from language.models import PhraseEntry, ValidationIssue, ValidationReport
+from language.pack_format import language_file_entries
 from language.renderer import template_variables
 
 REQUIRED_FIELDS = {"id", "text", "category", "language"}
+SUPPORTED_FIELDS = {
+    "id",
+    "text",
+    "category",
+    "language",
+    "tone",
+    "emotion",
+    "formality",
+    "gender",
+    "weight",
+    "requires",
+    "tags",
+    "enabled",
+    "version",
+    "speech_text",
+    "min_stage",
+    "gender_tier",
+    "eye_state",
+    "max_per_session",
+    "cooldown_group",
+    "time_of_day",
+    "humor",
+    "vars",
+}
 
 
 def validate_pack(path: Path | str) -> ValidationReport:
@@ -28,9 +53,15 @@ def validate_pack(path: Path | str) -> ValidationReport:
         except (OSError, json.JSONDecodeError) as error:
             issues.append(ValidationIssue("invalid_json", str(error), file=str(filename)))
             continue
-        phrase_items = raw.get("phrases", raw) if isinstance(raw, dict) else raw
+        phrase_items = language_file_entries(raw)
         if not isinstance(phrase_items, list):
-            issues.append(ValidationIssue("invalid_file_shape", "Expected a list or {'phrases': [...]} object.", file=str(filename)))
+            issues.append(
+                ValidationIssue(
+                    "invalid_file_shape",
+                    "Expected a list, {'phrases': [...]}, or Claude {'categories': {...}} object.",
+                    file=str(filename),
+                )
+            )
             continue
         for item in phrase_items:
             if not isinstance(item, dict):
@@ -75,7 +106,20 @@ def validate_entries(entries: list[tuple[str, dict[str, Any]]], manifest: dict[s
             issues.append(ValidationIssue("unsupported_tone", f"Unsupported tones: {', '.join(unsupported_tones)}", entry.id, filename))
         if emotions and entry.emotion not in emotions:
             issues.append(ValidationIssue("unsupported_emotion", f"Unsupported emotion: {entry.emotion}", entry.id, filename))
+        unsupported_fields = sorted(set(data) - SUPPORTED_FIELDS)
+        if unsupported_fields:
+            issues.append(
+                ValidationIssue(
+                    "unsupported_fields",
+                    f"Unsupported fields preserved in extra_fields: {', '.join(unsupported_fields)}",
+                    entry.id,
+                    filename,
+                    level="warning",
+                )
+            )
         variables = template_variables(entry.text)
+        if entry.speech_text:
+            variables |= template_variables(entry.speech_text)
         missing_requires = variables - set(entry.requires)
         if missing_requires:
             issues.append(ValidationIssue("broken_template_variables", f"Template variables not listed in requires: {', '.join(sorted(missing_requires))}", entry.id, filename))

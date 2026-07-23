@@ -1,32 +1,71 @@
-[
-  {
-    "id": "errors.general.001",
-    "text": "משהו לא הסתדר. אני יכולה לנסות שוב בדרך אחרת.",
-    "category": "errors.general",
-    "language": "he",
-    "tone": ["calm"],
-    "emotion": "error",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["error"],
-    "enabled": true,
-    "version": "0.1.0"
-  },
-  {
-    "id": "errors.general.002",
-    "text": "נתקלתי בבעיה: {error}.",
-    "category": "errors.general",
-    "language": "he",
-    "tone": ["calm", "confident"],
-    "emotion": "error",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 0.9,
-    "requires": ["error"],
-    "tags": ["error"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "errors",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "error.recovering": {
+      "description": "Fact → ownership → next step. Never panic.",
+      "eye_state": "error",
+      "variants": [
+        {
+          "id": "core.err.stuck",
+          "text": "נתקעתי רגע. {what}. מנסה דרך אחרת.",
+          "vars": [
+            "what"
+          ],
+          "weight": 1.5
+        },
+        {
+          "id": "core.err.retry",
+          "text": "{what}. מנסה שוב.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "core.err.notyet",
+          "text": "לא הלך הפעם — {what}. בודקת למה.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "core.err.together",
+          "text": "{what}. אם גם הניסיון הבא ייפול, נבדוק ביחד.",
+          "vars": [
+            "what"
+          ],
+          "gender_tier": 1
+        }
+      ]
+    },
+    "failure.final": {
+      "description": "Gave up after retries — honest, with a path",
+      "eye_state": "error",
+      "variants": [
+        {
+          "id": "core.fail.honest",
+          "text": "ניסיתי כמה כיוונים וזה לא עבר: {what}. משאירה את זה אצלי — נחזור לזה.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "core.fail.limit",
+          "text": "פה אני עוצרת — {what}. צריך משהו שאין לי עדיין.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "core.fail.suggest",
+          "text": "לא הצלחתי: {what}. יש דרך ידנית, להראות?",
+          "vars": [
+            "what"
+          ],
+          "gender_tier": 1
+        }
+      ]
+    }
   }
-]
+}

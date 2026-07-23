@@ -1,17 +1,95 @@
-[
-  {
-    "id": "permissions.request.001",
-    "text": "כדי להמשיך, אני צריכה אישור לבצע את הפעולה הזאת.",
-    "category": "permissions.request",
-    "language": "he",
-    "tone": ["calm", "confident"],
-    "emotion": "careful",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["permission"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "permissions",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "confirm.ask": {
+      "description": "Confirmation before a sensitive/irreversible action",
+      "eye_state": "waiting",
+      "variants": [
+        {
+          "id": "core.confirm.sagarnu",
+          "text": "{consequence}. סגרנו?",
+          "vars": [
+            "consequence"
+          ],
+          "weight": 1.5
+        },
+        {
+          "id": "core.confirm.sure",
+          "text": "רק מוודאת: {consequence}. להמשיך?",
+          "vars": [
+            "consequence"
+          ]
+        },
+        {
+          "id": "core.confirm.gender",
+          "text": "{consequence}. {you:בטוח|בטוחה}?",
+          "vars": [
+            "consequence"
+          ],
+          "gender_tier": 2
+        },
+        {
+          "id": "core.confirm.stop",
+          "text": "אפשר לעצור אותי בכל שלב. מתחילה?"
+        }
+      ]
+    },
+    "desktop.close_confirm": {
+      "description": "Before closing an app — always via confirm.ask semantics",
+      "eye_state": "waiting",
+      "variants": [
+        {
+          "id": "dom.close.plain",
+          "text": "סוגרת את {application}. אם יש שם משהו לא שמור — הוא ילך. סגרנו?",
+          "vars": [
+            "application"
+          ]
+        },
+        {
+          "id": "dom.close.terminal",
+          "text": "ב{application} רץ משהו כרגע. לסגור בכל זאת?",
+          "vars": [
+            "application"
+          ]
+        },
+        {
+          "id": "dom.close.simple",
+          "text": "לסגור את {application}?",
+          "vars": [
+            "application"
+          ]
+        }
+      ]
+    },
+    "warning": {
+      "description": "Heads-up before risk",
+      "eye_state": "warning",
+      "variants": [
+        {
+          "id": "core.warn.know",
+          "text": "שווה לדעת: {what}.",
+          "vars": [
+            "what"
+          ],
+          "weight": 1.5
+        },
+        {
+          "id": "core.warn.careful",
+          "text": "רגע לפני — {what}.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "core.warn.sure",
+          "text": "זה ישנה דברים: {what}.",
+          "vars": [
+            "what"
+          ]
+        }
+      ]
+    }
   }
-]
+}

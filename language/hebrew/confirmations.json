@@ -1,62 +1,57 @@
-[
-  {
-    "id": "confirmations.ask.001",
-    "text": "רוצה שאמשיך עם זה?",
-    "category": "confirmations.ask",
-    "language": "he",
-    "tone": ["calm", "warm"],
-    "emotion": "careful",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["confirmation"],
-    "enabled": true,
-    "version": "0.1.0"
-  },
-  {
-    "id": "confirmations.ask.002",
-    "text": "לפני שאני ממשיכה, צריך אישור.",
-    "category": "confirmations.ask",
-    "language": "he",
-    "tone": ["confident", "calm"],
-    "emotion": "careful",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 0.9,
-    "requires": [],
-    "tags": ["confirmation", "permission"],
-    "enabled": true,
-    "version": "0.1.0"
-  },
-  {
-    "id": "confirmations.accepted.001",
-    "text": "מאושר. אני ממשיכה.",
-    "category": "confirmations.accepted",
-    "language": "he",
-    "tone": ["calm", "confident"],
-    "emotion": "positive",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["confirmation"],
-    "enabled": true,
-    "version": "0.1.0"
-  },
-  {
-    "id": "confirmations.cancelled.001",
-    "text": "ביטלתי. לא אמשיך עם הפעולה הזאת.",
-    "category": "confirmations.cancelled",
-    "language": "he",
-    "tone": ["calm"],
-    "emotion": "neutral",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["confirmation", "cancelled"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "confirmations",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "ack.short": {
+      "description": "Immediate ack before executing",
+      "eye_state": "executing",
+      "variants": [
+        {
+          "id": "core.ack.onit",
+          "text": "על זה."
+        },
+        {
+          "id": "core.ack.sec",
+          "text": "שנייה."
+        },
+        {
+          "id": "core.ack.doing",
+          "text": "עושה."
+        },
+        {
+          "id": "core.ack.now",
+          "text": "עכשיו."
+        },
+        {
+          "id": "core.ack.ok",
+          "text": "סבבה, רצה על זה.",
+          "min_stage": 2
+        }
+      ]
+    },
+    "ack.ongoing": {
+      "description": "Accepted a long-running / monitoring task",
+      "eye_state": "executing",
+      "variants": [
+        {
+          "id": "core.ongoing.eye",
+          "text": "העין שלי על זה.",
+          "weight": 1.5
+        },
+        {
+          "id": "core.ongoing.track",
+          "text": "עוקבת. אעדכן כשיש משהו."
+        },
+        {
+          "id": "core.ongoing.bg",
+          "text": "רץ ברקע. ממשיכים בינתיים."
+        },
+        {
+          "id": "core.ongoing.ping",
+          "text": "כשזה יזוז — אני אגיד."
+        }
+      ]
+    }
   }
-]
+}

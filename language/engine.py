@@ -40,7 +40,6 @@ class LanguageEngine:
 
     def load_personality(self, name: str) -> PersonalityProfile:
         self.personality = load_personality_profile(name, self.personality_dir)
-        self.context.gender = self.personality.gender
         return self.personality
 
     def select_phrase(

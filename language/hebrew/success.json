@@ -1,32 +1,141 @@
-[
-  {
-    "id": "success.general.001",
-    "text": "בוצע.",
-    "category": "success.general",
-    "language": "he",
-    "tone": ["confident", "calm"],
-    "emotion": "positive",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["success"],
-    "enabled": true,
-    "version": "0.1.0"
-  },
-  {
-    "id": "success.general.002",
-    "text": "סיימתי את זה.",
-    "category": "success.general",
-    "language": "he",
-    "tone": ["warm"],
-    "emotion": "positive",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 0.9,
-    "requires": [],
-    "tags": ["success"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "success",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "success.short": {
+      "description": "Task finished, minimal",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "core.success.yesh",
+          "text": "יש.",
+          "weight": 1.5
+        },
+        {
+          "id": "core.success.smooth",
+          "text": "הלך חלק."
+        },
+        {
+          "id": "core.success.done",
+          "text": "זהו, מוכן."
+        },
+        {
+          "id": "core.success.closed",
+          "text": "סגור."
+        },
+        {
+          "id": "core.success.easy",
+          "text": "קליל.",
+          "min_stage": 2
+        }
+      ]
+    },
+    "success.long": {
+      "description": "Multi-step task finished, with detail",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "core.successl.steps",
+          "text": "הלך חלק — {task_hint}.",
+          "vars": [
+            "task_hint"
+          ]
+        },
+        {
+          "id": "core.successl.all",
+          "text": "הכול עבר. {task_hint}.",
+          "vars": [
+            "task_hint"
+          ]
+        },
+        {
+          "id": "core.successl.count",
+          "text": "סיימתי. {count_phrase}.",
+          "vars": [
+            "count_phrase"
+          ]
+        }
+      ]
+    },
+    "learning.saved": {
+      "description": "Wrote something to long-term memory",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "core.saved.mine",
+          "text": "שמרתי אצלי.",
+          "weight": 1.5
+        },
+        {
+          "id": "core.saved.noted",
+          "text": "רשום."
+        },
+        {
+          "id": "core.saved.forever",
+          "text": "נכנס לזיכרון. זה יישאר."
+        },
+        {
+          "id": "core.saved.pref",
+          "text": "הבנתי — מהיום ככה."
+        }
+      ]
+    },
+    "desktop.closed": {
+      "description": "After close",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "dom.closed.done",
+          "text": "{application} סגור.",
+          "vars": [
+            "application"
+          ]
+        },
+        {
+          "id": "dom.closed.yesh",
+          "text": "יש. נסגר."
+        },
+        {
+          "id": "dom.closed.tidy",
+          "text": "סגרתי. נקי."
+        }
+      ]
+    },
+    "media.play": {
+      "description": "Playback started",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "dom.play.playing",
+          "text": "מנגנת את {resource}.",
+          "vars": [
+            "resource"
+          ]
+        },
+        {
+          "id": "dom.play.rolling",
+          "text": "{resource} מתנגן. תגבירו כשבא לכם.",
+          "vars": [
+            "resource"
+          ],
+          "gender_tier": 1
+        },
+        {
+          "id": "dom.play.usual",
+          "text": "{resource}, כרגיל בעוצמה שאתם אוהבים.",
+          "vars": [
+            "resource"
+          ],
+          "gender_tier": 1,
+          "min_stage": 2
+        },
+        {
+          "id": "dom.play.enjoy",
+          "text": "רץ. תהנו.",
+          "gender_tier": 1
+        }
+      ]
+    }
   }
-]
+}

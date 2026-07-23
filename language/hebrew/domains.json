@@ -1,0 +1,212 @@
+{
+  "pack": "domains",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "desktop.launch": {
+      "description": "Launching / focusing an application",
+      "eye_state": "executing",
+      "variants": [
+        {
+          "id": "dom.launch.open",
+          "text": "פותחת את {application}.",
+          "vars": [
+            "application"
+          ]
+        },
+        {
+          "id": "dom.launch.short",
+          "text": "{application} — פותחת.",
+          "vars": [
+            "application"
+          ]
+        },
+        {
+          "id": "dom.launch.already",
+          "text": "{application} כבר פתוח, מביאה קדימה.",
+          "vars": [
+            "application"
+          ]
+        },
+        {
+          "id": "dom.launch.onit",
+          "text": "על זה. {application} עולה.",
+          "vars": [
+            "application"
+          ],
+          "min_stage": 2
+        }
+      ]
+    },
+    "media.search": {
+      "description": "Searching media",
+      "eye_state": "thinking",
+      "variants": [
+        {
+          "id": "dom.msearch.looking",
+          "text": "מחפשת את {query}.",
+          "vars": [
+            "query"
+          ]
+        },
+        {
+          "id": "dom.msearch.found",
+          "text": "מצאתי {count_phrase}. מנגנת את הראשון?",
+          "vars": [
+            "count_phrase"
+          ]
+        },
+        {
+          "id": "dom.msearch.none",
+          "text": "לא מצאתי את {query}. אולי בשם קצת אחר?",
+          "vars": [
+            "query"
+          ]
+        }
+      ]
+    },
+    "files.search": {
+      "description": "File search",
+      "eye_state": "thinking",
+      "variants": [
+        {
+          "id": "dom.files.looking",
+          "text": "מחפשת את {query} בקבצים.",
+          "vars": [
+            "query"
+          ]
+        },
+        {
+          "id": "dom.files.found",
+          "text": "יש. {count_phrase}.",
+          "vars": [
+            "count_phrase"
+          ]
+        },
+        {
+          "id": "dom.files.recent",
+          "text": "מצאתי — הכי עדכני מ{date_hint}.",
+          "vars": [
+            "date_hint"
+          ]
+        },
+        {
+          "id": "dom.files.none",
+          "text": "אין כזה אצלי בטווח החיפוש. להרחיב?"
+        }
+      ]
+    },
+    "browser.open": {
+      "description": "Opening a page / web search",
+      "eye_state": "executing",
+      "variants": [
+        {
+          "id": "dom.web.open",
+          "text": "פותחת את {resource} בדפדפן.",
+          "vars": [
+            "resource"
+          ]
+        },
+        {
+          "id": "dom.web.search",
+          "text": "חיפשתי את {query}. {count_phrase} — מציגה את העיקריות.",
+          "vars": [
+            "query",
+            "count_phrase"
+          ]
+        },
+        {
+          "id": "dom.web.tab",
+          "text": "טאב חדש, {resource} בפנים.",
+          "vars": [
+            "resource"
+          ],
+          "min_stage": 2
+        }
+      ]
+    },
+    "coding.assist": {
+      "description": "Code-related help",
+      "eye_state": "thinking",
+      "variants": [
+        {
+          "id": "dom.code.reading",
+          "text": "קוראת את הקוד. שנייה."
+        },
+        {
+          "id": "dom.code.found",
+          "text": "מצאתי את הבעיה — {what}. מראה איפה.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "dom.code.suggest",
+          "text": "יש לי כיוון. רוצים שאסביר או ישר לתקן?",
+          "gender_tier": 1
+        },
+        {
+          "id": "dom.code.tests",
+          "text": "רצתי על הבדיקות — {count_phrase} עוברות.",
+          "vars": [
+            "count_phrase"
+          ]
+        }
+      ]
+    },
+    "projects.status": {
+      "description": "Project context and status",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "dom.proj.where",
+          "text": "ב{project} עצרנו על {task_hint}.",
+          "vars": [
+            "project",
+            "task_hint"
+          ]
+        },
+        {
+          "id": "dom.proj.remember",
+          "text": "זוכרת את {project} — ממשיכים משם?",
+          "vars": [
+            "project"
+          ],
+          "min_stage": 2
+        },
+        {
+          "id": "dom.proj.saved",
+          "text": "עדכנתי את {project} אצלי.",
+          "vars": [
+            "project"
+          ]
+        }
+      ]
+    },
+    "automation.suggest": {
+      "description": "Proactive automation offer — stage 3, gentle",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "dom.auto.noticed",
+          "text": "שמתי לב שכל {when} אותו סדר — לקבע את זה?",
+          "vars": [
+            "when"
+          ],
+          "min_stage": 3
+        },
+        {
+          "id": "dom.auto.shortcut",
+          "text": "שווה לדעת: אפשר להפוך את זה לפקודה אחת. בא לך?",
+          "gender_tier": 1,
+          "min_stage": 3
+        },
+        {
+          "id": "dom.auto.done",
+          "text": "מהיום זה קורה לבד. אפשר לבטל מתי שרוצים.",
+          "gender_tier": 1
+        }
+      ]
+    }
+  }
+}

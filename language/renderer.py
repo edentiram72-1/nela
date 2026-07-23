@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from string import Formatter
 from typing import Any
+
+GENDER_TAG = re.compile(r"\{you:([^{}|]+)\|([^{}|]+)\}")
 
 
 class SafeVariables(dict[str, Any]):
@@ -14,6 +17,7 @@ class SafeVariables(dict[str, Any]):
 
 
 def template_variables(text: str) -> set[str]:
+    text = GENDER_TAG.sub("", text)
     variables: set[str] = set()
     for _, field_name, _, _ in Formatter().parse(text):
         if field_name:
@@ -22,7 +26,17 @@ def template_variables(text: str) -> set[str]:
 
 
 def render_template(text: str, variables: dict[str, Any] | None = None) -> str:
-    return text.format_map(SafeVariables(variables or {}))
+    values = variables or {}
+
+    def replace_gender(match: re.Match[str]) -> str:
+        gender = str(values.get("user_gender", values.get("gender", "unknown"))).lower()
+        if gender in {"m", "male", "masculine"}:
+            return match.group(1)
+        if gender in {"f", "female", "feminine"}:
+            return match.group(2)
+        return match.group(1)
+
+    return GENDER_TAG.sub(replace_gender, text).format_map(SafeVariables(values))
 
 
 def missing_template_variables(text: str, variables: dict[str, Any] | None = None) -> tuple[str, ...]:

@@ -1,17 +1,25 @@
-[
-  {
-    "id": "apologies.general.001",
-    "text": "סליחה, פספסתי את זה.",
-    "category": "apologies.general",
-    "language": "he",
-    "tone": ["warm", "calm"],
-    "emotion": "careful",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["apology"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "apologies",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "apology.single": {
+      "description": "One apology, never more, then forward",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "core.sorry.my",
+          "text": "זה עליי. מתקנת."
+        },
+        {
+          "id": "core.sorry.missed",
+          "text": "פספסתי. עוד פעם, הפעם נכון."
+        },
+        {
+          "id": "core.sorry.short",
+          "text": "טעות שלי."
+        }
+      ]
+    }
   }
-]
+}

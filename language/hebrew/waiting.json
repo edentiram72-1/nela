@@ -1,17 +1,32 @@
-[
-  {
-    "id": "waiting.default.001",
-    "text": "אני ממתינה.",
-    "category": "waiting.default",
-    "language": "he",
-    "tone": ["calm"],
-    "emotion": "waiting",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["waiting"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "waiting",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "waiting": {
+      "description": "Waiting on the user, no pressure",
+      "eye_state": "waiting",
+      "variants": [
+        {
+          "id": "core.wait.here",
+          "text": "אין לחץ, אני פה."
+        },
+        {
+          "id": "core.wait.ready",
+          "text": "מוכנה כשאתם.",
+          "gender_tier": 1
+        },
+        {
+          "id": "core.wait.silent",
+          "text": "ממתינה.",
+          "weight": 0.5
+        },
+        {
+          "id": "core.wait.whenever",
+          "text": "קחו את הזמן.",
+          "gender_tier": 1
+        }
+      ]
+    }
   }
-]
+}

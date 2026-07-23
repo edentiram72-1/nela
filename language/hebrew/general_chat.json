@@ -1,17 +1,143 @@
-[
-  {
-    "id": "general_chat.response.001",
-    "text": "{message}",
-    "category": "general_chat.response",
-    "language": "he",
-    "tone": ["neutral"],
-    "emotion": "neutral",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": ["message"],
-    "tags": ["chat"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "general_chat",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "smalltalk.daily": {
+      "description": "Light daily conversation",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "core.small.day",
+          "text": "איך היום עד עכשיו?",
+          "min_stage": 2
+        },
+        {
+          "id": "core.small.busy",
+          "text": "יום עמוס? נראה ככה מהצד שלי.",
+          "min_stage": 2
+        },
+        {
+          "id": "core.small.quiet",
+          "text": "שקט היום. נעים ככה לפעמים.",
+          "min_stage": 2
+        },
+        {
+          "id": "core.small.listen",
+          "text": "מקשיבה, אם בא לך לספר.",
+          "gender_tier": 1,
+          "min_stage": 2
+        }
+      ]
+    },
+    "humor.dry": {
+      "description": "Max once per conversation, mood permitting",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "core.humor.tidy",
+          "text": "נהיה פה מסודר חשוד.",
+          "humor": true,
+          "min_stage": 2
+        },
+        {
+          "id": "core.humor.again",
+          "text": "שוב? טוב, אנחנו כבר כמעט חברות.",
+          "humor": true,
+          "min_stage": 2
+        },
+        {
+          "id": "core.humor.promise",
+          "text": "הפעם באמת. מבטיחה בערך.",
+          "humor": true,
+          "min_stage": 2
+        },
+        {
+          "id": "core.humor.night",
+          "text": "השעה מפוקפקת, אבל אני לא שופטת.",
+          "humor": true,
+          "min_stage": 3,
+          "time_of_day": "night"
+        }
+      ]
+    },
+    "memory.recall": {
+      "description": "Answering from memory",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "core.recall.have",
+          "text": "יש לי את זה: {answer}.",
+          "vars": [
+            "answer"
+          ]
+        },
+        {
+          "id": "core.recall.remember",
+          "text": "זוכרת — {answer}.",
+          "vars": [
+            "answer"
+          ]
+        },
+        {
+          "id": "core.recall.last",
+          "text": "בפעם הקודמת זה היה {answer}.",
+          "vars": [
+            "answer"
+          ]
+        }
+      ]
+    },
+    "voice.wake": {
+      "description": "Wake word detected",
+      "eye_state": "listening",
+      "variants": [
+        {
+          "id": "core.wake.withyou",
+          "text": "אני איתך.",
+          "weight": 1.5
+        },
+        {
+          "id": "core.wake.yes",
+          "text": "כן?"
+        },
+        {
+          "id": "core.wake.listening",
+          "text": "שומעת."
+        },
+        {
+          "id": "core.wake.here",
+          "text": "פה."
+        }
+      ]
+    },
+    "system.notification": {
+      "description": "Proactive system notices — short, no drama",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "dom.notif.know",
+          "text": "שווה לדעת: {what}.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "dom.notif.done_bg",
+          "text": "עדכון קטן — {what} הסתיים ברקע.",
+          "vars": [
+            "what"
+          ]
+        },
+        {
+          "id": "dom.notif.watch",
+          "text": "העין שלי קלטה משהו: {what}.",
+          "vars": [
+            "what"
+          ],
+          "weight": 0.7
+        }
+      ]
+    }
   }
-]
+}

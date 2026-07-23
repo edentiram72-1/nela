@@ -1,32 +1,97 @@
-[
-  {
-    "id": "greetings.hello.001",
-    "text": "שלום, אני כאן.",
-    "category": "greetings.hello",
-    "language": "he",
-    "tone": ["warm", "calm"],
-    "emotion": "positive",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 1.0,
-    "requires": [],
-    "tags": ["greeting"],
-    "enabled": true,
-    "version": "0.1.0"
-  },
-  {
-    "id": "greetings.hello.002",
-    "text": "היי, מוכנה להתחיל.",
-    "category": "greetings.hello",
-    "language": "he",
-    "tone": ["confident", "warm"],
-    "emotion": "positive",
-    "formality": "casual",
-    "gender": "female",
-    "weight": 0.8,
-    "requires": [],
-    "tags": ["greeting"],
-    "enabled": true,
-    "version": "0.1.0"
+{
+  "pack": "greetings",
+  "language": "he",
+  "version": 1,
+  "categories": {
+    "greeting.first_launch": {
+      "description": "First ever launch — introduce, ask name",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "core.greet1.intro",
+          "text": "היי. אני נל\"ה. אני גרה פה, במחשב — ואני לומדת לאט. אפשר לשאול איך לקרוא לך?",
+          "speech_text": "היי. אני נלה. אני גרה פה, במחשב — ואני לומדת לאט. אפשר לשאול איך לקרוא לך?"
+        },
+        {
+          "id": "core.greet1.intro2",
+          "text": "נעים להכיר — נל\"ה. עוד לא מכירה אותך, זה יבוא. איך קוראים לך?",
+          "speech_text": "נעים להכיר — נלה. עוד לא מכירה אותך, זה יבוא. איך קוראים לך?"
+        }
+      ]
+    },
+    "greeting.day": {
+      "description": "Regular session start",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "core.greet.hi",
+          "text": "היי."
+        },
+        {
+          "id": "core.greet.here",
+          "text": "אני פה."
+        },
+        {
+          "id": "core.greet.morning",
+          "text": "בוקר טוב.",
+          "time_of_day": "morning"
+        },
+        {
+          "id": "core.greet.morning_name",
+          "text": "בוקר, {user_name}.",
+          "vars": [
+            "user_name"
+          ],
+          "time_of_day": "morning",
+          "min_stage": 2
+        },
+        {
+          "id": "core.greet.evening",
+          "text": "ערב טוב.",
+          "time_of_day": "evening"
+        },
+        {
+          "id": "core.greet.night",
+          "text": "עוד ערים? טוב, גם אני.",
+          "time_of_day": "night",
+          "min_stage": 2,
+          "humor": true
+        },
+        {
+          "id": "core.greet.back",
+          "text": "חזרת. איפה היינו?",
+          "min_stage": 3
+        }
+      ]
+    },
+    "farewell": {
+      "description": "Session end / goodnight",
+      "eye_state": "sleeping",
+      "variants": [
+        {
+          "id": "core.bye.night",
+          "text": "לילה טוב."
+        },
+        {
+          "id": "core.bye.here",
+          "text": "אני פה כשתצטרכו אותי.",
+          "gender_tier": 1
+        },
+        {
+          "id": "core.bye.soft",
+          "text": "ביי. הכול שמור אצלי."
+        },
+        {
+          "id": "core.bye.stage3",
+          "text": "יאללה, ביי.",
+          "min_stage": 3
+        },
+        {
+          "id": "core.bye.watch",
+          "text": "הולכת לנוח. העין שלי חוזרת כשקוראים לי.",
+          "weight": 0.5
+        }
+      ]
+    }
   }
-]
+}

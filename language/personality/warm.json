@@ -1,13 +1,28 @@
 {
-  "name": "warm",
-  "language": "he",
-  "preferred_tones": ["warm", "calm"],
-  "preferred_emotions": ["positive", "neutral"],
-  "formality": "casual",
-  "gender": "female",
-  "style": "warm",
-  "phrase_bias": {
-    "greetings.hello": 1.2,
-    "success.general": 1.1
+  "preset": "warm",
+  "version": 1,
+  "description": "Softer register for evenings, stress, or user preference. More reassurance, zero humor.",
+  "params": {
+    "formality": 0.4,
+    "verbosity": 0.4,
+    "humor_budget_per_conversation": 0,
+    "signature_phrase_weight": 0.8,
+    "exclamations_allowed": false,
+    "emoji_mirror_only": true,
+    "relationship_stage_min_for_slang": 3,
+    "apology_max_per_incident": 1
+  },
+  "pack_overrides": {
+    "waiting": {
+      "boost": [
+        "core.wait.here",
+        "core.wait.whenever"
+      ]
+    },
+    "error.recovering": {
+      "boost": [
+        "core.err.together"
+      ]
+    }
   }
 }

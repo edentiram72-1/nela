@@ -54,25 +54,28 @@ class NelaResponseAdapter:
             "resource": resource,
             "message": turn.message,
             "intent": turn.intent.action,
+            "task_hint": turn.message,
         }
 
         if turn.decision.type in {DecisionType.ASK_CLARIFICATION, DecisionType.WAIT}:
             variables["question"] = turn.message
-            return "clarifications.ask", variables
+            variables["clarify"] = turn.message
+            return "clarify.one_question", variables
         if turn.decision.type == DecisionType.REJECT:
-            return "confirmations.cancelled", variables
+            return "success.short", variables
         if turn.dispatched_results and any(not result.success for result in turn.dispatched_results):
             failed = next(result for result in turn.dispatched_results if not result.success)
             variables["error"] = failed.message
-            return "errors.general", variables
+            variables["what"] = failed.message
+            return "error.recovering", variables
         if turn.intent.action == "OpenApplication":
-            return "desktop.open.success", variables
+            return "desktop.launch", variables
         if turn.intent.action == "CloseApplication":
-            return "desktop.close.success", variables
+            return "desktop.closed", variables
         if turn.intent.action == "PlayMedia":
-            return "music.play.success", variables
+            return "media.play", variables
         if turn.intent.action == "Remember":
-            return "memory.remember.success", variables
+            return "learning.saved", variables
         if turn.plan:
-            return "success.general", variables
-        return "general_chat.response", variables
+            return "success.short", variables
+        return "smalltalk.daily", variables

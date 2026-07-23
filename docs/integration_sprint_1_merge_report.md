@@ -6,7 +6,7 @@ Integration Sprint 1 consolidated the completed NELA OS foundation work into the
 
 No merge was made into `main` during this sprint.
 
-The current `develop` branch already contained the historical merge commits for Waves 1-3 before this audit pass began. This sprint verified those merges, added two small compatibility fixes required by the requested end-to-end flow, documented the Memory blocker, and re-ran validation.
+The current `develop` branch already contained the historical merge commits for Waves 1-3 before this audit pass began. This sprint verified those merges, added two small compatibility fixes required by the requested end-to-end flow, integrated Claude's final Hebrew language/personality drop, documented the Memory blocker, and re-ran validation.
 
 ## Backup
 
@@ -123,12 +123,15 @@ Compatibility fix added during this sprint:
 
 ## Wave 2: Language And Voice
 
-Status: included and validated.
+Status: included, upgraded with Claude's final language drop, and validated.
 
 Covered work:
 
 - Hebrew Language Engine.
-- Hebrew seed language pack.
+- Claude authoritative Hebrew language pack: 117 variants across 31 categories.
+- Claude personality documents: personality bible, Hebrew language guide, tone of voice, and conversation rules.
+- Claude personality presets: `default`, `warm`, and `psychedelic`.
+- Claude language-pack schema.
 - Personality profile loader.
 - Voice Agent.
 - Speech provider abstraction.
@@ -136,6 +139,13 @@ Covered work:
 - Mock provider for tests.
 - Silent mode.
 - Voice lifecycle events.
+- Compatibility metadata support for `speech_text`, `eye_state`, `gender_tier`, `min_stage`, `max_per_session`, `cooldown_group`, `time_of_day`, `humor`, and personality `pack_overrides`.
+
+Compatibility fix added during finalization:
+
+- Language loader and validator now support both the earlier list-based pack shape and Claude's `pack/categories/variants` shape.
+- `core/response.py` maps semantic Brain results to Claude's category taxonomy.
+- Hebrew gender tags such as `{you:masc|fem}` are renderable without breaking Python formatting.
 
 ## Wave 3: Visual Identity
 
@@ -197,6 +207,7 @@ python3 -m unittest tests.test_intent_recognition tests.test_ui_state tests.test
 python3 -m scripts.validate_language_packs
 python3 -m unittest discover -s tests
 python3 -m ui.app --headless-smoke
+python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
 ```
 
 Results:
@@ -205,6 +216,7 @@ Results:
 - Full test suite: 66 passed.
 - UI headless bootstrap: passed.
 - Hebrew language pack validation: passed.
+- Hebrew CLI smoke: passed, returning a Claude-pack Hebrew response.
 
 ## End-To-End Smoke Test
 
@@ -222,7 +234,7 @@ brain_received=נלה, תפתחי את Spotify
 intent=OpenApplication
 application=Spotify
 plan_tasks=1
-response=הפעלתי את Spotify.
+response=Spotify — פותחת.
 ui_displayed=True
 voice_spoken=True
 eye_log=idle>listening>thinking>executing>success>executing>speaking>idle
@@ -256,12 +268,16 @@ The requested conceptual transition `IDLE -> THINKING -> SPEAKING -> IDLE` is pr
 ## Remaining Blockers
 
 - Memory subsystem integration is blocked until `nela-memory-subsystem.zip` is provided.
+- Animated Living Eye is prepared as an artifact, but live rendering still needs a WebView-compatible host.
+- Production voice still needs a real neural or higher-quality provider behind the existing Voice Agent contract.
+- Browser Agent, Vision, Wake Word, and durable memory are not yet production-ready.
 - Draft Pull Request creation is blocked because `gh` is not installed and the Codex GitHub connector returned `403 Resource not accessible by integration`. Create the draft PR through GitHub web UI or after installing/authenticating GitHub CLI.
 - Do not merge further into `main` as part of this sprint.
 
 ## Recommended Next Steps
 
-1. Create a draft PR from `develop` to `main` through GitHub web UI or authenticated `gh`.
-2. Send Claude the merge report and direct blob links for `docs/ai_handoff.md`, `docs/integration_sprint_1_merge_report.md`, `docs/language_system.md`, `docs/voice_architecture.md`, and `language/`.
-3. Continue with `NELA-0004-task-idempotency`.
-4. Integrate Memory only after the Claude Memory subsystem artifact is available.
+1. Send Claude `docs/claude_handoff_2026-07-24.md` for tomorrow's review.
+2. Create a draft PR from `develop` to `main` through GitHub web UI or authenticated `gh`.
+3. Integrate Memory only after the Claude Memory subsystem artifact is available.
+4. Choose the WebView-compatible host for the Living Eye.
+5. Continue with `NELA-0004-task-idempotency` and permission hardening before enabling additional real Agents.

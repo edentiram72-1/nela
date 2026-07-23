@@ -14,7 +14,7 @@ NELA OS היא תשתית למערכת הפעלה מבוססת בינה מלאכ
 
 ## מצב נוכחי
 
-NELA OS השלימה את **Integration Sprint 1** עבור baseline מאוחד בענף `develop`: **Phase 1 Brain Foundation + Desktop/UI + Hebrew Response And Voice Foundation**.
+NELA OS השלימה את **Integration Sprint 1** עבור baseline מאוחד בענף `develop`: **Phase 1 Brain Foundation + Desktop/UI + Claude Hebrew Language And Voice Foundation**.
 
 במאגר קיימת עכשיו תשתית עובדת שיכולה:
 
@@ -29,6 +29,7 @@ NELA OS השלימה את **Integration Sprint 1** עבור baseline מאוחד 
 - לפרסם אירועי מחזור חיים דרך Event Bus פנימי.
 - להשתמש בסוכני mock בטוחים לצורך בדיקות MVP, כאשר Desktop Agent V1 מתחיל שליטה מוגבלת ובטוחה במחזור חיים של אפליקציות macOS.
 - להפעיל תשתית UI מודולרית שמחברת קלט טקסט ל-Brain הקיים.
+- ליצור תשובות דרך חבילת השפה והאישיות הרשמית של Claude.
 - להחזיק את ה-Living Eye של קלוד כארטיפקט העיצוב הרשמי תחת `design/`.
 - לייצא חבילת סקירה לקלוד בלי ליצור חיבור ישיר לקלוד.
 - לתמוך בשיתוף פעולה דרך GitHub בין Codex, Claude ו-ChatGPT.
@@ -37,6 +38,8 @@ NELA OS השלימה את **Integration Sprint 1** עבור baseline מאוחד 
 Desktop Agent V1 הוא הסוכן האמיתי הראשון, והוא מוגבל לניהול מחזור חיים של אפליקציות macOS נתמכות. דפדפן, טרמינל, Spotify, Gmail, GitHub, קול וראייה נשארים placeholders בטוחים אלא אם ימומשו במפורש בהמשך.
 
 הזהות הוויזואלית של קלוד כבר נוספה כארטיפקט רשמי. חלון ה-Tkinter החי עדיין מציג placeholder לעין, עד שתתקבל החלטה איך לארח את prototype ה-HTML/SVG בתוך האפליקציה.
+
+חבילת העברית והאישיות של Claude היא עכשיו מקור התוכן הרשמי של השפה. החבילה כוללת 117 ניסוחים בעברית, 31 קטגוריות ו-3 פרופילי אישיות. Codex אחראי על המנוע ושכבת התאימות; Claude אחראי על הטון, האישיות והתוכן.
 
 ## מה נעשה עד עכשיו
 
@@ -72,6 +75,13 @@ Desktop Agent V1 הוא הסוכן האמיתי הראשון, והוא מוגב�
 - `docs/coding_rules.md`
 - `docs/memory_model.md`
 - `docs/claude_review_findings.md`
+- `docs/personality_bible.md`
+- `docs/hebrew_language_guide.md`
+- `docs/tone_of_voice.md`
+- `docs/conversation_rules.md`
+- `docs/language_compat_report.md`
+- `docs/claude_handoff_2026-07-24.md`
+- `docs/releases/v0.1-alpha.md`
 
 נוספו פרומפטים לתפקידי AI:
 
@@ -515,7 +525,7 @@ ChatGPT אחראי על:
 ## מגבלות ידועות כרגע
 
 - Desktop Agent V1 יכול לשלוט במחזור חיים של אפליקציות macOS נתמכות. שאר הסוכנים עדיין placeholders בטוחים.
-- Hebrew Language Engine ו-Voice Agent Foundation הם כרגע תשתית ניסיונית. קלוד עדיין אחראי על תוכן השפה הסופי, התנהגות האישיות וכללי סגנון הקול.
+- Hebrew Language Engine ו-Voice Agent Foundation הם עדיין תשתית foundation. חבילת השפה של Claude כבר משולבת כמקור תוכן רשמי, אבל התנהגות schema מלאה עדיין דורשת עבודת מנוע נוספת.
 - ארטיפקטי הזהות הוויזואלית קיימים תחת `design/`, אבל חלון ה-Tkinter החי עדיין משתמש ב-placeholder לעין.
 - זיהוי כוונות הוא דטרמיניסטי ומבוסס חוקים.
 - Event Bus סינכרוני ופנימי לתהליך.
@@ -537,7 +547,7 @@ ChatGPT אחראי על:
 5. לפשט את הנתיב הכפול של בקשות `Remember`.
 6. לעדכן דיאגרמות כך שיציגו במפורש Decision Engine ו-Dispatcher.
 
-עבודת UI הבאה צריכה להכריע איך לארח את `design/nela_living_eye.html` באפליקציה החיה, למשל WebView, Electron, Tauri או wrapper native אחר. אחרי שכבות הבטיחות האלה, להמשיך בזהירות לסוכנים אמיתיים נוספים.
+ה-milestone הבא: לשלב את מערכת הזיכרון כאשר ה-ZIP יהיה זמין, ואז לחבר את ה-Living Eye דרך host שתומך ב-WebView ולהתקדם לקול production. אחרי שכבות הבטיחות האלה, להמשיך בזהירות לסוכנים אמיתיים נוספים.
 
 ## צעד ראשון לכל עוזר AI
 
