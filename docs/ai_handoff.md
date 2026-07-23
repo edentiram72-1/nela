@@ -34,6 +34,8 @@ The root README now documents Desktop Agent V1, supported applications, safety l
 
 `NELA-0006-ui-foundation` has started on branch `feature/NELA-0006-ui-foundation`. A modular desktop UI foundation now exists under `ui/` to host Claude's future visual design without redesigning the interface. It includes UI state management, theme tokens, animation hooks, Brain event integration, a router from text input to the existing Brain, a Tkinter window shell, chat/status/sidebar/voice/eye/settings component placeholders, and tests for state, routing, and headless app bootstrap.
 
+`NELA-0007-ai-inbox` has started on branch `feature/NELA-0007-ai-inbox`. `docs/ai_inbox.md` now acts as a shared GitHub inbox for Claude, Codex, and ChatGPT, and `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md` provides a GitHub Issue template for routing collaboration tasks.
+
 GitHub is now the shared collaboration layer. The public repository is `https://github.com/edentiram72-1/nela`, and this feature branch has been pushed for review.
 
 Claude reviewed the Phase 1 Brain foundation from the review bundle and identified the next architecture-hardening work. The findings are recorded in `docs/claude_review_findings.md`. The highest-priority issue was a deterministic confirmation deadlock where pending confirmations were not resolved before new intent classification, causing follow-up input to remain stuck in `WAIT`.
@@ -44,7 +46,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 
 ## Active Branch
 
-`feature/NELA-0006-ui-foundation`
+`feature/NELA-0007-ai-inbox`
 
 ## Recently Modified Files
 
@@ -87,6 +89,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `agents/vision/agent.py`
 - `scripts/export_claude_review_bundle.py`
 - `docs/ai_handoff.md`
+- `docs/ai_inbox.md`
 - `docs/claude_review_bundle.md` generated locally for Claude review; ignored by Git to reduce merge conflicts.
 - `memory/short_term.py`
 - `memory/long_term.py`
@@ -131,11 +134,13 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - `tests/test_ui_app.py`
 - `tests/test_ui_router.py`
 - `tests/test_ui_state.py`
+- `.github/ISSUE_TEMPLATE/ai_collaboration_inbox.md`
 
 ## Pending Tasks
 
 - Open or finalize a GitHub Pull Request from `feature/NELA-0002-confirmation-deadlock` into `feature/NELA-0001-foundation-architecture` or `develop`.
-- Finish `NELA-0006-ui-foundation` documentation, final validation, and GitHub push.
+- Push `feature/NELA-0007-ai-inbox` to GitHub.
+- Use `docs/ai_inbox.md` as the shared queue for Claude, Codex, and ChatGPT.
 - Continue `NELA-0003-dispatcher-timeout-retry-safety` with idempotency metadata before enabling real side effects.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Try interactive NELA sessions through `python3 -m core.app`.
@@ -152,6 +157,7 @@ Claude reviewed the Phase 1 Brain foundation from the review bundle and identifi
 - Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
 - Live validation opened/foregrounded Finder only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
 - UI foundation intentionally has no Claude visual design yet. Eye, theme, animation, and component APIs expose states and tokens so Claude assets can be dropped in later without changing Brain architecture.
+- The AI Inbox is repository-based only. It does not connect directly to Claude, Codex, or ChatGPT.
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
 - Long-term memory is in-memory only and does not persist after restart.
@@ -239,7 +245,7 @@ Result: public HTTPS branch lookup succeeded.
 
 ## Suggested Next Task
 
-Send UI Foundation to Claude for infrastructure review. Claude should review the state contracts, Eye states, theme token system, animation hooks, component boundaries, and whether the structure is ready for Claude's brand identity, Eye SVG, UI/UX, and design system.
+Send UI Foundation to Claude for infrastructure review using the `Ready For Claude` items in `docs/ai_inbox.md`. Claude should review the state contracts, Eye states, theme token system, animation hooks, component boundaries, and whether the structure is ready for Claude's brand identity, Eye SVG, UI/UX, and design system.
 
 Scope:
 
@@ -253,7 +259,7 @@ After UI review, continue permission and idempotency hardening before implementi
 
 - Do not create a direct communication channel with Claude or any other assistant.
 - Use GitHub as the collaboration layer.
-- For Claude review, share `https://github.com/edentiram72-1/nela/tree/feature/NELA-0006-ui-foundation` and direct blob links, or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
+- For Claude review, share `docs/ai_inbox.md` direct blob links or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
 - Read `docs/architecture.md`, `docs/api.md`, and `docs/coding_rules.md` before changing code.
 - Keep the Brain agent-neutral.
 - Put execution logic inside Agents only.

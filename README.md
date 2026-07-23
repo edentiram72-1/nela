@@ -66,6 +66,7 @@ Added collaboration documents:
 - `docs/roadmap.md`
 - `docs/api.md`
 - `docs/ai_handoff.md`
+- `docs/ai_inbox.md`
 - `docs/decisions.md`
 - `docs/coding_rules.md`
 - `docs/memory_model.md`
@@ -97,6 +98,8 @@ Important branches:
 - `feature/NELA-0006-ui-foundation`: current UI foundation branch.
 
 Claude does not connect directly to Codex or to the local machine. Claude reviews GitHub branches, direct blob links, pull request diffs, or generated Markdown review bundles.
+
+Use `docs/ai_inbox.md` as the shared GitHub inbox for Claude, Codex, and ChatGPT. For GitHub Issues, use the `AI Collaboration Inbox` issue template.
 
 ### 3. Phase 1 Brain Foundation
 
@@ -437,6 +440,16 @@ docs/claude_review_bundle.md
 ```
 
 Claude should review architecture, risks, documentation, edge cases, and implementation safety. Claude should not directly rewrite completed modules without justification.
+
+## AI Inbox Workflow
+
+Use the GitHub inbox when work needs to move between assistants:
+
+- `docs/ai_inbox.md`: shared queue with lanes for Claude, Codex, ChatGPT, blocked work, and done work.
+- GitHub Issues: use the `AI Collaboration Inbox` issue template.
+- Claude review requests should prefer direct `blob/` links.
+- Broad reviews can use `docs/claude_review_bundle.md`.
+- Do not put secrets, private data, passwords, API keys, or credentials in the inbox.
 
 ## AI Collaboration Rules
 
