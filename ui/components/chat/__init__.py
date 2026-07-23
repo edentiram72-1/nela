@@ -1,0 +1,2 @@
+"""Chat component package."""
+
