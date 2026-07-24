@@ -158,6 +158,17 @@ class AgentDispatcher:
                 )
             if last_result.success:
                 last_result = self._annotate_permission_boundary(last_result, permission)
+            if self.permission_engine.kill_switch_active and permission.tier != PermissionTier.T0:
+                last_result = AgentResult(
+                    False,
+                    last_result.message,
+                    {
+                        **last_result.data,
+                        "kill_switch_active": True,
+                        "retry_blocked": True,
+                    },
+                )
+                break
 
             if last_result.success:
                 self.permission_engine.record_action_result(permission_request, last_result, permission)
