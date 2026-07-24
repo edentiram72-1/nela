@@ -92,6 +92,19 @@ class BlockingSensitiveAgent(BaseAgent):
         return AgentResult(True, "finished")
 
 
+class KillAfterAuthorizePermissionEngine(PermissionEngine):
+    def __init__(self, events: EventBus) -> None:
+        super().__init__(events=events)
+        self.triggered = False
+
+    def authorize(self, request):
+        result = super().authorize(request)
+        if result.granted and not self.triggered:
+            self.triggered = True
+            self.activate_kill_switch("post authorization race")
+        return result
+
+
 class DispatcherTests(unittest.TestCase):
     def test_registers_discovers_and_dispatches_agent(self) -> None:
         events = EventBus()
@@ -378,6 +391,45 @@ class DispatcherTests(unittest.TestCase):
             self.assertTrue(result_holder[0].data["kill_switch_active"])
             self.assertTrue(result_holder[0].data["retry_blocked"])
             self.assertEqual(marker_path.read_text(encoding="utf-8").splitlines(), ["started"])
+
+    def test_kill_switch_after_authorization_blocks_first_attempt(self) -> None:
+        events = EventBus()
+        permission_engine = KillAfterAuthorizePermissionEngine(events=events)
+        dispatcher = AgentDispatcher(events, permission_engine=permission_engine)
+        dispatcher.register_agent(BlockingSensitiveAgent())
+        with tempfile.TemporaryDirectory() as directory:
+            marker_path = Path(directory) / "attempts.txt"
+            expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+            payload = {
+                "confirmed": True,
+                "confirmation_expires_at": expires_at,
+                "marker_path": str(marker_path),
+                "sleep_seconds": 0.1,
+            }
+            payload["confirmation_action_hash"] = action_tuple_hash(
+                agent="blocking_sensitive",
+                capability="sensitive_wait",
+                action="sensitive_wait",
+                target=None,
+                parameters=payload,
+                expires_at=expires_at,
+            )
+
+            result = dispatcher.dispatch(
+                Task(
+                    description="Post-authorization kill switch race",
+                    action="sensitive_wait",
+                    target_agent="blocking_sensitive",
+                    payload=payload,
+                    timeout_seconds=3.0,
+                    retry_policy=RetryPolicy(max_attempts=1),
+                ),
+                plan_id="plan-1",
+            )
+
+            self.assertFalse(result.success)
+            self.assertTrue(result.data["kill_switch_active"])
+            self.assertFalse(marker_path.exists())
 
 
 if __name__ == "__main__":

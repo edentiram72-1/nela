@@ -99,9 +99,13 @@ class AgentDispatcher:
         attempts = 0
         last_result = AgentResult(False, "Task was not executed.")
         while attempts < task.retry_policy.max_attempts:
-            attempts += 1
             if task.id in self.cancelled_tasks:
                 return self._cancelled(task, plan_id)
+            if self._emergency_stop_active(permission):
+                last_result = self._emergency_stop_result(task, plan_id, last_result, attempts)
+                break
+
+            attempts += 1
 
             self.events.publish(
                 Event(
@@ -158,16 +162,8 @@ class AgentDispatcher:
                 )
             if last_result.success:
                 last_result = self._annotate_permission_boundary(last_result, permission)
-            if self.permission_engine.kill_switch_active and permission.tier != PermissionTier.T0:
-                last_result = AgentResult(
-                    False,
-                    last_result.message,
-                    {
-                        **last_result.data,
-                        "kill_switch_active": True,
-                        "retry_blocked": True,
-                    },
-                )
+            if self._emergency_stop_active(permission):
+                last_result = self._emergency_stop_result(task, plan_id, last_result, attempts)
                 break
 
             if last_result.success:
@@ -274,6 +270,35 @@ class AgentDispatcher:
             permission.tier in {PermissionTier.T2, PermissionTier.T3}
             or bool(task.payload.get("requires_isolation"))
             or bool(task.payload.get("isolate"))
+        )
+
+    def _emergency_stop_active(self, permission: PermissionResult) -> bool:
+        return permission.tier != PermissionTier.T0 and (
+            self.permission_engine.kill_switch_active or self.permission_engine.lock_mode_active
+        )
+
+    def _emergency_stop_result(
+        self,
+        task: Task,
+        plan_id: str,
+        last_result: AgentResult,
+        attempts: int,
+    ) -> AgentResult:
+        if self.permission_engine.kill_switch_active:
+            message = "Kill switch is active; task execution stopped."
+        else:
+            message = "Lock mode is active; task execution stopped."
+        return AgentResult(
+            False,
+            last_result.message if attempts else message,
+            {
+                **last_result.data,
+                "task_id": task.id,
+                "plan_id": plan_id,
+                "kill_switch_active": self.permission_engine.kill_switch_active,
+                "lock_mode_active": self.permission_engine.lock_mode_active,
+                "retry_blocked": attempts > 0,
+            },
         )
 
     def _agent_result_from_process(self, process_result) -> AgentResult:
