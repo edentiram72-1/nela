@@ -8,6 +8,8 @@ from typing import Any
 from agents.base import AgentCommand, AgentResult, BaseAgent
 from agents.policy import DefensivePolicyGuard, ToolPermissionProfile, default_tool_permissions
 from agents.task_schema import AgentDomain, AgentWorkProduct, TaskArtifact, TaskFinding
+from permissions.models import AgentManifest as PermissionAgentManifest
+from permissions.models import Capability, PermissionTier
 
 
 @dataclass(frozen=True)
@@ -41,7 +43,10 @@ class SpecialistAgent(BaseAgent):
 
     @property
     def manifest(self) -> AgentManifest:
-        permissions = default_tool_permissions()[self.name]
+        permissions = default_tool_permissions().get(
+            self.name,
+            ToolPermissionProfile(self.name, ("summarize",), filesystem="workspace_read"),
+        )
         return AgentManifest(
             name=self.name,
             domain=self.domain,
@@ -49,6 +54,20 @@ class SpecialistAgent(BaseAgent):
             capabilities=self.capabilities,
             permission_profile=permissions,
         )
+
+    @property
+    def permission_manifest(self) -> PermissionAgentManifest:
+        capabilities = tuple(
+            Capability(
+                action=action,
+                tier=_permission_tier_for_action(action),
+                description=f"{self.name}: {action}",
+                requires_confirmation=_permission_tier_for_action(action) in {PermissionTier.T2, PermissionTier.T3},
+                scopes=("cyber.authorized_scope",) if _permission_tier_for_action(action) == PermissionTier.T3 else (),
+            )
+            for action in sorted(self._handlers())
+        )
+        return PermissionAgentManifest(agent=self.name, capabilities=capabilities)
 
     def execute(self, command: AgentCommand) -> AgentResult:
         policy = self.policy.validate(command.action, command.payload)
@@ -124,3 +143,17 @@ def finding(
         evidence=evidence,
         recommendation=recommendation,
     )
+
+
+def _permission_tier_for_action(action: str) -> PermissionTier:
+    if action in {
+        "contain_incident",
+        "simulate_lab_adversary",
+        "validate_exploit_safely",
+        "scan_lab_target",
+        "run_local_fuzzing",
+    }:
+        return PermissionTier.T3
+    if action in {"remember", "record_lesson"}:
+        return PermissionTier.T1
+    return PermissionTier.T0

@@ -6,10 +6,11 @@ import logging
 import time
 
 from agents.base import AgentCommand, AgentResult, AgentState, BaseAgent
+from agents.process_isolation import IsolatedAgentProcessRunner, ProcessOutcome
 from agents.registry import AgentRegistry
 from brain.planner import Task
 from core.events import Event, EventBus, EventTypes
-from permissions import AuthenticatedUser, PermissionEngine, PermissionRequest, PermissionResult
+from permissions import AuthenticatedUser, PermissionEngine, PermissionRequest, PermissionResult, PermissionTier
 
 
 class AgentDispatcher:
@@ -122,7 +123,7 @@ class AgentDispatcher:
                 id=permission_request.command_id,
             )
             try:
-                last_result = agent.execute(command)
+                last_result = self._execute_agent(agent, command, task, permission)
             except Exception as error:  # Defensive boundary for all current and future Agents.
                 elapsed = time.monotonic() - attempt_started_at
                 last_result = AgentResult(
@@ -141,6 +142,8 @@ class AgentDispatcher:
                 break
             elapsed = time.monotonic() - attempt_started_at
             timed_out = task.timeout_seconds is not None and elapsed > task.timeout_seconds
+            if last_result.data.get("isolated_outcome") == ProcessOutcome.TIMED_OUT.value:
+                timed_out = False
             if timed_out and not last_result.success:
                 last_result = AgentResult(False, "Task timed out.", {"elapsed_seconds": elapsed})
             elif timed_out:
@@ -153,6 +156,8 @@ class AgentDispatcher:
                         "timeout_exceeded": True,
                     },
                 )
+            if last_result.success:
+                last_result = self._annotate_permission_boundary(last_result, permission)
 
             if last_result.success:
                 self.permission_engine.record_action_result(permission_request, last_result, permission)
@@ -233,6 +238,53 @@ class AgentDispatcher:
             scoped_session_id=_optional_string(task.payload.get("scoped_session_id")),
         )
 
+    def _execute_agent(
+        self,
+        agent: BaseAgent,
+        command: AgentCommand,
+        task: Task,
+        permission: PermissionResult,
+    ) -> AgentResult:
+        if not self._requires_isolation(task, permission):
+            return agent.execute(command)
+
+        runner = IsolatedAgentProcessRunner(
+            timeout_seconds=task.timeout_seconds or 30.0,
+            before_terminate=self.permission_engine.revoke_all_scoped_sessions,
+        )
+        return self._agent_result_from_process(runner.run(_execute_agent_command, agent, command))
+
+    def _requires_isolation(self, task: Task, permission: PermissionResult) -> bool:
+        return (
+            permission.tier in {PermissionTier.T2, PermissionTier.T3}
+            or bool(task.payload.get("requires_isolation"))
+            or bool(task.payload.get("isolate"))
+        )
+
+    def _agent_result_from_process(self, process_result) -> AgentResult:
+        result = process_result.data.get("result")
+        if process_result.outcome == ProcessOutcome.COMPLETED and isinstance(result, AgentResult):
+            return AgentResult(
+                result.success,
+                result.message,
+                {
+                    **result.data,
+                    "isolated": True,
+                    "isolated_outcome": process_result.outcome.value,
+                    "worker_exit_code": process_result.exit_code,
+                },
+            )
+        return AgentResult(
+            False,
+            process_result.message,
+            {
+                **process_result.data,
+                "isolated": True,
+                "isolated_outcome": process_result.outcome.value,
+                "worker_exit_code": process_result.exit_code,
+            },
+        )
+
     def _agent_unavailable(self, task: Task, plan_id: str, message: str) -> AgentResult:
         result = AgentResult(False, message, {"task_id": task.id, "plan_id": plan_id})
         self.events.publish(
@@ -281,5 +333,23 @@ class AgentDispatcher:
         return result
 
 
+    def _annotate_permission_boundary(self, result: AgentResult, permission: PermissionResult) -> AgentResult:
+        """Attach permission/sandbox metadata to successful Agent results."""
+
+        data = {
+            **result.data,
+            "permission_tier": permission.tier.value,
+        }
+        if permission.scope_session_id:
+            data["scope_session_id"] = permission.scope_session_id
+        if permission.tier.value in {"T3", "T4"}:
+            data["isolated"] = True
+        return AgentResult(result.success, result.message, data)
+
+
 def _optional_string(value: object) -> str | None:
     return str(value) if value else None
+
+
+def _execute_agent_command(agent: BaseAgent, command: AgentCommand) -> AgentResult:
+    return agent.execute(command)

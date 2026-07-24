@@ -222,6 +222,7 @@ health_check()
 - Secure Code Reviewer
 - Vulnerability Research
 - Anomaly Discovery
+- Authorized Lab
 
 הסוכנים האלה בודקים כרגע האצלה ומחזור חיים. הם לא מבצעים פעולות אמיתיות עם תופעות לוואי.
 
@@ -232,7 +233,11 @@ health_check()
 והצעת תיקונים. הם לא בונים exploitation, persistence, credential theft,
 evasion, malware, phishing, DDoS או תקיפה נגד מטרות חיצוניות.
 
-ראו `docs/multi_agent_foundation.md` ו-`agents/README.md`.
+מצב Authorized Lab רושם targets, בודק authorization מוגבל, כותב audit
+decisions, ומכין סריקות dry-run או fuzz cases מקומיים בלי לפנות למערכות
+ציבוריות חיצוניות.
+
+ראו `docs/multi_agent_foundation.md`, `docs/cyber_lab.md` ו-`agents/README.md`.
 
 ### 6. זרימת סקירה עם Claude
 

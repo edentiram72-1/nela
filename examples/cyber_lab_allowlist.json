@@ -1,0 +1,15 @@
+{
+  "targets": [
+    {
+      "identifier": "lab-web",
+      "scope_type": "local_lab",
+      "owner": "local-owner",
+      "proof": "Created by the local NELA cyber lab configuration.",
+      "metadata": {
+        "network": "isolated",
+        "internet": "disabled",
+        "dry_run_default": true
+      }
+    }
+  ]
+}
