@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 import logging
 
 from agents.base import AgentResult, BaseAgent
+from agents.process_isolation import IsolatedAgentProcessRunner, IsolatedProcessSupervisor
 from core.events import Event, EventBus, EventTypes
 from permissions.audit import AuditLog, AuditRecord, AuditWriteError
 from permissions.confirmation import action_tuple_hash
@@ -39,6 +40,7 @@ class PermissionEngine:
         self.kill_switch_active = False
         self.lock_mode_active = False
         self._scoped_sessions: dict[str, ScopedSession] = {}
+        self._isolated_processes = IsolatedProcessSupervisor()
         self._logger = logging.getLogger("nela.permissions")
 
     def register_agent(self, agent: BaseAgent) -> None:
@@ -240,13 +242,24 @@ class PermissionEngine:
 
     def activate_kill_switch(self, reason: str = "") -> None:
         self.kill_switch_active = True
-        self.revoke_all_scoped_sessions()
-        self._logger.warning("permission_kill_switch_active reason=%s", reason)
+        revoked_sessions = self.revoke_all_scoped_sessions()
+        terminated_processes = self._isolated_processes.terminate_all()
+        self._logger.warning(
+            "permission_kill_switch_active reason=%s revoked_sessions=%s terminated_processes=%s",
+            reason,
+            revoked_sessions,
+            terminated_processes,
+        )
         self.events.publish(
             Event(
                 type=EventTypes.KILL_SWITCH_ACTIVATED,
                 source="permissions.engine",
-                payload={"active": True, "reason": reason},
+                payload={
+                    "active": True,
+                    "reason": reason,
+                    "revoked_sessions": revoked_sessions,
+                    "terminated_processes": terminated_processes,
+                },
             )
         )
 
@@ -274,6 +287,15 @@ class PermissionEngine:
         count = len(self._scoped_sessions)
         self._scoped_sessions.clear()
         return count
+
+    def register_isolated_runner(self, runner: IsolatedAgentProcessRunner) -> str:
+        return self._isolated_processes.register(runner)
+
+    def unregister_isolated_runner(self, token: str) -> None:
+        self._isolated_processes.unregister(token)
+
+    def active_isolated_runner_count(self) -> int:
+        return self._isolated_processes.active_count()
 
     def _validate_t3_scope(
         self,

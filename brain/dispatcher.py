@@ -252,7 +252,11 @@ class AgentDispatcher:
             timeout_seconds=task.timeout_seconds or 30.0,
             before_terminate=self.permission_engine.revoke_all_scoped_sessions,
         )
-        return self._agent_result_from_process(runner.run(_execute_agent_command, agent, command))
+        runner_token = self.permission_engine.register_isolated_runner(runner)
+        try:
+            return self._agent_result_from_process(runner.run(_execute_agent_command, agent, command))
+        finally:
+            self.permission_engine.unregister_isolated_runner(runner_token)
 
     def _requires_isolation(self, task: Task, permission: PermissionResult) -> bool:
         return (

@@ -1,12 +1,14 @@
 import unittest
 import time
+import threading
 
 from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.process_isolation import ProcessOutcome
 from agents.registry import AgentNotRegisteredError, AgentRegistry, DuplicateAgentError
 from brain.dispatcher import AgentDispatcher
 from brain.planner import RetryPolicy, Task
 from core.events import EventBus, EventTypes
-from permissions import AgentManifest, Capability, PermissionTier, action_tuple_hash
+from permissions import AgentManifest, Capability, PermissionEngine, PermissionTier, action_tuple_hash
 from datetime import datetime, timedelta, timezone
 
 
@@ -70,6 +72,18 @@ class DesktopLikeAgent(BaseAgent):
 
     def execute(self, command: AgentCommand) -> AgentResult:
         return AgentResult(True, "desktop ok", {"action": command.action, "application": command.payload.get("application")})
+
+
+class BlockingSensitiveAgent(BaseAgent):
+    name = "blocking_sensitive"
+    permission_manifest = AgentManifest(
+        agent="blocking_sensitive",
+        capabilities=(Capability("sensitive_wait", PermissionTier.T2, requires_confirmation=True),),
+    )
+
+    def execute(self, command: AgentCommand) -> AgentResult:
+        time.sleep(float(command.payload.get("sleep_seconds", 5.0)))
+        return AgentResult(True, "finished")
 
 
 class DispatcherTests(unittest.TestCase):
@@ -268,6 +282,48 @@ class DispatcherTests(unittest.TestCase):
         dispatched = [event for event in events.history() if event.type == EventTypes.TASK_DISPATCHED]
         self.assertEqual(dispatched[-1].payload["agent"], "desktop")
         self.assertEqual(dispatched[-1].payload["capability"], "desktop.application.launch")
+
+    def test_kill_switch_terminates_inflight_isolated_task(self) -> None:
+        events = EventBus()
+        permission_engine = PermissionEngine(events=events)
+        dispatcher = AgentDispatcher(events, permission_engine=permission_engine)
+        dispatcher.register_agent(BlockingSensitiveAgent())
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+        payload = {"confirmed": True, "confirmation_expires_at": expires_at, "sleep_seconds": 5.0}
+        payload["confirmation_action_hash"] = action_tuple_hash(
+            agent="blocking_sensitive",
+            capability="sensitive_wait",
+            action="sensitive_wait",
+            target=None,
+            parameters=payload,
+            expires_at=expires_at,
+        )
+        result_holder: list[AgentResult] = []
+        task = Task(
+            description="Blocking sensitive task",
+            action="sensitive_wait",
+            target_agent="blocking_sensitive",
+            payload=payload,
+            timeout_seconds=10.0,
+        )
+        worker = threading.Thread(target=lambda: result_holder.append(dispatcher.dispatch(task, plan_id="plan-1")))
+
+        worker.start()
+        deadline = time.monotonic() + 3.0
+        while permission_engine.active_isolated_runner_count() == 0 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        self.assertEqual(permission_engine.active_isolated_runner_count(), 1)
+
+        permission_engine.activate_kill_switch("unit test")
+        worker.join(3.0)
+
+        self.assertFalse(worker.is_alive())
+        self.assertEqual(permission_engine.active_isolated_runner_count(), 0)
+        self.assertEqual(len(result_holder), 1)
+        self.assertFalse(result_holder[0].success)
+        self.assertEqual(result_holder[0].data["isolated_outcome"], ProcessOutcome.TERMINATED.value)
+        kill_events = [event for event in events.history() if event.type == EventTypes.KILL_SWITCH_ACTIVATED]
+        self.assertEqual(kill_events[-1].payload["terminated_processes"], 1)
 
 
 if __name__ == "__main__":
