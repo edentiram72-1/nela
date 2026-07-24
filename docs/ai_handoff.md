@@ -50,6 +50,9 @@ blocks retries after kill-switch termination so a second attempt cannot bypass
 the emergency state. Follow-up commit `9262ce0a58f93d1800ff90684dbf0c1ab8478521`
 adds a pre-attempt emergency stop guard so kill switch or lock mode activation
 after authorization still prevents execution before the next attempt starts.
+Final commit `667c34cd07e2bc5722aaec35d2a830c95141ec52` adds a second guard after
+isolated runner registration and before child process start to close the
+remaining check-then-act micro-window.
 
 The consolidation includes:
 
@@ -249,7 +252,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Continue `NELA-0004-task-idempotency` before enabling real side effects.
 - Review and merge Sprint 2 Permission Engine before implementing Browser Agent, Terminal Agent, Files Agent, Coding Agent, Cyber Agent, or communication Agents with real side effects.
 - Continue the remaining hardening around the Permission Engine: durable audit storage, richer scope validation, rollback handling, and in-flight cancellation.
-- Send the refreshed K1 final review bundle for Claude verification after commit `9262ce0a58f93d1800ff90684dbf0c1ab8478521`.
+- Send the refreshed K1 final review bundle for Claude verification after commit `667c34cd07e2bc5722aaec35d2a830c95141ec52`.
 - Continue `NELA-0007-event-bus-hardening` with subscriber isolation, bounded history, and trace/correlation conventions.
 - Continue `NELA-0008-capability-registry` so Planner/Dispatcher can reason about Agent capabilities and availability.
 - Continue `NELA-0009-plan-executor` before relying on parallel, conditional, cancellable, or async orchestration semantics.
@@ -317,7 +320,7 @@ python3 -m scripts.validate_language_packs
 python3 -m ui.app --headless-smoke
 ```
 
-Result: 123 tests passed; language pack validation passed; headless UI bootstrap succeeded. The new regression tests verify that `activate_kill_switch()` terminates an in-flight isolated T2 task, reports `terminated_processes=1`, blocks retries after the kill switch is active, and blocks the post-authorization/pre-attempt race.
+Result: 124 tests passed; language pack validation passed; headless UI bootstrap succeeded. The new regression tests verify that `activate_kill_switch()` terminates an in-flight isolated T2 task, reports `terminated_processes=1`, blocks retries after the kill switch is active, blocks the post-authorization/pre-attempt race, and blocks the runner-registration/pre-process-start race.
 
 Additional syntax validation:
 

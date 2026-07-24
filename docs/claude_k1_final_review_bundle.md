@@ -6,7 +6,7 @@ codex/multi-agent-foundation-safety
 
 ## Commit
 
-9262ce0a58f93d1800ff90684dbf0c1ab8478521
+667c34cd07e2bc5722aaec35d2a830c95141ec52
 
 ## Purpose
 
@@ -18,6 +18,8 @@ It also addresses Claude's follow-up concern that a terminated isolated attempt
 could be retried without re-authorization while the kill switch is active.
 The latest commit also closes the post-authorization race where the kill switch
 becomes active after authorization but before an attempt starts.
+The final commit closes the runner-registration race by re-checking emergency
+state after runner registration and before starting the child process.
 
 ## Changes Since Previous Bundle
 
@@ -31,6 +33,8 @@ becomes active after authorization but before an attempt starts.
 - Added a dispatcher regression test proving a two-attempt T2 task records only one child-process start after kill-switch termination.
 - Added a pre-attempt emergency stop check so kill switch or lock mode activation after authorization prevents first-attempt execution.
 - Added a dispatcher regression test proving a post-authorization kill switch prevents the Agent from writing its marker before execution.
+- Added a post-runner-registration emergency stop check so a kill switch activated after runner registration prevents child process start.
+- Added a dispatcher regression test proving a runner-registration kill switch prevents the Agent from writing its marker.
 
 ## Security Behavior
 
@@ -49,6 +53,7 @@ This means the kill switch now affects both:
 - in-flight isolated T2/T3 work
 - retry behavior after an isolated process is terminated
 - the race window between authorization and execution start
+- the race window between runner registration and child process start
 
 ## Files Changed In Commit
 
@@ -78,7 +83,7 @@ The ZIP also includes supporting files that were missing from the previous bundl
 
 ```text
 python3 -m unittest discover -s tests
-123 tests passed
+124 tests passed
 
 python3 -m scripts.validate_language_packs
 passed
