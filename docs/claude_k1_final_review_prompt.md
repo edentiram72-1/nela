@@ -6,11 +6,12 @@ Branch:
 codex/multi-agent-foundation-safety
 
 Latest code fix commit:
-1ebd6023ecb498b99eac0af5073a827a92442757
+64dc0e0909ca553152ffa3871cc977d41550432d
 
 This follow-up addresses Claude's previous remaining before-merge blocker:
 
 - K1 - Kill switch must terminate in-flight isolated work.
+- K1 retry safety - kill switch termination must not be bypassed by task retries.
 
 R1 was already reviewed as PASS in the previous Claude response. Please verify it remains intact, but focus the review on K1.
 
@@ -29,12 +30,13 @@ Please inspect:
    - _execute_agent isolated runner registration and cleanup
 4. tests/test_dispatcher.py
    - test_kill_switch_terminates_inflight_isolated_task
+   - test_kill_switch_blocks_retry_after_isolated_termination
    - R1 registry replacement tests
 
 Validation run locally:
 
 - python3 -m unittest discover -s tests
-  - 121 tests passed
+  - 122 tests passed
 - python3 -m scripts.validate_language_packs
   - passed
 - python3 -m ui.app --headless-smoke

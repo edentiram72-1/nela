@@ -6,13 +6,16 @@ codex/multi-agent-foundation-safety
 
 ## Commit
 
-1ebd6023ecb498b99eac0af5073a827a92442757
+64dc0e0909ca553152ffa3871cc977d41550432d
 
 ## Purpose
 
 This bundle addresses Claude's remaining K1 blocker from the previous review:
 the kill switch blocked future authorization but did not terminate already
 running isolated Agent work.
+
+It also addresses Claude's follow-up concern that a terminated isolated attempt
+could be retried without re-authorization while the kill switch is active.
 
 ## Changes Since Previous Bundle
 
@@ -22,6 +25,8 @@ running isolated Agent work.
 - Connected `PermissionEngine.activate_kill_switch()` to terminate tracked isolated runners after scoped sessions are revoked.
 - Registered each isolated runner in `AgentDispatcher._execute_agent()` before execution and unregistered it in a `finally` block.
 - Added a dispatcher regression test proving a running T2 isolated task is terminated when the kill switch fires mid-execution.
+- Blocked retries after the kill switch is active for any non-T0 permission boundary.
+- Added a dispatcher regression test proving a two-attempt T2 task records only one child-process start after kill-switch termination.
 
 ## Security Behavior
 
@@ -38,6 +43,7 @@ This means the kill switch now affects both:
 
 - future non-T0 authorization attempts
 - in-flight isolated T2/T3 work
+- retry behavior after an isolated process is terminated
 
 ## Files Changed In Commit
 
@@ -67,7 +73,7 @@ The ZIP also includes supporting files that were missing from the previous bundl
 
 ```text
 python3 -m unittest discover -s tests
-121 tests passed
+122 tests passed
 
 python3 -m scripts.validate_language_packs
 passed
