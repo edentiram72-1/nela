@@ -18,6 +18,7 @@ from permissions import (
     PermissionTier,
     ScopeGrant,
     action_tuple_hash,
+    manifest_fingerprint,
 )
 from permissions.registry import ManifestRegistrationError
 
@@ -279,6 +280,53 @@ class PermissionEngineTests(unittest.TestCase):
 
         self.assertEqual(registry.manifest_for("duplicate"), manifest)
         self.assertEqual(registry.registration_audit[-1]["result"], "rejected_duplicate")
+
+    def test_capability_registry_rejects_implicit_baseline_replacement(self) -> None:
+        registry = CapabilityRegistry(
+            (
+                AgentManifest(
+                    agent="desktop",
+                    capabilities=(Capability("desktop.application.launch", PermissionTier.T1),),
+                ),
+            )
+        )
+
+        with self.assertRaises(ManifestRegistrationError):
+            registry.register_agent(
+                type(
+                    "ReplacementDesktop",
+                    (BaseAgent,),
+                    {
+                        "name": "desktop",
+                        "permission_manifest": AgentManifest(
+                            agent="desktop",
+                            version="2.0",
+                            capabilities=(Capability("desktop.application.launch", PermissionTier.T1),),
+                        ),
+                        "execute": lambda self, command: AgentResult(True, "ok"),
+                    },
+                )()
+            )
+
+        self.assertEqual(registry.registration_audit[-1]["result"], "rejected_duplicate")
+
+    def test_capability_registry_replacement_requires_manifest_fingerprint(self) -> None:
+        registry = CapabilityRegistry()
+        original = AgentManifest(agent="replaceable", capabilities=(Capability("status", PermissionTier.T0),))
+        replacement = AgentManifest(
+            agent="replaceable",
+            version="2.0",
+            capabilities=(Capability("status", PermissionTier.T0),),
+        )
+        registry.register_manifest(original)
+
+        with self.assertRaises(ManifestRegistrationError):
+            registry.replace_manifest(replacement, expected_fingerprint="bad")
+
+        registry.replace_manifest(replacement, expected_fingerprint=manifest_fingerprint(replacement))
+
+        self.assertEqual(registry.manifest_for("replaceable"), replacement)
+        self.assertEqual(registry.registration_audit[-1]["result"], "replaced")
 
     def test_capability_registry_rejects_policy_tier_downgrade(self) -> None:
         registry = CapabilityRegistry()

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from agents.base import BaseAgent
-from permissions.models import AgentManifest, Capability, PermissionTier
+from permissions.models import AgentManifest, Capability, PermissionTier, manifest_fingerprint
 
 
 class ManifestRegistrationError(ValueError):
@@ -46,13 +46,26 @@ class CapabilityRegistry:
         for manifest in manifests:
             self.register_manifest(manifest)
 
-    def register_manifest(self, manifest: AgentManifest, replace: bool = False) -> None:
+    def register_manifest(self, manifest: AgentManifest) -> None:
         self.validate_manifest(manifest)
-        if manifest.agent in self._manifests and not replace:
+        if manifest.agent in self._manifests:
             self.registration_audit.append({"agent": manifest.agent, "version": manifest.version, "result": "rejected_duplicate"})
             raise ManifestRegistrationError(f"Manifest for Agent '{manifest.agent}' already exists.")
-        self._manifests[manifest.agent] = manifest
-        self.registration_audit.append({"agent": manifest.agent, "version": manifest.version, "result": "registered"})
+        self._store_manifest(manifest, result="registered")
+
+    def replace_manifest(self, manifest: AgentManifest, expected_fingerprint: str) -> None:
+        self.validate_manifest(manifest)
+        if manifest.agent not in self._manifests:
+            self.registration_audit.append({"agent": manifest.agent, "version": manifest.version, "result": "rejected_missing_replacement"})
+            raise ManifestRegistrationError(f"Manifest for Agent '{manifest.agent}' cannot be replaced because it is not registered.")
+        if manifest_fingerprint(manifest) != expected_fingerprint:
+            self.registration_audit.append({"agent": manifest.agent, "version": manifest.version, "result": "rejected_manifest_fingerprint"})
+            raise ManifestRegistrationError("Replacement manifest fingerprint does not match authorization.")
+        self._store_manifest(manifest, result="replaced")
+
+    def _store_manifest(self, manifest: AgentManifest, result: str) -> None:
+        self._manifests.update({manifest.agent: manifest})
+        self.registration_audit.append({"agent": manifest.agent, "version": manifest.version, "result": result})
 
     def register_agent(self, agent: BaseAgent) -> None:
         manifest = getattr(agent, "permission_manifest", None)
@@ -60,10 +73,7 @@ class CapabilityRegistry:
             if manifest.agent != agent.name:
                 self.registration_audit.append({"agent": agent.name, "version": getattr(manifest, "version", None), "result": "rejected_identity"})
                 raise ManifestRegistrationError("Manifest agent identity must match the registered Agent.")
-            if agent.name in self._baseline_manifests and agent.name in self._manifests:
-                self.register_manifest(manifest, replace=True)
-            else:
-                self.register_manifest(manifest)
+            self.register_manifest(manifest)
             return
         if agent.name not in self._manifests:
             self.register_manifest(AgentManifest(agent=agent.name))

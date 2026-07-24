@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from enum import Enum
+import hashlib
+import json
 from typing import Any
 from uuid import uuid4
 
@@ -67,6 +69,31 @@ class AgentManifest:
 
     def supports_capability(self, capability_id: str) -> bool:
         return any(capability.action == capability_id for capability in self.capabilities)
+
+
+def manifest_fingerprint(manifest: AgentManifest) -> str:
+    """Return a stable fingerprint for protected Agent replacement checks."""
+
+    payload = {
+        "agent": manifest.agent,
+        "version": manifest.version,
+        "owner": manifest.owner,
+        "capabilities": [
+            {
+                "action": capability.action,
+                "tier": capability.tier.value,
+                "description": capability.description,
+                "scopes": capability.scopes,
+                "actions": capability.actions,
+                "platforms": capability.platforms,
+                "requires_confirmation": capability.requires_confirmation,
+                "enabled": capability.enabled,
+            }
+            for capability in manifest.capabilities
+        ],
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 @dataclass(frozen=True)

@@ -13,6 +13,8 @@ class ProcessOutcome(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     TIMED_OUT = "timed_out"
+    CANCELLED = "cancelled"
+    CRASHED = "crashed"
     UNKNOWN = "unknown"
 
 
@@ -33,15 +35,32 @@ class IsolatedAgentProcessRunner:
         self,
         timeout_seconds: float,
         before_terminate: Callable[[], None] | None = None,
+        cancel_check: Callable[[], bool] | None = None,
+        on_start: Callable[[int], None] | None = None,
     ) -> None:
         self.timeout_seconds = timeout_seconds
         self.before_terminate = before_terminate
+        self.cancel_check = cancel_check
+        self.on_start = on_start
 
     def run(self, target: Callable[..., Any], *args: Any, **kwargs: Any) -> ProcessExecutionResult:
         queue: multiprocessing.Queue = multiprocessing.Queue(maxsize=1)
         process = multiprocessing.Process(target=_worker, args=(queue, target, args, kwargs))
         process.start()
-        process.join(self.timeout_seconds)
+        if self.on_start is not None and process.pid is not None:
+            self.on_start(process.pid)
+
+        deadline = time.monotonic() + self.timeout_seconds
+        cancelled = False
+        while process.is_alive():
+            if self.cancel_check is not None and self.cancel_check():
+                cancelled = True
+                break
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            process.join(min(0.05, remaining))
+
         if process.is_alive():
             if self.before_terminate is not None:
                 self.before_terminate()
@@ -52,18 +71,20 @@ class IsolatedAgentProcessRunner:
                 process.join(1.0)
             return ProcessExecutionResult(
                 False,
-                "Isolated Agent process timed out and was terminated.",
-                timed_out=True,
+                "Isolated Agent process was cancelled and terminated."
+                if cancelled
+                else "Isolated Agent process timed out and was terminated.",
+                timed_out=not cancelled,
                 exit_code=process.exitcode,
-                outcome=ProcessOutcome.TIMED_OUT,
+                outcome=ProcessOutcome.CANCELLED if cancelled else ProcessOutcome.TIMED_OUT,
             )
 
         if queue.empty():
             return ProcessExecutionResult(
-                process.exitcode == 0,
+                False,
                 "Isolated Agent process exited without a result.",
                 exit_code=process.exitcode,
-                outcome=ProcessOutcome.UNKNOWN,
+                outcome=ProcessOutcome.UNKNOWN if process.exitcode == 0 else ProcessOutcome.CRASHED,
             )
         payload = queue.get()
         return ProcessExecutionResult(

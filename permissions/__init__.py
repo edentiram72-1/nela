@@ -14,6 +14,7 @@ from permissions.models import (
     PermissionTier,
     ScopeGrant,
     ScopedSession,
+    manifest_fingerprint,
 )
 
 __all__ = [
@@ -30,6 +31,7 @@ __all__ = [
     "PermissionTier",
     "ScopeGrant",
     "ScopedSession",
+    "manifest_fingerprint",
     "default_capability_registry",
     "action_tuple_hash",
 ]

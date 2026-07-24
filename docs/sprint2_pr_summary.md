@@ -4,9 +4,12 @@ Branch: `feature/NELA-safety-spine-routing`
 
 Implementation commit verified before PR preparation: `11a2991`
 
+Required-fix commit for Claude re-review: see final commit hash in handoff.
+
 Base branch: `develop`
 
-Status: ready for draft pull request review. Do not merge yet.
+Status: Claude returned `APPROVE WITH REQUIRED FIXES`. K1/R1 required fixes are
+implemented on this branch and need Claude re-review before merge.
 
 ## Sprint Goals
 
@@ -32,7 +35,10 @@ Agent expansion, or advanced UI redesign.
 - Intelligent capability routing from semantic tasks to authorized Agents.
 - Desktop Agent integration through semantic capabilities.
 - Secure local UI bridge foundation for future WebView host.
-- Subprocess isolation foundation for future blocking or high-risk Agents.
+- Subprocess isolation foundation for blocking or high-risk Agents.
+- Dispatcher isolation policy for T2/T3 and explicitly isolated tasks.
+- Kill Switch termination of blocked isolated workers.
+- Protected Agent replacement with manifest fingerprint verification.
 
 ## Architecture Changes
 
@@ -65,7 +71,8 @@ The Brain still does not execute actions directly.
 - T2/T3 audit write failures fail closed.
 - Kill switch revokes scoped sessions before blocking non-read-only work.
 - Future WebView bridge must use restricted local transport and launch tokens.
-- Future high-risk or blocking Agents must use subprocess isolation.
+- T2/T3 and explicitly isolated Agent tasks use subprocess isolation.
+- Safe non-blocking T0/T1 tasks remain direct by default.
 
 ## Permission Engine Summary
 
@@ -131,13 +138,16 @@ python3 -m ui.app --headless-smoke
 Result:
 
 - Language validation passed.
-- 100 tests passed.
+- 114 tests passed.
+- Dedicated K1/R1 tests passed (38 tests).
 - UI headless smoke passed.
 
 ## Known Limitations
 
-- Audit storage is still in-memory, though the model supports durable sinks.
-- Current safe MVP Agents were not moved into subprocesses.
+- Audit storage is still in-memory by default, though file-like sinks can be
+  flushed and fsync'ed.
+- Current safe low-risk T0/T1 Agent tasks are not moved into subprocesses by
+  default.
 - Full plugin manifest loading is not implemented yet.
 - Parallel, conditional, cancellable, and async plan execution remain future
   work.
@@ -151,6 +161,9 @@ Result:
   and prior connector attempts returned permission errors.
 - 94 untracked duplicate-suffix local files still exist and are intentionally
   excluded from this PR.
-- Durable audit storage, task idempotency, production event-bus hardening, and
-  runtime isolation wiring are still required before advanced Agents gain real
-  side effects.
+- P1 stable identity enforcement is required before enabling file-writing
+  capabilities.
+- L1 durable audit storage and startup chain verification are required before
+  NELA 1.0 or durable T2/T3 workflows.
+- Task idempotency and production event-bus hardening are still required before
+  advanced Agents gain real side effects.

@@ -2,14 +2,25 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 import time
 
 from agents.base import AgentCommand, AgentResult, AgentState, BaseAgent
+from agents.process_isolation import IsolatedAgentProcessRunner, ProcessOutcome
 from agents.registry import AgentRegistry
 from brain.planner import Task
 from core.events import Event, EventBus, EventTypes
-from permissions import AuthenticatedUser, PermissionEngine, PermissionRequest, PermissionResult
+from permissions import AuthenticatedUser, PermissionEngine, PermissionRequest, PermissionResult, PermissionTier
+
+
+@dataclass(frozen=True)
+class ActiveWorker:
+    task_id: str
+    correlation_id: str
+    agent: str
+    capability: str
+    process_id: int
 
 
 class AgentDispatcher:
@@ -27,6 +38,7 @@ class AgentDispatcher:
         self.permission_engine = permission_engine or PermissionEngine(events=events)
         self.authenticated_user = authenticated_user or self.permission_engine.default_user
         self.cancelled_tasks: set[str] = set()
+        self._active_workers: dict[str, ActiveWorker] = {}
         self.logger = logging.getLogger("nela.agents")
 
     def register_agent(self, agent: BaseAgent) -> None:
@@ -58,6 +70,9 @@ class AgentDispatcher:
 
     def health_check(self) -> dict[str, AgentResult]:
         return self.registry.health_check()
+
+    def active_workers(self) -> tuple[ActiveWorker, ...]:
+        return tuple(self._active_workers.values())
 
     def cancel_task(self, task_id: str) -> None:
         self.cancelled_tasks.add(task_id)
@@ -122,7 +137,14 @@ class AgentDispatcher:
                 id=permission_request.command_id,
             )
             try:
-                last_result = agent.execute(command)
+                last_result = self._execute_agent(
+                    agent=agent,
+                    command=command,
+                    task=task,
+                    plan_id=plan_id,
+                    permission=permission,
+                    permission_request=permission_request,
+                )
             except Exception as error:  # Defensive boundary for all current and future Agents.
                 elapsed = time.monotonic() - attempt_started_at
                 last_result = AgentResult(
@@ -141,6 +163,8 @@ class AgentDispatcher:
                 break
             elapsed = time.monotonic() - attempt_started_at
             timed_out = task.timeout_seconds is not None and elapsed > task.timeout_seconds
+            if last_result.data.get("isolated_outcome") in {ProcessOutcome.TIMED_OUT.value, ProcessOutcome.CANCELLED.value}:
+                timed_out = False
             if timed_out and not last_result.success:
                 last_result = AgentResult(False, "Task timed out.", {"elapsed_seconds": elapsed})
             elif timed_out:
@@ -174,6 +198,9 @@ class AgentDispatcher:
 
             if attempts < task.retry_policy.max_attempts and task.retry_policy.backoff_seconds:
                 time.sleep(task.retry_policy.backoff_seconds)
+
+            if self.permission_engine.kill_switch_active:
+                break
 
         self.logger.error("task_failed task_id=%s agent=%s", task.id, target_agent)
         self.permission_engine.record_action_result(permission_request, last_result, permission)
@@ -233,6 +260,121 @@ class AgentDispatcher:
             scoped_session_id=_optional_string(task.payload.get("scoped_session_id")),
         )
 
+    def _execute_agent(
+        self,
+        agent: BaseAgent,
+        command: AgentCommand,
+        task: Task,
+        plan_id: str,
+        permission: PermissionResult,
+        permission_request: PermissionRequest,
+    ) -> AgentResult:
+        if not self._requires_isolation(task, permission):
+            return agent.execute(command)
+
+        runner = IsolatedAgentProcessRunner(
+            timeout_seconds=task.timeout_seconds or 30.0,
+            before_terminate=self.permission_engine.revoke_all_scoped_sessions,
+            cancel_check=lambda: self.permission_engine.kill_switch_active or task.id in self.cancelled_tasks,
+            on_start=lambda pid: self._register_worker(task, plan_id, permission_request, pid),
+        )
+        try:
+            process_result = runner.run(_execute_agent_command, agent, command)
+        finally:
+            self._active_workers.pop(task.id, None)
+        return self._agent_result_from_process(process_result)
+
+    def _requires_isolation(self, task: Task, permission: PermissionResult) -> bool:
+        return (
+            permission.tier in {PermissionTier.T2, PermissionTier.T3}
+            or bool(task.payload.get("requires_isolation"))
+            or bool(task.payload.get("isolate"))
+        )
+
+    def _register_worker(
+        self,
+        task: Task,
+        plan_id: str,
+        permission_request: PermissionRequest,
+        process_id: int,
+    ) -> None:
+        self._active_workers[task.id] = ActiveWorker(
+            task_id=task.id,
+            correlation_id=permission_request.command_id,
+            agent=permission_request.agent,
+            capability=permission_request.capability_id,
+            process_id=process_id,
+        )
+        self.events.publish(
+            Event(
+                type=EventTypes.AGENT_STATUS_CHANGED,
+                source="brain.dispatcher",
+                payload={
+                    "plan_id": plan_id,
+                    "task_id": task.id,
+                    "agent": permission_request.agent,
+                    "capability": permission_request.capability_id,
+                    "process_id": process_id,
+                    "status": "isolated_worker_started",
+                },
+            )
+        )
+
+    def _agent_result_from_process(self, process_result) -> AgentResult:
+        result = process_result.data.get("result")
+        if process_result.outcome == ProcessOutcome.COMPLETED and isinstance(result, AgentResult):
+            return AgentResult(
+                result.success,
+                result.message,
+                {
+                    **result.data,
+                    "isolated": True,
+                    "isolated_outcome": process_result.outcome.value,
+                    "worker_exit_code": process_result.exit_code,
+                },
+            )
+        if process_result.outcome == ProcessOutcome.FAILED:
+            return AgentResult(
+                False,
+                f"Isolated Agent worker failed: {process_result.message}",
+                {
+                    **process_result.data,
+                    "isolated": True,
+                    "isolated_outcome": process_result.outcome.value,
+                    "worker_exit_code": process_result.exit_code,
+                },
+            )
+        if process_result.outcome == ProcessOutcome.CANCELLED:
+            return AgentResult(
+                False,
+                "Isolated Agent worker was cancelled and terminated.",
+                {
+                    "isolated": True,
+                    "isolated_outcome": process_result.outcome.value,
+                    "worker_exit_code": process_result.exit_code,
+                },
+            )
+        if process_result.outcome == ProcessOutcome.TIMED_OUT:
+            return AgentResult(
+                False,
+                "Isolated Agent worker timed out and was terminated.",
+                {
+                    "isolated": True,
+                    "isolated_outcome": process_result.outcome.value,
+                    "worker_exit_code": process_result.exit_code,
+                    "timed_out": True,
+                },
+            )
+        return AgentResult(
+            False,
+            "Isolated Agent worker ended without a trustworthy result.",
+            {
+                "isolated": True,
+                "isolated_outcome": process_result.outcome.value,
+                "worker_exit_code": process_result.exit_code,
+            },
+        )
+
     def _agent_unavailable(self, task: Task, plan_id: str, message: str) -> AgentResult:
         result = AgentResult(False, message, {"task_id": task.id, "plan_id": plan_id})
         self.events.publish(
@@ -283,3 +425,7 @@ class AgentDispatcher:
 
 def _optional_string(value: object) -> str | None:
     return str(value) if value else None
+
+
+def _execute_agent_command(agent: BaseAgent, command: AgentCommand) -> AgentResult:
+    return agent.execute(command)

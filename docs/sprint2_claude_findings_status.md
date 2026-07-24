@@ -11,11 +11,11 @@ implementation directly.
 | ID | Finding | Current status |
 | --- | --- | --- |
 | A1 | WebView bridge authentication | Implemented foundation |
-| K1 | Kill switch process isolation | Implemented foundation |
-| P1 | TOCTOU protection | Implemented foundation |
+| K1 | Kill switch process isolation | Fixed for merge re-review |
+| P1 | TOCTOU protection | Partially mitigated; deferred before write agents |
 | P2 | Confirmation binding | Implemented |
-| R1 | Agent registry overwrite | Implemented |
-| L1 | Tamper-evident audit log | Implemented |
+| R1 | Agent registry overwrite | Fixed for merge re-review |
+| L1 | Tamper-evident audit log | Partially implemented; durable default sink deferred |
 | T1 | Authorization before final routing | Implemented foundation |
 | T2 | Prompt injection into routing | Partially mitigated |
 
@@ -38,22 +38,30 @@ selected. No unauthenticated WebView bridge should be merged.
 
 ## K1 - Kill Switch Process Isolation
 
-Implemented foundation in `agents/process_isolation.py`.
+Fixed for merge re-review in `agents/process_isolation.py` and
+`brain/dispatcher.py`.
 
 - Blocking work can run in a child process.
 - Timeout terminates the process, then escalates to kill if needed.
 - A `before_terminate` hook allows session revocation before termination.
 - `ProcessOutcome.UNKNOWN` exists for child-process outcomes that cannot be
   safely classified.
+- Dispatcher routes T2/T3 tasks and explicitly isolated tasks through
+  `IsolatedAgentProcessRunner`.
+- Active isolated workers track task ID, correlation ID, Agent ID, capability,
+  and process ID.
+- Kill switch activation cancels and terminates a blocked isolated worker.
+- Scoped sessions are revoked before isolated emergency termination.
+- Safe non-blocking T0/T1 tasks still execute directly.
 
-Tests: `tests/test_process_isolation.py`.
+Tests: `tests/test_process_isolation.py`, `tests/test_dispatcher.py`.
 
-Remaining work: wire high-risk future Agents into this runner. Current live
-Agents are not moved into subprocesses in this sprint.
+Remaining work: a full runtime supervisor and worker pool are future lifecycle
+work. The before-merge K1 issue is fixed for current Dispatcher execution.
 
 ## P1 - TOCTOU Protection
 
-Implemented foundation in `permissions/scope.py`.
+Partially mitigated in `permissions/scope.py`.
 
 - Filesystem paths are canonicalized with `Path.resolve`.
 - Protected credential/security paths are denied.
@@ -64,8 +72,9 @@ Implemented foundation in `permissions/scope.py`.
 
 Tests: `tests/test_permission_engine.py`.
 
-Remaining work: future file-writing Agents should execute against stable
-verified objects or repeat scope checks at their own execution boundary.
+Deferred requirement before enabling `coding.files.write`, `files.write`,
+`files.move`, or `files.delete`: execution must enforce stable identity
+(`st_dev`/`st_ino` or file descriptor equivalent), not only capture it.
 
 ## P2 - Confirmation Binding
 
@@ -94,16 +103,21 @@ Implemented in `agents/registry.py` and `permissions/registry.py`.
 
 - `AgentRegistry.register()` is insert-only by default.
 - Duplicate Agent IDs raise `DuplicateAgentError`.
-- `replace()` exists as an explicit replacement path.
+- `replace()` requires explicit `ReplacementAuthorization`.
+- `replace()` fails for missing Agents, self-replacement, manifest identity
+  mismatch, version mismatch, and manifest fingerprint mismatch.
 - Capability manifests reject duplicate registration by default.
-- Manifest identity and version are validated.
+- Capability manifest replacement is explicit through `replace_manifest()` and
+  requires the expected manifest fingerprint.
+- Ordinary registration paths do not call replacement implicitly.
 - Registration attempts are recorded in registry audit trails.
 
-Tests: `tests/test_dispatcher.py`, `tests/test_permission_engine.py`.
+Tests: `tests/test_agent_registry.py`, `tests/test_dispatcher.py`,
+`tests/test_permission_engine.py`.
 
 ## L1 - Tamper-Evident Audit Log
 
-Implemented in `permissions/audit.py`.
+Partially implemented in `permissions/audit.py`.
 
 - Every record includes `previous_hash` and `entry_hash`.
 - `AuditLog.verify_chain()` detects modification, deletion, and reordering.
@@ -113,9 +127,9 @@ Implemented in `permissions/audit.py`.
 
 Tests: `tests/test_audit_log.py`, `tests/test_permission_engine.py`.
 
-Remaining work: production retention, rotation, and external storage policy are
-future work. The current implementation is tamper-evident in memory and can
-write durably to file-like sinks.
+Deferred requirement before NELA 1.0 or durable T2/T3 workflows: default
+persistent sink, startup chain verification, corruption detection, and
+fail-closed behavior for corrupted durable audit state.
 
 ## T1 - Authorization Before Final Routing
 
@@ -165,9 +179,10 @@ python3 -m unittest discover -s tests
 python3 -m scripts.validate_language_packs
 python3 -m ui.app --headless-smoke
 python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
+python3 -m unittest tests.test_agent_registry tests.test_dispatcher tests.test_process_isolation tests.test_permission_engine
 python3 -m compileall permissions agents/process_isolation.py agents/registry.py brain/dispatcher.py brain/planner.py brain/conversation.py brain/decision.py brain/intent_router.py ui/secure_bridge.py tests
 ```
 
-Result: 100 tests passed; language pack validation passed; UI headless smoke
+Result: 114 tests passed; dedicated K1/R1 tests passed; language pack validation passed; UI headless smoke
 passed; Hebrew no-dispatch smoke produced `Intent: OpenApplication` and one
 semantic launch task; compileall completed successfully.

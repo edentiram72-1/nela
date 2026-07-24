@@ -4,6 +4,8 @@ Branch: `feature/NELA-safety-spine-routing`
 
 Implementation review commit: `11a2991`
 
+Required-fix commit for K1/R1 re-review: see final commit hash in handoff
+
 Base branch: `develop`
 
 Repository: `https://github.com/edentiram72-1/nela`
@@ -14,16 +16,22 @@ Compare URL:
 https://github.com/edentiram72-1/nela/compare/develop...feature/NELA-safety-spine-routing?expand=1
 ```
 
-Commit-specific tree:
+Required-fix branch tree:
 
 ```text
-https://github.com/edentiram72-1/nela/tree/11a29917264f732bc2a266563e079dffd77761a2
+https://github.com/edentiram72-1/nela/tree/feature/NELA-safety-spine-routing
 ```
 
 ## Review Request
 
-Please review Sprint 2 as an implementation review. Do not assume merge
-approval. Focus on A1, K1, P1, P2, R1, L1, T1, and T2.
+Claude returned `APPROVE WITH REQUIRED FIXES` for PR #2. Please re-review only
+the before-merge fixes unless another regression is visible:
+
+- K1: subprocess isolation is now wired into Dispatcher execution.
+- R1: Agent Registry replacement bypass is now closed.
+
+P1 and L1 remain documented deferred requirements before file-writing
+capabilities, durable T2/T3 workflows, or NELA 1.0.
 
 ## Architecture Summary
 
@@ -47,14 +55,17 @@ Intent
 
 ## Diff Summary Against `develop`
 
-At implementation review commit `11a2991`, the branch changes 47 files with
-Safety Spine code, tests, and documentation. The major runtime areas are:
+At the required-fix branch tip, the branch includes Sprint
+2 Safety Spine code, K1/R1 required fixes, tests, and documentation. The major
+runtime areas are:
 
 - `permissions/`: Permission Engine, models, registry, audit, confirmation, and
   scope validation.
 - `brain/`: semantic capability routing, confirmation continuation, and app
   alias handling.
-- `agents/`: duplicate registration protection and process isolation foundation.
+- `agents/`: protected replacement and process isolation foundation.
+- `brain/dispatcher.py`: isolated execution policy for T2/T3 and explicitly
+  isolated tasks.
 - `core/events.py`: hardened in-process Event Bus.
 - `ui/secure_bridge.py`: secure local bridge foundation.
 - `tests/`: permission, audit, dispatcher, Event Bus, confirmation, bridge, and
@@ -97,6 +108,7 @@ permissions/models.py
 permissions/registry.py
 permissions/scope.py
 tests/test_audit_log.py
+tests/test_agent_registry.py
 tests/test_conversation_confirmations.py
 tests/test_dispatcher.py
 tests/test_events.py
@@ -118,9 +130,12 @@ ui/secure_bridge.py
 - `permissions/confirmation.py`: exact action tuple confirmation hash.
 - `permissions/scope.py`: filesystem scope validation and symlink checks.
 - `permissions/audit.py`: audit redaction and tamper-evident hash chain.
-- `brain/dispatcher.py`: capability-first authorization before Agent execution.
-- `agents/registry.py`: duplicate Agent registration protection.
-- `agents/process_isolation.py`: subprocess timeout/termination foundation.
+- `brain/dispatcher.py`: capability-first authorization before Agent execution
+  plus isolated execution for T2/T3 and explicitly isolated tasks.
+- `agents/registry.py`: duplicate Agent registration protection and protected
+  manifest-bound replacement.
+- `agents/process_isolation.py`: subprocess cancellation, timeout, and
+  termination foundation.
 - `ui/secure_bridge.py`: local Unix socket bridge with launch token and origin
   verification.
 - `core/events.py`: Event Bus hardening.
@@ -145,9 +160,9 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/engine.py#L25
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/models.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_permission_engine.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/engine.py#L25
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/models.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_permission_engine.py
 
 ## Capability Registry And Agent Manifests
 
@@ -170,8 +185,8 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/registry.py#L39
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/agents/registry.py#L8
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/registry.py#L39
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/agents/registry.py#L8
 
 ## Confirmation Token Implementation
 
@@ -194,8 +209,8 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/confirmation.py#L25
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/engine.py#L380
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/confirmation.py#L25
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/engine.py#L380
 
 ## Authentication And Scoped Sessions
 
@@ -215,8 +230,8 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/models.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/engine.py#L214
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/models.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/engine.py#L214
 
 ## Audit Hash Chain
 
@@ -235,8 +250,8 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/audit.py#L102
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_audit_log.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/audit.py#L102
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_audit_log.py
 
 ## Kill Switch
 
@@ -253,7 +268,7 @@ Relevant implementation:
 
 Evidence link:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/engine.py#L241
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/engine.py#L241
 
 ## Lock Mode
 
@@ -268,7 +283,7 @@ Relevant implementation:
 
 Evidence link:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/engine.py#L263
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/engine.py#L263
 
 ## Event Bus Hardening
 
@@ -285,8 +300,8 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/core/events.py#L72
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_events.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/core/events.py#L72
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_events.py
 
 ## WebView Bridge Security
 
@@ -304,15 +319,17 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/ui/secure_bridge.py#L23
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_secure_bridge.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/ui/secure_bridge.py#L23
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_secure_bridge.py
 
 ## Worker Process Isolation
 
 Relevant files:
 
 - `agents/process_isolation.py`
+- `brain/dispatcher.py`
 - `tests/test_process_isolation.py`
+- `tests/test_dispatcher.py`
 
 Relevant implementation:
 
@@ -320,11 +337,14 @@ Relevant implementation:
 - timeout termination flow at `agents/process_isolation.py:40`
 - `before_terminate` hook at `agents/process_isolation.py:46`
 - terminate/kill escalation at `agents/process_isolation.py:48`
+- Dispatcher isolated execution policy in `brain/dispatcher.py`
+- Active worker tracking in `brain/dispatcher.py`
+- Kill-switch cancellation check in `brain/dispatcher.py`
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/agents/process_isolation.py#L29
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_process_isolation.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/agents/process_isolation.py#L29
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_process_isolation.py
 
 ## Routing Trust Boundary
 
@@ -349,9 +369,9 @@ Relevant implementation:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/brain/dispatcher.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/brain/applications.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_dispatcher.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/brain/dispatcher.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/brain/applications.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_dispatcher.py
 
 ## Finding A1 - WebView Bridge Authentication
 
@@ -386,43 +406,60 @@ Unresolved questions:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/ui/secure_bridge.py#L23
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_secure_bridge.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/ui/secure_bridge.py#L23
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_secure_bridge.py
 
 ## Finding K1 - Subprocess Isolation And Kill Switch
 
 Relevant files:
 
 - `agents/process_isolation.py`
+- `brain/dispatcher.py`
 - `permissions/engine.py`
 - `tests/test_process_isolation.py`
+- `tests/test_dispatcher.py`
 - `tests/test_permission_engine.py`
 
 Relevant functions/classes:
 
 - `IsolatedAgentProcessRunner`
+- `AgentDispatcher._requires_isolation()`
+- `AgentDispatcher._execute_agent()`
+- `AgentDispatcher.active_workers()`
 - `PermissionEngine.activate_kill_switch()`
 
 Implementation summary:
 
-- Blocking/high-risk work can run in a subprocess.
+- Dispatcher routes T2/T3 tasks and explicitly isolated tasks through
+  `IsolatedAgentProcessRunner`.
+- Safe non-blocking T0/T1 tasks still execute directly by default.
+- Active workers track task ID, correlation ID, Agent ID, capability, and
+  process ID.
 - Timeout calls `before_terminate`, then terminates and can kill the child.
-- Kill switch revokes scoped sessions and blocks non-`T0` work.
-- Current MVP Agents are not all subprocess-wrapped yet.
+- Kill switch cancellation is checked while the child process is running.
+- Kill switch revokes scoped sessions, cancels the blocked isolated worker, and
+  prevents new non-T0 dispatches.
+- Timeout, cancellation, worker crash, and unknown outcomes return structured
+  failed `AgentResult` objects.
+- Execution results and cancellation/termination failures are preserved in the
+  audit log.
 
 Tests covering the finding:
 
 - `tests/test_process_isolation.py`
+- K1 isolated-dispatch tests in `tests/test_dispatcher.py`
 - kill-switch tests in `tests/test_permission_engine.py`
 
 Unresolved questions:
 
-- Runtime-wide subprocess supervision is future work.
+- Runtime-wide worker pool/supervisor remains future lifecycle work. The
+  before-merge K1 Dispatcher wiring issue is fixed.
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/agents/process_isolation.py#L29
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/engine.py#L241
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/agents/process_isolation.py#L29
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/brain/dispatcher.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/engine.py#L241
 
 ## Finding P1 - TOCTOU Protection
 
@@ -457,8 +494,8 @@ Unresolved questions:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/scope.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/brain/dispatcher.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/scope.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/brain/dispatcher.py
 
 ## Finding P2 - Confirmation Binding
 
@@ -495,8 +532,8 @@ Unresolved questions:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/confirmation.py#L25
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/engine.py#L380
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/confirmation.py#L25
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/engine.py#L380
 
 ## Finding R1 - Agent Registry Overwrite Protection
 
@@ -504,6 +541,8 @@ Relevant files:
 
 - `agents/registry.py`
 - `permissions/registry.py`
+- `permissions/models.py`
+- `tests/test_agent_registry.py`
 - `tests/test_dispatcher.py`
 - `tests/test_permission_engine.py`
 
@@ -511,28 +550,43 @@ Relevant functions/classes:
 
 - `AgentRegistry.register()`
 - `AgentRegistry.replace()`
+- `ReplacementAuthorization`
+- `authorize_replacement()`
 - `CapabilityRegistry.register_manifest()`
+- `CapabilityRegistry.replace_manifest()`
+- `manifest_fingerprint()`
 
 Implementation summary:
 
 - Runtime Agent registration rejects duplicate names by default.
-- Replacement requires explicit `replace()`.
-- Capability manifest registration rejects duplicates unless `replace=True`.
+- Replacement requires explicit `ReplacementAuthorization` bound to Agent ID,
+  manifest version, and manifest fingerprint.
+- Replacement fails for missing Agents, self-replacement, missing
+  authorization, manifest identity mismatch, authorization identity mismatch,
+  and fingerprint mismatch.
+- Direct `_store()` calls cannot silently overwrite an existing Agent unless the
+  protected replacement path has already validated the request.
+- Capability manifest registration rejects duplicates by default.
+- Capability manifest replacement requires explicit `replace_manifest()` with
+  matching fingerprint.
+- Ordinary registration paths never call replacement implicitly.
 - Registration and replacement attempts are audited in registry state.
 
 Tests covering the finding:
 
+- replacement-bypass tests in `tests/test_agent_registry.py`
 - duplicate Agent and duplicate manifest tests in `tests/test_dispatcher.py` and
   `tests/test_permission_engine.py`
 
 Unresolved questions:
 
-- Future plugin loader should define a signed or trusted replacement policy.
+- Future plugin loader should define a signed or trusted external replacement
+  policy. The current local replacement API is protected and explicit.
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/agents/registry.py#L8
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/registry.py#L39
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/agents/registry.py#L8
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/registry.py#L39
 
 ## Finding L1 - Audit Hash-Chain Integrity
 
@@ -568,8 +622,8 @@ Unresolved questions:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/audit.py#L102
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_audit_log.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/audit.py#L102
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_audit_log.py
 
 ## Finding T1 - Authorization-Safe Routing
 
@@ -605,8 +659,8 @@ Unresolved questions:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/brain/dispatcher.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/permissions/registry.py#L85
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/brain/dispatcher.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/permissions/registry.py#L85
 
 ## Finding T2 - Prompt-Injection-Resistant Routing
 
@@ -647,9 +701,9 @@ Unresolved questions:
 
 Evidence links:
 
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/brain/applications.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/brain/dispatcher.py
-- https://github.com/edentiram72-1/nela/blob/11a29917264f732bc2a266563e079dffd77761a2/tests/test_intent_recognition.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/brain/applications.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/brain/dispatcher.py
+- https://github.com/edentiram72-1/nela/blob/feature/NELA-safety-spine-routing/tests/test_intent_recognition.py
 
 ## Relevant Tests
 
@@ -659,19 +713,27 @@ Executed locally before package finalization:
 python3 -m scripts.validate_language_packs
 python3 -m unittest discover -s tests
 python3 -m ui.app --headless-smoke
+python3 -m unittest tests.test_agent_registry tests.test_dispatcher tests.test_process_isolation tests.test_permission_engine
+python3 -m compileall agents/process_isolation.py agents/registry.py brain/dispatcher.py permissions tests/test_agent_registry.py tests/test_dispatcher.py tests/test_permission_engine.py tests/test_process_isolation.py
 ```
 
 Result:
 
 - Language validation passed.
-- 100 tests passed.
+- 114 tests passed.
+- Dedicated K1/R1 tests passed (38 tests).
 - UI headless smoke passed.
+- Hebrew no-dispatch smoke passed.
+- Compileall completed successfully.
 
 ## Current Limitations
 
-- Audit storage is still in-memory; durable storage is future work.
-- Subprocess isolation is foundation-only; current safe MVP Agents are not all
-  moved into child processes.
+- P1 stable identity enforcement is still required before enabling
+  `coding.files.write`, `files.write`, `files.move`, or `files.delete`.
+- L1 default persistent audit sink, startup chain verification, corruption
+  detection, and durable fail-closed behavior are required before NELA 1.0 or
+  durable T2/T3 workflows.
+- Safe non-blocking T0/T1 tasks are intentionally not isolated by default.
 - WebView host integration is future work.
 - Plugin manifest loading is not implemented.
 - Terminal and Coding side-effecting capabilities are disabled declarations.

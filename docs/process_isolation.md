@@ -1,35 +1,46 @@
 # Process Isolation Foundation
 
-Status: implemented foundation on `feature/NELA-safety-spine-routing`.
+Status: wired into Dispatcher policy on `feature/NELA-safety-spine-routing`.
 
 ## Purpose
 
-Python threads cannot reliably stop blocked or high-risk Agent work. Any future
-Agent that can block indefinitely or perform high-risk execution must run behind
-a subprocess boundary before NELA claims forced termination behavior.
+Python threads cannot reliably stop blocked or high-risk Agent work. Any Agent
+task that can block indefinitely, carries T2/T3 risk, or is explicitly marked
+for isolation must run behind a subprocess boundary before NELA claims forced
+termination behavior.
 
 ## Current Foundation
 
 `agents.process_isolation.IsolatedAgentProcessRunner` runs a callable in a child
-process and returns a structured `ProcessExecutionResult`.
+process and returns a structured `ProcessExecutionResult`. `brain.dispatcher`
+uses this runner for T2, T3, and explicitly isolated tasks.
 
-Timeout behavior:
+Timeout and cancellation behavior:
 
 1. Invoke the optional `before_terminate` hook.
 2. Terminate the child process.
 3. Escalate to kill if the child remains alive.
-4. Return a timeout result without pretending that a thread was interrupted.
+4. Return timeout, cancellation, crash, failed, unknown, or completed state
+   without pretending that a thread was interrupted.
 
-The hook is intended for actions such as scoped-session revocation before
-terminating the process.
+The Dispatcher hook revokes scoped sessions before terminating the process.
+
+## Dispatcher Policy
+
+The Dispatcher isolates:
+
+- `T2` tasks.
+- `T3` tasks.
+- Tasks with `payload.requires_isolation` or `payload.isolate`.
+
+The Dispatcher does not isolate simple proven non-blocking `T0`/`T1` tasks by
+default. This keeps low-risk status and local helper operations lightweight.
 
 ## Current Limits
 
-- Existing safe MVP Agents are not moved into subprocesses in Sprint 2.
 - There is no worker pool yet.
 - There is no streamed output protocol yet.
-- High-risk Agent enablement remains blocked until this runtime boundary is
-  connected to the Agent lifecycle.
+- A dedicated runtime supervisor is still future work.
 
 ## Future Work
 

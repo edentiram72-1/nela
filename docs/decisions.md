@@ -394,3 +394,47 @@ Terminal capabilities from becoming active.
 - `permissions/confirmation.py`
 - `permissions/scope.py`
 - `brain/dispatcher.py`
+
+### DEC-0016: Wire Required K1/R1 Fixes Before Sprint 2 Merge
+
+**Date:** 2026-07-25
+**Status:** Accepted
+
+**Context:** Claude reviewed PR #2 and returned `APPROVE WITH REQUIRED FIXES`.
+The two before-merge blockers were K1, because process isolation existed but was
+not wired into Dispatcher execution, and R1, because Agent replacement could
+bypass insert-only registration guarantees.
+
+**Decision:** Before merging Sprint 2, the Dispatcher must route T2, T3, and
+explicitly isolated tasks through `IsolatedAgentProcessRunner`. The Dispatcher
+must track isolated task ID, correlation ID, Agent ID, capability, and process
+ID, and Kill Switch activation must cancel and terminate blocked isolated
+workers while revoking scoped sessions. Simple proven non-blocking T0/T1 tasks
+remain direct execution by default.
+
+Agent replacement is not a normal registration path. Runtime Agent replacement
+requires explicit `ReplacementAuthorization` bound to Agent ID, manifest
+version, and manifest fingerprint. Capability manifest replacement uses an
+explicit `replace_manifest()` path with matching fingerprint. Ordinary
+registration never replaces an existing Agent or manifest implicitly.
+
+**Consequences:**
+
+- K1 can be re-reviewed as a before-merge fix instead of a future-only
+  foundation.
+- R1 can be re-reviewed as closed against late Agent shadowing and manifest
+  replacement bypasses.
+- P1 stable file identity enforcement remains deferred until file-writing
+  capabilities are enabled.
+- L1 durable default audit persistence remains deferred until NELA 1.0 or
+  durable T2/T3 workflows.
+
+**Related files:**
+
+- `brain/dispatcher.py`
+- `agents/process_isolation.py`
+- `agents/registry.py`
+- `permissions/registry.py`
+- `permissions/models.py`
+- `tests/test_dispatcher.py`
+- `tests/test_agent_registry.py`
