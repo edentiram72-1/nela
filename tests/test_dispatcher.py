@@ -2,7 +2,7 @@ import unittest
 import time
 
 from agents.base import AgentCommand, AgentResult, BaseAgent
-from agents.registry import DuplicateAgentError
+from agents.registry import AgentNotRegisteredError, AgentRegistry, DuplicateAgentError
 from brain.dispatcher import AgentDispatcher
 from brain.planner import RetryPolicy, Task
 from core.events import EventBus, EventTypes
@@ -229,6 +229,25 @@ class DispatcherTests(unittest.TestCase):
 
         with self.assertRaises(DuplicateAgentError):
             dispatcher.register_agent(EchoAgent())
+
+    def test_agent_replace_rejects_missing_agent(self) -> None:
+        registry = AgentRegistry()
+
+        with self.assertRaises(AgentNotRegisteredError):
+            registry.replace(EchoAgent())
+
+        self.assertEqual(registry.registration_audit[-1], {"agent": "echo", "result": "rejected_missing"})
+        self.assertEqual(registry.names(), ())
+
+    def test_agent_replace_requires_existing_agent(self) -> None:
+        registry = AgentRegistry()
+        registry.register(EchoAgent())
+        replacement = EchoAgent()
+
+        registry.replace(replacement)
+
+        self.assertIs(registry.get("echo"), replacement)
+        self.assertEqual(registry.registration_audit[-1], {"agent": "echo", "result": "replaced"})
 
     def test_routes_by_capability_when_target_agent_is_not_hardcoded(self) -> None:
         events = EventBus()

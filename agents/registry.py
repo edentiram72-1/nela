@@ -9,6 +9,10 @@ class DuplicateAgentError(ValueError):
     """Raised when an Agent ID is already registered."""
 
 
+class AgentNotRegisteredError(ValueError):
+    """Raised when replacing an Agent that is not already registered."""
+
+
 class AgentRegistry:
     """Stores available agents by name."""
 
@@ -17,15 +21,19 @@ class AgentRegistry:
         self.registration_audit: list[dict[str, str]] = []
 
     def register(self, agent: BaseAgent) -> None:
-        if agent.name in self._agents:
-            self.registration_audit.append({"agent": agent.name, "result": "rejected_duplicate"})
-            raise DuplicateAgentError(f"Agent '{agent.name}' is already registered.")
-        self._store(agent, result="registered")
+        self._store(agent, result="registered", expect_exists=False)
 
     def replace(self, agent: BaseAgent) -> None:
-        self._store(agent, result="replaced")
+        self._store(agent, result="replaced", expect_exists=True)
 
-    def _store(self, agent: BaseAgent, result: str) -> None:
+    def _store(self, agent: BaseAgent, result: str, *, expect_exists: bool) -> None:
+        exists = agent.name in self._agents
+        if expect_exists and not exists:
+            self.registration_audit.append({"agent": agent.name, "result": "rejected_missing"})
+            raise AgentNotRegisteredError(f"Agent '{agent.name}' is not registered.")
+        if not expect_exists and exists:
+            self.registration_audit.append({"agent": agent.name, "result": "rejected_duplicate"})
+            raise DuplicateAgentError(f"Agent '{agent.name}' is already registered.")
         self._agents.update({agent.name: agent})
         self.registration_audit.append({"agent": agent.name, "result": result})
 
