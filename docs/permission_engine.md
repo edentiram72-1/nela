@@ -11,7 +11,13 @@ and it does not contain Agent-specific permission logic.
 The engine converts a proposed Agent command into an authorization decision:
 
 ```text
-Task -> Dispatcher -> PermissionEngine -> Agent.execute()
+Intent
+-> candidate capability set
+-> policy eligibility
+-> authorized candidate set
+-> Agent selection
+-> final scope validation
+-> Agent.execute()
 ```
 
 If authorization fails, the Agent is not called.
@@ -41,10 +47,14 @@ Built-in manifests currently exist for:
 - `voice`
 - `memory`
 - `spotify`
+- `terminal` foundation capabilities, with side-effecting execution disabled
+- `coding` foundation capabilities, with write/commit actions disabled
 - current placeholder Agents with read-only status/health capabilities
 
 Dynamic Agents can provide a `permission_manifest` attribute. If an Agent has no
 manifest and no built-in baseline, it registers with no executable actions.
+Duplicate manifests are rejected by default. Replacement must be explicit and is
+recorded in the registry audit trail.
 
 ### Agent Manifests
 
@@ -63,8 +73,19 @@ Example:
 AgentManifest(
     agent="desktop",
     capabilities=(
-        Capability("launch_application", PermissionTier.T1),
-        Capability("close_application", PermissionTier.T2, requires_confirmation=True),
+        Capability(
+            "desktop.application.launch",
+            PermissionTier.T1,
+            actions=("launch_application", "ensure_application"),
+            platforms=("macos",),
+        ),
+        Capability(
+            "desktop.application.close",
+            PermissionTier.T2,
+            actions=("close_application", "quit_application"),
+            platforms=("macos",),
+            requires_confirmation=True,
+        ),
     ),
 )
 ```
@@ -81,6 +102,9 @@ from unauthenticated users are denied before scope or tier checks.
 The existing conversation confirmation flow computes a hash over the Agent,
 capability, action, target, parameters, session, and expiration. The Permission
 Engine recomputes that hash immediately before execution and denies mismatches.
+The confirmation hash travels with the planned task; a confirmation for one
+action tuple cannot authorize another target, Agent, capability, parameter set,
+session, or expiration.
 
 The Permission Engine does not ask the user directly. It emits
 `PermissionRequested` and returns `confirmation_required`. Conversation-level
@@ -112,13 +136,14 @@ future work. In Sprint 2 it supports:
 - previous-entry hash and current-entry hash
 
 A durable audit writer can replace the current in-memory store later without
-changing the Dispatcher integration.
+changing the Dispatcher integration. T2/T3 authorization fails closed if the
+required audit write fails.
 
 ### Kill Switch
 
-`PermissionEngine.activate_kill_switch()` blocks every non-`T0` action. Read-only
-status checks can still proceed. The engine emits `KillSwitchActivated` and
-`KillSwitchDeactivated`.
+`PermissionEngine.activate_kill_switch()` revokes active scoped sessions and
+blocks every non-`T0` action. Read-only status checks can still proceed. The
+engine emits `KillSwitchActivated` and `KillSwitchDeactivated`.
 
 ### Lock Mode
 
@@ -146,13 +171,14 @@ states without redesigning the UI.
 
 `AgentDispatcher.dispatch()` now:
 
-1. Resolves the target Agent.
-2. Builds a `PermissionRequest`.
-3. Calls `PermissionEngine.authorize()`.
-4. Stops before `Agent.execute()` if authorization fails.
-5. Selects an authorized Agent only after policy evaluation.
-6. Uses the permission request `command_id` as the `AgentCommand.id`.
-7. Records the Agent result in the audit log after execution.
+1. Reads the semantic capability on the planned Task.
+2. Builds a candidate Agent set from the Capability Registry.
+3. Calls `PermissionEngine.authorize()` for each candidate.
+4. Selects only from authorized candidates.
+5. Revalidates scope immediately before `Agent.execute()`.
+6. Stops before `Agent.execute()` if authorization fails.
+7. Uses the permission request `command_id` as the `AgentCommand.id`.
+8. Records the Agent result in the audit log after execution.
 
 This keeps authorization centralized and avoids Agent-specific logic in the
 Brain.
@@ -167,6 +193,9 @@ Brain.
 - Kill switch currently blocks future execution and revokes scoped sessions.
   `agents/process_isolation.py` provides a subprocess foundation for future
   blocking/high-risk Agents.
+- `ui/secure_bridge.py` provides the restricted local WebView bridge foundation:
+  Unix domain socket transport, per-launch token validation, and origin checks.
+  The UI client is never treated as an authority source.
 - No Coding Agent or Cyber Agent was implemented in this sprint.
 
 ## Validation
