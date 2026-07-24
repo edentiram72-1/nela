@@ -1,7 +1,12 @@
 # Manual Draft PR Instructions
 
-Automatic PR creation was not available because GitHub CLI (`gh`) is not
-installed/authenticated in the local shell.
+Automatic PR creation may be unavailable because GitHub CLI (`gh`) is not
+installed/authenticated in the local shell and the GitHub connector may not have
+permission to create pull requests.
+
+Current branch: `feature/NELA-safety-spine-routing`
+
+Current commit for review setup: `11a2991`
 
 ## Compare URL
 
@@ -29,42 +34,44 @@ NELA Sprint 2 — Safety Spine and Intelligent Agent Routing
 ```markdown
 ## Summary
 
-Implements the first production Safety Spine for NELA OS.
+Implements Sprint 2 for NELA OS:
 
-### Included
-
-- Permission Engine
+- Permission Engine with T0-T4
 - Capability Registry
-- Agent Manifests
-- Scoped Sessions
-- Authentication foundation
-- Audit Log
-- Kill Switch
-- Lock Mode
+- Agent manifests
+- Scoped authenticated sessions
+- Confirmation binding
+- Tamper-evident audit log
+- Kill switch
+- Lock mode
 - Event Bus hardening
-- Intelligent capability routing
-- Desktop Agent integration
+- Safer capability routing
+- Desktop Agent permission integration
 
-### Validation
+## Validation
 
 - Language validation passed
 - UI headless smoke passed
 - 100 tests passed
 
-### Review Requested
+## Security Review Requested
 
-Please review:
+Claude findings to verify:
 
-- A1
-- K1
-- P1
-- P2
-- R1
-- L1
-- T1
-- T2
+- A1 - WebView bridge authentication
+- K1 - subprocess isolation and kill switch
+- P1 - TOCTOU protection
+- P2 - confirmation binding
+- R1 - Agent Registry overwrite protection
+- L1 - audit hash-chain integrity
+- T1 - authorization-safe routing
+- T2 - prompt-injection-resistant routing
 
-No merge requested yet.
+## Status
+
+Draft review only.
+
+Do not merge yet.
 ```
 
 ## Checklist
@@ -74,6 +81,8 @@ No merge requested yet.
 - [ ] Select **Create draft pull request**.
 - [ ] Paste the PR title above.
 - [ ] Paste the PR description above.
+- [ ] Use the dropdown next to the submit button if needed and choose the draft
+      pull request option.
 - [ ] Create the PR as Draft.
 - [ ] Send the PR link to Claude for review.
 - [ ] Do not merge until Claude/Codex review is complete.

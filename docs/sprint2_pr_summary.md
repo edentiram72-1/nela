@@ -2,7 +2,7 @@
 
 Branch: `feature/NELA-safety-spine-routing`
 
-Implementation commit verified before PR preparation: `8a86b1f`
+Implementation commit verified before PR preparation: `11a2991`
 
 Base branch: `develop`
 

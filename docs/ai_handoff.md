@@ -33,10 +33,10 @@ On 2026-07-24, Claude's `nela-architecture.zip` deliverable was staged as reposi
 On 2026-07-24, Sprint 2 implemented and hardened the Permission Engine on `feature/NELA-safety-spine-routing`. This is infrastructure-only work: no unrestricted Coding Agent, Cyber Agent, Browser/Vision/Cyber feature expansion, or UI redesign was added.
 
 On 2026-07-25, Sprint 2 was prepared for draft PR review. `docs/sprint2_pr_summary.md`,
-`docs/manual_pr_instructions.md`, and `docs/claude_sprint2_review_bundle.md`
-were added. Automatic PR creation is still blocked locally because GitHub CLI is
-not installed/authenticated and prior connector attempts returned permission
-errors.
+`docs/sprint2_pr_body.md`, `docs/manual_pr_instructions.md`,
+`docs/claude_sprint2_review_bundle.md`, `docs/claude_sprint2_review_prompt.md`,
+and `docs/safety_spine_sprint_report.md` were added. Automatic PR creation may
+still require GitHub web confirmation because GitHub CLI is not installed locally.
 
 The consolidation includes:
 
@@ -109,8 +109,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/secure_ui_bridge.md`
 - `docs/sprint2_claude_findings_status.md`
 - `docs/sprint2_pr_summary.md`
+- `docs/sprint2_pr_body.md`
 - `docs/manual_pr_instructions.md`
 - `docs/claude_sprint2_review_bundle.md`
+- `docs/claude_sprint2_review_prompt.md`
+- `docs/safety_spine_sprint_report.md`
 - `brain/reasoning.py`
 - `agents/base.py`
 - `agents/mock.py`
