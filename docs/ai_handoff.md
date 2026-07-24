@@ -32,6 +32,12 @@ On 2026-07-24, Claude's `nela-architecture.zip` deliverable was staged as reposi
 
 On 2026-07-24, Sprint 2 implemented and hardened the Permission Engine on `feature/NELA-safety-spine-routing`. This is infrastructure-only work: no unrestricted Coding Agent, Cyber Agent, Browser/Vision/Cyber feature expansion, or UI redesign was added.
 
+On 2026-07-25, Sprint 2 was prepared for draft PR review. `docs/sprint2_pr_summary.md`,
+`docs/manual_pr_instructions.md`, and `docs/claude_sprint2_review_bundle.md`
+were added. Automatic PR creation is still blocked locally because GitHub CLI is
+not installed/authenticated and prior connector attempts returned permission
+errors.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -102,6 +108,9 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/process_isolation.md`
 - `docs/secure_ui_bridge.md`
 - `docs/sprint2_claude_findings_status.md`
+- `docs/sprint2_pr_summary.md`
+- `docs/manual_pr_instructions.md`
+- `docs/claude_sprint2_review_bundle.md`
 - `brain/reasoning.py`
 - `agents/base.py`
 - `agents/mock.py`
@@ -210,7 +219,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Pending Tasks
 
-- Create a draft PR from `develop` to `main` through GitHub web UI or authenticated `gh`.
+- Create a draft PR from `feature/NELA-safety-spine-routing` to `develop`
+  through GitHub web UI using `docs/manual_pr_instructions.md`.
 - Do not merge further into `main` as part of Integration Sprint 1.
 - Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
