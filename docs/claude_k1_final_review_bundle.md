@@ -6,7 +6,7 @@ codex/multi-agent-foundation-safety
 
 ## Commit
 
-64dc0e0909ca553152ffa3871cc977d41550432d
+9262ce0a58f93d1800ff90684dbf0c1ab8478521
 
 ## Purpose
 
@@ -16,6 +16,8 @@ running isolated Agent work.
 
 It also addresses Claude's follow-up concern that a terminated isolated attempt
 could be retried without re-authorization while the kill switch is active.
+The latest commit also closes the post-authorization race where the kill switch
+becomes active after authorization but before an attempt starts.
 
 ## Changes Since Previous Bundle
 
@@ -27,6 +29,8 @@ could be retried without re-authorization while the kill switch is active.
 - Added a dispatcher regression test proving a running T2 isolated task is terminated when the kill switch fires mid-execution.
 - Blocked retries after the kill switch is active for any non-T0 permission boundary.
 - Added a dispatcher regression test proving a two-attempt T2 task records only one child-process start after kill-switch termination.
+- Added a pre-attempt emergency stop check so kill switch or lock mode activation after authorization prevents first-attempt execution.
+- Added a dispatcher regression test proving a post-authorization kill switch prevents the Agent from writing its marker before execution.
 
 ## Security Behavior
 
@@ -44,6 +48,7 @@ This means the kill switch now affects both:
 - future non-T0 authorization attempts
 - in-flight isolated T2/T3 work
 - retry behavior after an isolated process is terminated
+- the race window between authorization and execution start
 
 ## Files Changed In Commit
 
@@ -73,7 +78,7 @@ The ZIP also includes supporting files that were missing from the previous bundl
 
 ```text
 python3 -m unittest discover -s tests
-122 tests passed
+123 tests passed
 
 python3 -m scripts.validate_language_packs
 passed
