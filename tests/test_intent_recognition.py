@@ -45,6 +45,12 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.application, "Spotify")
         self.assertEqual(intent.target_agent, "spotify")
 
+    def test_resolves_hebrew_application_alias(self) -> None:
+        intent = IntentRouter().classify("נלה, תפתחי את ספוטיפיי")
+
+        self.assertEqual(intent.action, "OpenApplication")
+        self.assertEqual(intent.application, "Spotify")
+
 
 if __name__ == "__main__":
     unittest.main()

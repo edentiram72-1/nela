@@ -2,10 +2,12 @@ import unittest
 import time
 
 from agents.base import AgentCommand, AgentResult, BaseAgent
+from agents.registry import DuplicateAgentError
 from brain.dispatcher import AgentDispatcher
 from brain.planner import RetryPolicy, Task
 from core.events import EventBus, EventTypes
-from permissions import AgentManifest, Capability, PermissionTier
+from permissions import AgentManifest, Capability, PermissionTier, action_tuple_hash
+from datetime import datetime, timedelta, timezone
 
 
 class EchoAgent(BaseAgent):
@@ -61,6 +63,13 @@ class CrashingAgent(BaseAgent):
 
     def execute(self, command: AgentCommand) -> AgentResult:
         raise RuntimeError("boom")
+
+
+class DesktopLikeAgent(BaseAgent):
+    name = "desktop"
+
+    def execute(self, command: AgentCommand) -> AgentResult:
+        return AgentResult(True, "desktop ok", {"action": command.action, "application": command.payload.get("application")})
 
 
 class DispatcherTests(unittest.TestCase):
@@ -187,12 +196,22 @@ class DispatcherTests(unittest.TestCase):
             Task(description="Sensitive echo", action="sensitive_echo", target_agent="echo"),
             plan_id="plan-1",
         )
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+        payload = {"confirmed": True, "confirmation_expires_at": expires_at}
+        payload["confirmation_action_hash"] = action_tuple_hash(
+            agent="echo",
+            capability="sensitive_echo",
+            action="sensitive_echo",
+            target=None,
+            parameters=payload,
+            expires_at=expires_at,
+        )
         allowed = dispatcher.dispatch(
             Task(
                 description="Sensitive echo",
                 action="sensitive_echo",
                 target_agent="echo",
-                payload={"confirmed": True},
+                payload=payload,
             ),
             plan_id="plan-1",
         )
@@ -202,6 +221,34 @@ class DispatcherTests(unittest.TestCase):
         self.assertTrue(allowed.success)
         self.assertIn(EventTypes.PERMISSION_REQUESTED, [event.type for event in events.history()])
         self.assertIn(EventTypes.PERMISSION_GRANTED, [event.type for event in events.history()])
+
+    def test_duplicate_agent_registration_is_rejected(self) -> None:
+        events = EventBus()
+        dispatcher = AgentDispatcher(events)
+        dispatcher.register_agent(EchoAgent())
+
+        with self.assertRaises(DuplicateAgentError):
+            dispatcher.register_agent(EchoAgent())
+
+    def test_routes_by_capability_when_target_agent_is_not_hardcoded(self) -> None:
+        events = EventBus()
+        dispatcher = AgentDispatcher(events)
+        dispatcher.register_agent(DesktopLikeAgent())
+
+        result = dispatcher.dispatch(
+            Task(
+                description="Open Spotify",
+                action="launch_application",
+                capability="desktop.application.launch",
+                payload={"application": "Spotify"},
+            ),
+            plan_id="plan-1",
+        )
+
+        self.assertTrue(result.success)
+        dispatched = [event for event in events.history() if event.type == EventTypes.TASK_DISPATCHED]
+        self.assertEqual(dispatched[-1].payload["agent"], "desktop")
+        self.assertEqual(dispatched[-1].payload["capability"], "desktop.application.launch")
 
 
 if __name__ == "__main__":

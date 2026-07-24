@@ -7,7 +7,8 @@ import logging
 
 from agents.base import AgentResult, BaseAgent
 from core.events import Event, EventBus, EventTypes
-from permissions.audit import AuditLog, AuditRecord
+from permissions.audit import AuditLog, AuditRecord, AuditWriteError
+from permissions.confirmation import action_tuple_hash
 from permissions.models import (
     AuthenticatedUser,
     PermissionDecision,
@@ -18,6 +19,7 @@ from permissions.models import (
     ScopedSession,
 )
 from permissions.registry import CapabilityRegistry, default_capability_registry
+from permissions.scope import validate_scopes
 
 
 class PermissionEngine:
@@ -47,7 +49,7 @@ class PermissionEngine:
 
     def authorize(self, request: PermissionRequest) -> PermissionResult:
         user = request.user or self.default_user
-        capability = self.capabilities.capability_for(request.agent, request.action)
+        capability = self.capabilities.capability_for(request.agent, request.capability_id)
         tier = capability.tier if capability else PermissionTier.T4
 
         if not user.authenticated:
@@ -65,7 +67,7 @@ class PermissionEngine:
                 user=user,
                 tier=PermissionTier.T4,
                 decision=PermissionDecision.DENIED,
-                reason=f"No capability manifest allows {request.agent}.{request.action}.",
+                reason=f"No capability manifest allows {request.agent}.{request.capability_id}.",
             )
 
         if tier == PermissionTier.T4:
@@ -75,6 +77,16 @@ class PermissionEngine:
                 tier=tier,
                 decision=PermissionDecision.DENIED,
                 reason=f"{request.agent}.{request.action} is forbidden.",
+                capability=capability,
+            )
+
+        if not capability.enabled:
+            return self._deny(
+                request=request,
+                user=user,
+                tier=tier,
+                decision=PermissionDecision.DENIED,
+                reason=f"{request.agent}.{request.capability_id} is declared but disabled.",
                 capability=capability,
             )
 
@@ -111,30 +123,38 @@ class PermissionEngine:
                     capability=capability,
                 )
 
-        for scope in capability.scopes:
-            if scoped_session is None or not scoped_session.has_scope(scope):
-                return self._deny(
-                    request=request,
-                    user=user,
-                    tier=tier,
-                    decision=PermissionDecision.SCOPE_VIOLATION,
-                    reason=f"Missing scoped session grant for scope '{scope}'.",
-                    capability=capability,
-                )
-
-        if capability.needs_confirmation and not request.confirmed:
-            result = self._record(
+        scope_result = validate_scopes(capability.scopes, request, scoped_session)
+        if not scope_result.allowed:
+            return self._deny(
                 request=request,
                 user=user,
                 tier=tier,
-                decision=PermissionDecision.CONFIRMATION_REQUIRED,
-                reason=f"{request.agent}.{request.action} requires user confirmation.",
-                granted=False,
+                decision=PermissionDecision.SCOPE_VIOLATION,
+                reason=scope_result.reason,
                 capability=capability,
-                scope_session_id=scoped_session.id if scoped_session else None,
             )
-            self._publish(EventTypes.PERMISSION_REQUESTED, request, result)
-            return result
+
+        if capability.needs_confirmation:
+            confirmation_error = self._confirmation_error(request, capability.action)
+            if confirmation_error is not None:
+                decision = (
+                    PermissionDecision.CONFIRMATION_REQUIRED
+                    if not request.confirmed
+                    else PermissionDecision.CONFIRMATION_MISMATCH
+                )
+                result = self._record(
+                    request=request,
+                    user=user,
+                    tier=tier,
+                    decision=decision,
+                    reason=confirmation_error,
+                    granted=False,
+                    capability=capability,
+                    scope_session_id=scoped_session.id if scoped_session else None,
+                )
+                event_type = EventTypes.PERMISSION_REQUESTED if result.decision == PermissionDecision.CONFIRMATION_REQUIRED else EventTypes.PERMISSION_DENIED
+                self._publish(event_type, request, result)
+                return result
 
         result = self._record(
             request=request,
@@ -146,19 +166,21 @@ class PermissionEngine:
             capability=capability,
             scope_session_id=scoped_session.id if scoped_session else None,
         )
-        self._publish(EventTypes.PERMISSION_GRANTED, request, result)
+        self._publish(EventTypes.PERMISSION_GRANTED if result.granted else EventTypes.PERMISSION_DENIED, request, result)
         return result
 
     def record_action_result(self, request: PermissionRequest, result: AgentResult, permission: PermissionResult) -> None:
         record = AuditRecord(
             agent=request.agent,
             action=request.action,
+            capability=permission.capability.action if permission.capability else request.action,
             tier=permission.tier,
             decision=PermissionDecision.GRANTED if result.success else PermissionDecision.DENIED,
             reason="Agent execution completed." if result.success else "Agent execution failed.",
             granted=permission.granted,
             user_id=(request.user or self.default_user).user_id,
             target=request.target,
+            session_id=permission.scope_session_id,
             task_id=request.task_id,
             plan_id=request.plan_id,
             command_id=request.command_id,
@@ -166,7 +188,13 @@ class PermissionEngine:
             result_success=result.success,
             result_message=result.message,
         )
-        self.audit_log.append(record)
+        try:
+            self.audit_log.append(record)
+        except AuditWriteError:
+            if permission.tier in {PermissionTier.T2, PermissionTier.T3}:
+                raise
+            self._logger.exception("audit_result_write_failed agent=%s action=%s", request.agent, request.action)
+            return
         self.events.publish(
             Event(
                 type=EventTypes.ACTION_EXECUTED,
@@ -212,6 +240,7 @@ class PermissionEngine:
 
     def activate_kill_switch(self, reason: str = "") -> None:
         self.kill_switch_active = True
+        self.revoke_all_scoped_sessions()
         self._logger.warning("permission_kill_switch_active reason=%s", reason)
         self.events.publish(
             Event(
@@ -240,6 +269,11 @@ class PermissionEngine:
                 payload={"active": active, "reason": reason},
             )
         )
+
+    def revoke_all_scoped_sessions(self) -> int:
+        count = len(self._scoped_sessions)
+        self._scoped_sessions.clear()
+        return count
 
     def _validate_t3_scope(
         self,
@@ -298,22 +332,41 @@ class PermissionEngine:
         capability=None,
         scope_session_id: str | None = None,
     ) -> PermissionResult:
-        record = self.audit_log.append(
-            AuditRecord(
-                agent=request.agent,
-                action=request.action,
-                tier=tier,
-                decision=decision,
-                reason=reason,
-                granted=granted,
-                user_id=user.user_id,
-                target=request.target,
-                task_id=request.task_id,
-                plan_id=request.plan_id,
-                command_id=request.command_id,
-                scope_session_id=scope_session_id,
-            )
+        record = AuditRecord(
+            agent=request.agent,
+            action=request.action,
+            capability=capability.action if capability else request.capability_id,
+            tier=tier,
+            decision=decision,
+            reason=reason,
+            granted=granted,
+            user_id=user.user_id,
+            target=request.target,
+            session_id=scope_session_id,
+            task_id=request.task_id,
+            plan_id=request.plan_id,
+            command_id=request.command_id,
+            scope_session_id=scope_session_id,
         )
+        try:
+            record = self.audit_log.append(record)
+        except AuditWriteError:
+            if tier in {PermissionTier.T2, PermissionTier.T3}:
+                return PermissionResult(
+                    granted=False,
+                    decision=PermissionDecision.DENIED,
+                    tier=tier,
+                    reason="Audit write failed; action denied fail-closed.",
+                    capability=capability,
+                )
+            self._logger.exception("audit_decision_write_failed agent=%s action=%s", request.agent, request.action)
+            return PermissionResult(
+                granted=granted,
+                decision=decision,
+                tier=tier,
+                reason=f"{reason} Audit write failed; continuing under T0/T1 diagnostic policy.",
+                capability=capability,
+            )
         return PermissionResult(
             granted=granted,
             decision=decision,
@@ -323,6 +376,27 @@ class PermissionEngine:
             audit_id=record.id,
             scope_session_id=scope_session_id,
         )
+
+    def _confirmation_error(self, request: PermissionRequest, capability_id: str) -> str | None:
+        if not request.confirmed:
+            return f"{request.agent}.{request.action} requires user confirmation."
+        expires_at = _parse_datetime(request.confirmation_expires_at)
+        if expires_at is None:
+            return "Confirmation is missing a bound expiration."
+        if datetime.now(timezone.utc) > expires_at:
+            return "Confirmation expired before execution."
+        expected = action_tuple_hash(
+            agent=request.agent,
+            capability=capability_id,
+            action=request.action,
+            target=request.target,
+            parameters=request.payload,
+            session=request.scoped_session_id,
+            expires_at=expires_at,
+        )
+        if request.confirmation_action_hash != expected:
+            return "Confirmation does not match the exact action tuple."
+        return None
 
     def _publish(self, event_type: str, request: PermissionRequest, result: PermissionResult) -> None:
         self.events.publish(
@@ -338,3 +412,17 @@ class PermissionEngine:
                 },
             )
         )
+
+
+def _parse_datetime(value: object) -> datetime | None:
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = datetime.fromisoformat(value)
+            if parsed.tzinfo is None:
+                return parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc)
+        except ValueError:
+            return None
+    return None

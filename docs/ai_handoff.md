@@ -6,7 +6,7 @@ Every significant change must update this file before handoff.
 
 ## Current Project Status
 
-Phase 1 Brain foundation, Integration Sprint 1, the Claude language/personality drop, the multi-agent architecture specifications, and Sprint 2 Permission Engine implementation have been consolidated or staged from the current `develop` baseline.
+Phase 1 Brain foundation, Integration Sprint 1, the Claude language/personality drop, the multi-agent architecture specifications, Sprint 2 Permission Engine implementation, and Claude Sprint 2 safety findings are being consolidated on `feature/NELA-safety-spine-routing`.
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
@@ -30,7 +30,7 @@ On 2026-07-24, `nela-language-drop-final.zip` was integrated into the language f
 
 On 2026-07-24, Claude's `nela-architecture.zip` deliverable was staged as repository documentation on `feature/NELA-architecture-specs`. This is specification-only work: no Coding Agent, Cyber Agent, Research Agent, advanced orchestration runtime, or new side-effecting capability was implemented.
 
-On 2026-07-24, Sprint 2 implemented the Permission Engine on `feature/NELA-sprint-2-permission-engine`. This is infrastructure-only work: no Coding Agent, Cyber Agent, Browser/Vision/Cyber feature expansion, or UI redesign was added.
+On 2026-07-24, Sprint 2 implemented and hardened the Permission Engine on `feature/NELA-safety-spine-routing`. This is infrastructure-only work: no unrestricted Coding Agent, Cyber Agent, Browser/Vision/Cyber feature expansion, or UI redesign was added.
 
 The consolidation includes:
 
@@ -47,6 +47,7 @@ The consolidation includes:
 - Claude language system integration: `pack/categories/variants` pack shape, `speech_text`, `eye_state`, `gender_tier`, `min_stage`, session use counts, gender tag rendering, and personality `preset/params/pack_overrides` compatibility.
 - Multi-agent architecture specifications: shared T0-T4 permission model, runtime lifecycle architecture, Coding Agent spec, defensive Cyber Agent spec, multi-agent orchestration spec, and AI system roadmap.
 - Sprint 2 Permission Engine: T0-T4 tiers, Capability Registry, Agent manifests, authentication checks, confirmation gate, scoped sessions, in-memory audit log, kill switch, lock mode, permission events, UI state mapping for permission events, and Dispatcher integration before `agent.execute()`.
+- Claude Sprint 2 findings: secure local bridge foundation, subprocess isolation foundation, symlink-aware scope validation, exact confirmation binding, insert-only Agent registration, tamper-evident audit hash chain, and authorization-before-final-routing foundation.
 
 Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
@@ -56,11 +57,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Sprint 2: Permission Engine**
+**Sprint 2: Safety Spine + Intelligent Routing**
 
 ## Active Branch
 
-`feature/NELA-sprint-2-permission-engine`
+`feature/NELA-safety-spine-routing`
 
 ## Recently Modified Files
 
@@ -83,6 +84,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `brain/decision.py`
 - `brain/dispatcher.py`
 - `brain/intent_router.py`
+- `brain/applications.py`
 - `brain/memory_manager.py`
 - `brain/planner.py`
 - `permissions/__init__.py`
@@ -90,11 +92,15 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `permissions/engine.py`
 - `permissions/models.py`
 - `permissions/registry.py`
+- `permissions/confirmation.py`
+- `permissions/scope.py`
 - `docs/permission_engine.md`
+- `docs/sprint2_claude_findings_status.md`
 - `brain/reasoning.py`
 - `agents/base.py`
 - `agents/mock.py`
 - `agents/registry.py`
+- `agents/process_isolation.py`
 - `agents/automation/agent.py`
 - `agents/browser/agent.py`
 - `agents/calendar/agent.py`
@@ -159,6 +165,9 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `tests/test_desktop_agent.py`
 - `tests/test_dispatcher.py`
 - `tests/test_permission_engine.py`
+- `tests/test_audit_log.py`
+- `tests/test_process_isolation.py`
+- `tests/test_secure_bridge.py`
 - `tests/test_intent_recognition.py`
 - `tests/test_planner.py`
 - `ui/app.py`
@@ -251,7 +260,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Validation
 
-Latest Sprint 2 validation on `feature/NELA-sprint-2-permission-engine`:
+Latest Sprint 2 validation on `feature/NELA-safety-spine-routing`:
 
 ```text
 python3 -m unittest discover -s tests
@@ -259,7 +268,7 @@ python3 -m scripts.validate_language_packs
 python3 -m ui.app --headless-smoke
 ```
 
-Result: 76 tests passed; language pack validation passed; headless UI bootstrap succeeded.
+Result: 99 tests passed; language pack validation passed; headless UI bootstrap succeeded.
 
 Additional syntax validation:
 

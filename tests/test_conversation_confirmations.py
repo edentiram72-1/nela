@@ -133,6 +133,20 @@ class ConversationConfirmationTests(unittest.TestCase):
         dispatched_events = [event for event in events.history() if event.type == EventTypes.TASK_DISPATCHED]
         self.assertGreaterEqual(len(dispatched_events), 2)
 
+    def test_missing_application_slot_is_filled_without_false_confirmation(self) -> None:
+        engine, events, context = make_engine()
+
+        first = engine.handle_text("תפתחי אפליקציה")
+        second = engine.handle_text("Spotify")
+
+        self.assertEqual(first.decision.type, DecisionType.ASK_CLARIFICATION)
+        self.assertFalse(context.pending_confirmations)
+        self.assertNotIn("pending_slot", context.session_state)
+        self.assertEqual(second.intent.action, "OpenApplication")
+        self.assertEqual(second.intent.application, "Spotify")
+        self.assertIsNotNone(second.plan)
+        self.assertNotIn("ConfirmationResponse", [event.payload.get("action") for event in events.history()])
+
     def test_close_application_requires_confirmation_then_dispatches_original_intent(self) -> None:
         engine, events, context = make_engine()
 
@@ -144,7 +158,7 @@ class ConversationConfirmationTests(unittest.TestCase):
         self.assertEqual(second.intent.action, "CloseApplication")
         self.assertIsNotNone(second.plan)
         self.assertEqual(second.plan.tasks[0].action, "close_application")
-        self.assertEqual(second.plan.tasks[0].target_agent, "desktop")
+        self.assertEqual(second.plan.tasks[0].capability, "desktop.application.close")
         self.assertIn(EventTypes.CONFIRMATION_RESOLVED, [event.type for event in events.history()])
 
 

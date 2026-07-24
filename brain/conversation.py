@@ -11,10 +11,12 @@ from agents.base import AgentResult
 from brain.context import ContextEngine, PendingConfirmation
 from brain.decision import Decision, DecisionEngine, DecisionType
 from brain.dispatcher import AgentDispatcher
+from brain.applications import resolve_application_alias
 from brain.intent_router import Intent, IntentRouter
 from brain.memory_manager import MemoryManager
-from brain.planner import Plan, Planner, Task, TaskMode
+from brain.planner import Plan, Planner, Task, TaskMode, _action_to_command
 from core.events import Event, EventBus, EventTypes
+from permissions.confirmation import action_tuple_hash
 
 
 @dataclass(frozen=True)
@@ -90,6 +92,10 @@ class ConversationEngine:
             if routed is not None:
                 return routed
 
+        pending_slot = self.context.session_state.get("pending_slot")
+        if isinstance(pending_slot, dict):
+            return self._handle_pending_slot(text, input_mode, turn_id, pending_slot)
+
         intent = self.intent_router.classify(text, context=self.context.snapshot().__dict__)
         return self._process_intent(text, input_mode, turn_id, intent)
 
@@ -124,26 +130,42 @@ class ConversationEngine:
 
         if decision.type in {DecisionType.ASK_CLARIFICATION, DecisionType.WAIT, DecisionType.REJECT}:
             if decision.question:
-                confirmation = self.context.add_pending_confirmation(
-                    decision.question,
-                    {
-                        "turn_id": turn_id,
-                        "intent": intent,
-                        "unclear_replies": 0,
-                    },
-                )
-                self.events.publish(
-                    Event(
-                        type=EventTypes.CONFIRMATION_REQUESTED,
-                        source="brain.conversation",
-                        payload={
+                if intent.requires_confirmation:
+                    confirmation_binding = self._confirmation_binding(intent)
+                    confirmation = self.context.add_pending_confirmation(
+                        decision.question,
+                        {
                             "turn_id": turn_id,
-                            "confirmation_id": confirmation.id,
-                            "question": confirmation.question,
-                            "intent": intent.action,
+                            "intent": intent,
+                            "unclear_replies": 0,
+                            "confirmation_binding": confirmation_binding,
                         },
                     )
-                )
+                    self.events.publish(
+                        Event(
+                            type=EventTypes.CONFIRMATION_REQUESTED,
+                            source="brain.conversation",
+                            payload={
+                                "turn_id": turn_id,
+                                "confirmation_id": confirmation.id,
+                                "question": confirmation.question,
+                                "intent": intent.action,
+                            },
+                        )
+                    )
+                elif decision.reason == "Missing application slot.":
+                    self.context.session_state["pending_slot"] = {
+                        "slot": "application",
+                        "intent": intent,
+                        "turn_id": turn_id,
+                    }
+                    self.events.publish(
+                        Event(
+                            type=EventTypes.CONTEXT_UPDATED,
+                            source="brain.conversation",
+                            payload={"turn_id": turn_id, "pending_slot": "application", "intent": intent.action},
+                        )
+                    )
             return ConversationTurn(
                 user_text=text,
                 input_mode=input_mode,
@@ -187,6 +209,36 @@ class ConversationEngine:
             return self._resolve_cancelled(text, input_mode, turn_id, confirmation, "User cancelled the action.")
         return self._handle_unclear_confirmation_answer(text, input_mode, turn_id, confirmation)
 
+    def _handle_pending_slot(
+        self,
+        text: str,
+        input_mode: str,
+        turn_id: str,
+        pending_slot: dict[str, object],
+    ) -> ConversationTurn:
+        intent = pending_slot.get("intent")
+        if not isinstance(intent, Intent):
+            self.context.session_state.pop("pending_slot", None)
+            fresh = self.intent_router.classify(text, context=self.context.snapshot().__dict__)
+            return self._process_intent(text, input_mode, turn_id, fresh)
+
+        application = resolve_application_alias(text.strip())
+        if not application:
+            self.context.session_state.pop("pending_slot", None)
+            fresh = self.intent_router.classify(text, context=self.context.snapshot().__dict__)
+            return self._process_intent(text, input_mode, turn_id, fresh)
+
+        self.context.session_state.pop("pending_slot", None)
+        filled_intent = replace(intent, application=application, raw_text=f"{intent.raw_text} {text}".strip())
+        self.events.publish(
+            Event(
+                type=EventTypes.CONTEXT_UPDATED,
+                source="brain.conversation",
+                payload={"turn_id": turn_id, "filled_slot": "application", "application": application},
+            )
+        )
+        return self._process_intent(text, input_mode, turn_id, filled_intent)
+
     def _resolve_confirmed(
         self,
         text: str,
@@ -210,9 +262,16 @@ class ConversationEngine:
         if not isinstance(intent, Intent):
             intent = self.intent_router.classify(text, context=self.context.snapshot().__dict__)
         elif intent.requires_confirmation:
+            binding = confirmation.metadata.get("confirmation_binding")
+            bound_parameters = {}
+            if isinstance(binding, dict):
+                bound_parameters = {
+                    "confirmation_action_hash": binding.get("action_hash"),
+                    "confirmation_expires_at": binding.get("expires_at"),
+                }
             intent = replace(
                 intent,
-                parameters={**intent.parameters, "confirmed": True},
+                parameters={**intent.parameters, "confirmed": True, **bound_parameters},
                 requires_confirmation=False,
             )
         return self._process_intent(text, input_mode, turn_id, intent)
@@ -394,6 +453,41 @@ class ConversationEngine:
 
     def _dependencies_satisfied(self, task: Task, completed: set[str]) -> bool:
         return all(dependency in completed for dependency in task.depends_on)
+
+    def _confirmation_binding(self, intent: Intent) -> dict[str, object]:
+        expires_at = datetime.now(timezone.utc) + self.confirmation_ttl
+        if intent.action == "CloseApplication":
+            agent = "desktop"
+            capability = "desktop.application.close"
+            action = "close_application"
+            target = intent.application
+            parameters = {"application": intent.application}
+        else:
+            agent = intent.target_agent
+            action = _action_to_command(intent.action)
+            capability = str(intent.parameters.get("capability") or action)
+            target = intent.application or intent.resource
+            parameters = {
+                "text": intent.raw_text,
+                "application": intent.application,
+                "resource": intent.resource,
+            }
+        return {
+            "agent": agent,
+            "capability": capability,
+            "action": action,
+            "target": target,
+            "expires_at": expires_at.isoformat(),
+            "action_hash": action_tuple_hash(
+                agent=agent,
+                capability=capability,
+                action=action,
+                target=target,
+                parameters=parameters,
+                session=None,
+                expires_at=expires_at,
+            ),
+        }
 
 
 ConfirmationAnswer = Literal["affirmative", "negative", "unclear"]

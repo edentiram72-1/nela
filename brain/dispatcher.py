@@ -9,7 +9,7 @@ from agents.base import AgentCommand, AgentResult, AgentState, BaseAgent
 from agents.registry import AgentRegistry
 from brain.planner import Task
 from core.events import Event, EventBus, EventTypes
-from permissions import AuthenticatedUser, PermissionEngine, PermissionRequest
+from permissions import AuthenticatedUser, PermissionEngine, PermissionRequest, PermissionResult
 
 
 class AgentDispatcher:
@@ -72,33 +72,23 @@ class AgentDispatcher:
     def dispatch(self, task: Task, plan_id: str) -> AgentResult:
         if task.id in self.cancelled_tasks:
             return self._cancelled(task, plan_id)
-
-        if not task.target_agent:
-            return self._agent_unavailable(task, plan_id, "Task has no target agent.")
-
-        agent = self.registry.get(task.target_agent)
-        if not agent:
+        if task.target_agent and self.registry.get(task.target_agent) is None:
             return self._agent_unavailable(task, plan_id, f"Agent '{task.target_agent}' is not registered.")
 
-        permission_request = PermissionRequest(
-            agent=task.target_agent,
-            action=task.action,
-            payload=task.payload,
-            task_id=task.id,
-            plan_id=plan_id,
-            user=self.authenticated_user,
-            confirmed=bool(task.payload.get("confirmed", False)),
-            scoped_session_id=_optional_string(task.payload.get("scoped_session_id")),
-        )
-        permission = self.permission_engine.authorize(permission_request)
+        target_agent, permission_request, permission = self._authorize_task_route(task, plan_id)
+        if target_agent is None or permission_request is None or permission is None:
+            return self._agent_unavailable(task, plan_id, "No authorized Agent is available for this capability.")
         if not permission.granted:
             return self._permission_denied(task, plan_id, permission.reason, permission.to_dict())
+        agent = self.registry.get(target_agent)
+        if not agent:
+            return self._agent_unavailable(task, plan_id, f"Agent '{target_agent}' is not registered.")
 
         self.events.publish(
             Event(
                 type=EventTypes.TASK_DISPATCHED,
                 source="brain.dispatcher",
-                payload={"plan_id": plan_id, "task_id": task.id, "agent": task.target_agent},
+                payload={"plan_id": plan_id, "task_id": task.id, "agent": target_agent, "capability": permission_request.capability_id},
             )
         )
 
@@ -141,13 +131,13 @@ class AgentDispatcher:
                     {
                         "task_id": task.id,
                         "plan_id": plan_id,
-                        "agent": task.target_agent,
+                        "agent": target_agent,
                         "error_type": error.__class__.__name__,
                         "error": str(error),
                         "elapsed_seconds": elapsed,
                     },
                 )
-                self.logger.exception("agent_execute_failed task_id=%s agent=%s", task.id, task.target_agent)
+                self.logger.exception("agent_execute_failed task_id=%s agent=%s", task.id, target_agent)
                 break
             elapsed = time.monotonic() - attempt_started_at
             timed_out = task.timeout_seconds is not None and elapsed > task.timeout_seconds
@@ -173,7 +163,8 @@ class AgentDispatcher:
                         payload={
                             "plan_id": plan_id,
                             "task_id": task.id,
-                            "agent": task.target_agent,
+                            "agent": target_agent,
+                            "capability": permission_request.capability_id,
                             "attempts": attempts,
                             "elapsed_seconds": elapsed,
                         },
@@ -184,7 +175,7 @@ class AgentDispatcher:
             if attempts < task.retry_policy.max_attempts and task.retry_policy.backoff_seconds:
                 time.sleep(task.retry_policy.backoff_seconds)
 
-        self.logger.error("task_failed task_id=%s agent=%s", task.id, task.target_agent)
+        self.logger.error("task_failed task_id=%s agent=%s", task.id, target_agent)
         self.permission_engine.record_action_result(permission_request, last_result, permission)
         self.events.publish(
             Event(
@@ -193,13 +184,54 @@ class AgentDispatcher:
                 payload={
                     "plan_id": plan_id,
                     "task_id": task.id,
-                    "agent": task.target_agent,
+                    "agent": target_agent,
                     "message": last_result.message,
                     "attempts": attempts,
                 },
             )
         )
         return last_result
+
+    def _authorize_task_route(
+        self,
+        task: Task,
+        plan_id: str,
+    ) -> tuple[str | None, PermissionRequest | None, PermissionResult | None]:
+        if task.target_agent:
+            request = self._permission_request(task.target_agent, task, plan_id)
+            return task.target_agent, request, self.permission_engine.authorize(request)
+        if not task.capability:
+            return None, None, None
+
+        candidates = self.permission_engine.capabilities.find_agents_for_capability(task.capability, platform="macos")
+        first_denial: tuple[str, PermissionRequest, PermissionResult] | None = None
+        for candidate in candidates:
+            if self.registry.get(candidate) is None:
+                continue
+            request = self._permission_request(candidate, task, plan_id)
+            permission = self.permission_engine.authorize(request)
+            if permission.granted:
+                return candidate, request, permission
+            if first_denial is None:
+                first_denial = (candidate, request, permission)
+        if first_denial is not None:
+            return first_denial
+        return None, None, None
+
+    def _permission_request(self, agent_name: str, task: Task, plan_id: str) -> PermissionRequest:
+        return PermissionRequest(
+            agent=agent_name,
+            action=task.action,
+            capability=task.capability or _optional_string(task.payload.get("capability")),
+            payload=task.payload,
+            task_id=task.id,
+            plan_id=plan_id,
+            user=self.authenticated_user,
+            confirmed=bool(task.payload.get("confirmed", False)),
+            confirmation_action_hash=_optional_string(task.payload.get("confirmation_action_hash")),
+            confirmation_expires_at=task.payload.get("confirmation_expires_at"),
+            scoped_session_id=_optional_string(task.payload.get("scoped_session_id")),
+        )
 
     def _agent_unavailable(self, task: Task, plan_id: str, message: str) -> AgentResult:
         result = AgentResult(False, message, {"task_id": task.id, "plan_id": plan_id})
@@ -211,6 +243,7 @@ class AgentDispatcher:
                     "plan_id": plan_id,
                     "task_id": task.id,
                     "agent": task.target_agent,
+                    "capability": task.capability,
                     "message": message,
                 },
             )

@@ -353,3 +353,39 @@ declare allowed actions through manifests; unknown actions fail closed as `T4`.
 - `core/events.py`
 - `docs/permission_engine.md`
 - `tests/test_permission_engine.py`
+
+### DEC-0015: Treat Claude Sprint 2 Findings As Ship Blockers
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** Claude reviewed the Sprint 2 safety design and identified
+ship-blocking risks around WebView bridge authentication, kill switch process
+isolation, TOCTOU scope validation, confirmation binding, registry overwrite,
+audit tamper evidence, routing order, and prompt injection into routing.
+
+**Decision:** Track the findings as required safety gates on
+`feature/NELA-safety-spine-routing`. Additive code may land only when it keeps
+the Brain agent-neutral and prevents unrestricted Coding, Cyber, Browser, or
+Terminal capabilities from becoming active.
+
+**Consequences:**
+
+- Future WebView bridge code must use restricted local transport and per-launch
+  authentication.
+- Blocking/high-risk Agents must run behind a subprocess boundary before they
+  can claim forced termination semantics.
+- T2/T3 confirmations must be bound to exact action tuples.
+- Audit records must be tamper-evident.
+- Agent/capability registration must not silently overwrite existing entries.
+- Routing must authorize candidate capabilities before final Agent selection.
+
+**Related files:**
+
+- `docs/sprint2_claude_findings_status.md`
+- `ui/secure_bridge.py`
+- `agents/process_isolation.py`
+- `permissions/audit.py`
+- `permissions/confirmation.py`
+- `permissions/scope.py`
+- `brain/dispatcher.py`

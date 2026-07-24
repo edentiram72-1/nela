@@ -29,6 +29,7 @@ class PermissionDecision(str, Enum):
     LOCKED = "locked"
     KILL_SWITCH_ACTIVE = "kill_switch_active"
     SCOPE_VIOLATION = "scope_violation"
+    CONFIRMATION_MISMATCH = "confirmation_mismatch"
 
 
 @dataclass(frozen=True)
@@ -39,7 +40,10 @@ class Capability:
     tier: PermissionTier
     description: str = ""
     scopes: tuple[str, ...] = ()
+    actions: tuple[str, ...] = ()
+    platforms: tuple[str, ...] = ()
     requires_confirmation: bool = False
+    enabled: bool = True
 
     @property
     def needs_confirmation(self) -> bool:
@@ -57,9 +61,12 @@ class AgentManifest:
 
     def capability_for(self, action: str) -> Capability | None:
         for capability in self.capabilities:
-            if capability.action == action:
+            if capability.action == action or action in capability.actions:
                 return capability
         return None
+
+    def supports_capability(self, capability_id: str) -> bool:
+        return any(capability.action == capability_id for capability in self.capabilities)
 
 
 @dataclass(frozen=True)
@@ -120,12 +127,15 @@ class PermissionRequest:
 
     agent: str
     action: str
+    capability: str | None = None
     payload: dict[str, Any] = field(default_factory=dict)
     task_id: str | None = None
     plan_id: str | None = None
     command_id: str = field(default_factory=lambda: str(uuid4()))
     user: AuthenticatedUser | None = None
     confirmed: bool = False
+    confirmation_action_hash: str | None = None
+    confirmation_expires_at: datetime | None = None
     scoped_session_id: str | None = None
 
     @property
@@ -137,6 +147,10 @@ class PermissionRequest:
             or self.payload.get("path")
         )
         return str(value) if value is not None else None
+
+    @property
+    def capability_id(self) -> str:
+        return self.capability or self.action
 
 
 @dataclass(frozen=True)

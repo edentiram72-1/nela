@@ -5,6 +5,10 @@ from __future__ import annotations
 from agents.base import BaseAgent
 
 
+class DuplicateAgentError(ValueError):
+    """Raised when an Agent ID is already registered."""
+
+
 class AgentRegistry:
     """Stores available agents by name."""
 
@@ -12,6 +16,11 @@ class AgentRegistry:
         self._agents: dict[str, BaseAgent] = {}
 
     def register(self, agent: BaseAgent) -> None:
+        if agent.name in self._agents:
+            raise DuplicateAgentError(f"Agent '{agent.name}' is already registered.")
+        self._agents[agent.name] = agent
+
+    def replace(self, agent: BaseAgent) -> None:
         self._agents[agent.name] = agent
 
     def unregister(self, name: str) -> bool:
