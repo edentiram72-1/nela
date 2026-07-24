@@ -26,6 +26,7 @@ The repository now contains a working foundation that can:
 - Track conversation context and running tasks.
 - Manage short-term and long-term memory layers.
 - Dispatch tasks to registered Agents through a shared contract.
+- Register a first-wave defensive multi-agent foundation for orchestration, planning, software engineering, QA, memory, learning, secure code review, vulnerability research, and anomaly discovery.
 - Publish lifecycle events through an in-process Event Bus.
 - Use safe mock Agents for MVP validation while Desktop Agent V1 begins real macOS application lifecycle control.
 - Launch a modular desktop UI shell that connects user text input to the existing Brain.
@@ -213,8 +214,27 @@ Implemented Agents:
 - Codex
 - Claude
 - Automation
+- Orchestrator
+- Planner
+- Learning
+- Code Architect
+- Backend
+- Frontend
+- Test/QA
+- Secure Code Reviewer
+- Vulnerability Research
+- Anomaly Discovery
 
 All non-Desktop Agents currently validate delegation and lifecycle behavior through safe mock behavior. They do not perform real side effects.
+
+The first specialist-agent layer is available through `agents.build_default_registry()`.
+The security agents are defensive-only: local code analysis, SAST-style checks,
+dependency/advisory correlation, config review scaffolding, local/lab fuzzing
+plans, anomaly detection, threat modeling, and remediation guidance. They do not
+build exploitation, persistence, credential theft, evasion, malware, phishing,
+DDoS, or attacks against external targets.
+
+See `docs/multi_agent_foundation.md` and `agents/README.md`.
 
 ### Desktop Agent V1
 

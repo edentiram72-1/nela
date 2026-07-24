@@ -26,6 +26,7 @@ NELA OS השלימה את **Integration Sprint 1** עבור baseline מאוחד 
 - לעקוב אחרי הקשר שיחה ומשימות רצות.
 - לנהל שכבות זיכרון קצר-טווח וארוך-טווח.
 - לשלוח משימות לסוכנים רשומים דרך חוזה משותף.
+- לרשום תשתית multi-agent ראשונית והגנתית לתיאום, תכנון, פיתוח, QA, זיכרון, למידה, סקירת קוד מאובטחת, מחקר פגיעויות וגילוי אנומליות.
 - לפרסם אירועי מחזור חיים דרך Event Bus פנימי.
 - להשתמש בסוכני mock בטוחים לצורך בדיקות MVP, כאשר Desktop Agent V1 מתחיל שליטה מוגבלת ובטוחה במחזור חיים של אפליקציות macOS.
 - להפעיל תשתית UI מודולרית שמחברת קלט טקסט ל-Brain הקיים.
@@ -211,8 +212,27 @@ health_check()
 - Codex
 - Claude
 - Automation
+- Orchestrator
+- Planner
+- Learning
+- Code Architect
+- Backend
+- Frontend
+- Test/QA
+- Secure Code Reviewer
+- Vulnerability Research
+- Anomaly Discovery
 
 הסוכנים האלה בודקים כרגע האצלה ומחזור חיים. הם לא מבצעים פעולות אמיתיות עם תופעות לוואי.
+
+שכבת הסוכנים המתמחים הראשונה זמינה דרך `agents.build_default_registry()`.
+סוכני הסייבר הם הגנתיים בלבד: ניתוח קוד מקומי, בדיקות בסגנון SAST,
+התאמת תלותים לנתוני advisory/CVE שסופקו, הכנת סקירת קונפיגורציה,
+תוכניות fuzzing מקומיות/מעבדתיות, גילוי אנומליות, threat modeling
+והצעת תיקונים. הם לא בונים exploitation, persistence, credential theft,
+evasion, malware, phishing, DDoS או תקיפה נגד מטרות חיצוניות.
+
+ראו `docs/multi_agent_foundation.md` ו-`agents/README.md`.
 
 ### 6. זרימת סקירה עם Claude
 

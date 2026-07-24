@@ -38,5 +38,17 @@ class AgentRegistry:
     def names(self) -> tuple[str, ...]:
         return tuple(sorted(self._agents))
 
+    def manifests(self) -> dict[str, object]:
+        """Return optional Agent manifests for capability discovery."""
+
+        manifests: dict[str, object] = {}
+        for name, agent in self._agents.items():
+            manifest = getattr(agent, "manifest", None)
+            if manifest is None:
+                continue
+            to_dict = getattr(manifest, "to_dict", None)
+            manifests[name] = to_dict() if callable(to_dict) else manifest
+        return manifests
+
     def health_check(self) -> dict[str, object]:
         return {name: agent.health_check() for name, agent in self._agents.items()}
