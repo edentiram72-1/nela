@@ -383,6 +383,11 @@ Terminal capabilities from becoming active.
 **Related files:**
 
 - `docs/sprint2_claude_findings_status.md`
+- `docs/agent_registry.md`
+- `docs/audit_and_recovery.md`
+- `docs/capability_routing.md`
+- `docs/process_isolation.md`
+- `docs/secure_ui_bridge.md`
 - `ui/secure_bridge.py`
 - `agents/process_isolation.py`
 - `permissions/audit.py`

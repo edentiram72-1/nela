@@ -95,6 +95,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `permissions/confirmation.py`
 - `permissions/scope.py`
 - `docs/permission_engine.md`
+- `docs/agent_registry.md`
+- `docs/audit_and_recovery.md`
+- `docs/capability_routing.md`
+- `docs/process_isolation.md`
+- `docs/secure_ui_bridge.md`
 - `docs/sprint2_claude_findings_status.md`
 - `brain/reasoning.py`
 - `agents/base.py`
@@ -256,7 +261,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - The current Language Engine supports Claude metadata needed for loading and rendering, but the full anti-repetition, humor budget, time-of-day, relationship-stage memory wiring, and phrase event observability from `language/pack_schema.md` are not fully implemented yet.
 - `docs/permission_model.md`, `docs/nela_runtime_architecture.md`, `docs/coding_agent_spec.md`, `docs/cyber_agent_spec.md`, `docs/multi_agent_orchestration.md`, and `docs/ai_system_roadmap.md` are specifications only. Their runtime systems are not implemented yet.
 - Cybersecurity capabilities must remain blocked until the permission model, capability registry, audit logging, kill switch, and isolated lab architecture exist.
-- Sprint 2 Permission Engine exists, but Cybersecurity capabilities must still remain blocked until isolated lab architecture, richer scope validation, durable audit storage, task idempotency, and event-bus hardening are complete.
+- Sprint 2 Permission Engine exists and Claude Sprint 2 blocking findings have foundation implementations, but Cybersecurity capabilities must still remain blocked until isolated lab architecture, durable audit storage, task idempotency, and production event-bus hardening are complete.
+- Terminal and Coding manifests declare future capabilities for review only. Side-effecting terminal execution and coding write/commit capabilities are disabled.
 
 ## Validation
 
@@ -266,9 +272,10 @@ Latest Sprint 2 validation on `feature/NELA-safety-spine-routing`:
 python3 -m unittest discover -s tests
 python3 -m scripts.validate_language_packs
 python3 -m ui.app --headless-smoke
+python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
 ```
 
-Result: 99 tests passed; language pack validation passed; headless UI bootstrap succeeded.
+Result: 99 tests passed; language pack validation passed; headless UI bootstrap succeeded; Hebrew no-dispatch smoke produced `Intent: OpenApplication` and one semantic launch task.
 
 Additional syntax validation:
 

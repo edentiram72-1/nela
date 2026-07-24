@@ -157,6 +157,12 @@ Latest local validation:
 
 ```text
 python3 -m unittest discover -s tests
+python3 -m scripts.validate_language_packs
+python3 -m ui.app --headless-smoke
+python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
+python3 -m compileall permissions agents/process_isolation.py brain/dispatcher.py brain/planner.py brain/conversation.py brain/decision.py brain/intent_router.py ui/secure_bridge.py tests
 ```
 
-Result: 99 tests passed.
+Result: 99 tests passed; language pack validation passed; UI headless smoke
+passed; Hebrew no-dispatch smoke produced `Intent: OpenApplication` and one
+semantic launch task; compileall completed successfully.
