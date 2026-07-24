@@ -1,0 +1,50 @@
+# NELA OS - K1 Final Follow-Up Code Review
+
+Review the attached refreshed self-contained bundle.
+
+Branch:
+codex/multi-agent-foundation-safety
+
+Latest code fix commit:
+1ebd6023ecb498b99eac0af5073a827a92442757
+
+This follow-up addresses Claude's previous remaining before-merge blocker:
+
+- K1 - Kill switch must terminate in-flight isolated work.
+
+R1 was already reviewed as PASS in the previous Claude response. Please verify it remains intact, but focus the review on K1.
+
+Please inspect:
+
+1. agents/process_isolation.py
+   - IsolatedAgentProcessRunner.terminate
+   - IsolatedProcessSupervisor
+   - ProcessOutcome.TERMINATED
+2. permissions/engine.py
+   - activate_kill_switch
+   - register_isolated_runner
+   - unregister_isolated_runner
+   - active_isolated_runner_count
+3. brain/dispatcher.py
+   - _execute_agent isolated runner registration and cleanup
+4. tests/test_dispatcher.py
+   - test_kill_switch_terminates_inflight_isolated_task
+   - R1 registry replacement tests
+
+Validation run locally:
+
+- python3 -m unittest discover -s tests
+  - 121 tests passed
+- python3 -m scripts.validate_language_packs
+  - passed
+- python3 -m ui.app --headless-smoke
+  - passed
+
+Return one verdict:
+
+- APPROVE
+- APPROVE WITH REQUIRED FIXES
+- BLOCK MERGE
+
+Do not rewrite the code.
+Do not claim PASS without implementation evidence.

@@ -39,6 +39,14 @@ and `docs/safety_spine_sprint_report.md` were added. Draft PR #2 was opened from
 `feature/NELA-safety-spine-routing` to `develop`:
 `https://github.com/edentiram72-1/nela/pull/2`.
 
+On 2026-07-25, Claude's K1/R1 follow-up review on `codex/multi-agent-foundation-safety`
+confirmed R1 Agent Registry overwrite protection as PASS and subprocess isolation
+as PASS, but required one remaining K1 fix: kill switch termination of already
+running isolated work. Commit `1ebd6023ecb498b99eac0af5073a827a92442757` wires the
+kill switch to live isolated runners, adds `ProcessOutcome.TERMINATED`, and adds
+a regression test proving an in-flight T2 isolated task is terminated when the
+kill switch fires.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -69,7 +77,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Active Branch
 
-`feature/NELA-safety-spine-routing`
+`codex/multi-agent-foundation-safety`
 
 ## Recently Modified Files
 
@@ -114,6 +122,10 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/manual_pr_instructions.md`
 - `docs/claude_sprint2_review_bundle.md`
 - `docs/claude_sprint2_review_prompt.md`
+- `docs/claude_k1_r1_review_bundle.md`
+- `docs/claude_k1_r1_review_prompt.md`
+- `docs/claude_k1_final_review_bundle.md`
+- `docs/claude_k1_final_review_prompt.md`
 - `docs/safety_spine_sprint_report.md`
 - `brain/reasoning.py`
 - `agents/base.py`
@@ -233,6 +245,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Continue `NELA-0004-task-idempotency` before enabling real side effects.
 - Review and merge Sprint 2 Permission Engine before implementing Browser Agent, Terminal Agent, Files Agent, Coding Agent, Cyber Agent, or communication Agents with real side effects.
 - Continue the remaining hardening around the Permission Engine: durable audit storage, richer scope validation, rollback handling, and in-flight cancellation.
+- Send the refreshed K1 final review bundle for Claude verification after commit `1ebd6023ecb498b99eac0af5073a827a92442757`.
 - Continue `NELA-0007-event-bus-hardening` with subscriber isolation, bounded history, and trace/correlation conventions.
 - Continue `NELA-0008-capability-registry` so Planner/Dispatcher can reason about Agent capabilities and availability.
 - Continue `NELA-0009-plan-executor` before relying on parallel, conditional, cancellable, or async orchestration semantics.
@@ -261,7 +274,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Intent recognition is deterministic and rule-based; no LLM or external NLP provider is connected.
 - Event bus is synchronous and in-process only.
 - Long-term memory is in-memory only and does not persist after restart.
-- Task timeout metadata is handled per attempt, but synchronous Agent execution still cannot interrupt a blocking Agent while it is running.
+- T2/T3 isolated Agent work can now be terminated by the kill switch through the isolated runner supervisor. Non-isolated synchronous Agent execution is still not interruptible mid-call.
 - GitHub Pull Request creation through the Codex GitHub connector returned `403 Resource not accessible by integration`; use GitHub web UI or install/authenticate GitHub CLI if a PR must be opened from the local machine.
 - `docs/claude_review_bundle.md` is generated from the current branch and should be regenerated after meaningful architecture or code changes.
 - Claude review found several hardening gaps to address before real agents are trusted: task idempotency, event bus subscriber isolation, permission policy, capability registry clarity, and future confidence scoring for intent matching.
@@ -291,6 +304,16 @@ python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
 ```
 
 Result: 100 tests passed; language pack validation passed; headless UI bootstrap succeeded; Hebrew no-dispatch smoke produced `Intent: OpenApplication` and one semantic launch task.
+
+Latest K1 final validation on `codex/multi-agent-foundation-safety`:
+
+```text
+python3 -m unittest discover -s tests
+python3 -m scripts.validate_language_packs
+python3 -m ui.app --headless-smoke
+```
+
+Result: 121 tests passed; language pack validation passed; headless UI bootstrap succeeded. The new regression test verifies that `activate_kill_switch()` terminates an in-flight isolated T2 task and reports `terminated_processes=1`.
 
 Additional syntax validation:
 
