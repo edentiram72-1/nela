@@ -35,8 +35,9 @@ On 2026-07-24, Sprint 2 implemented and hardened the Permission Engine on `featu
 On 2026-07-25, Sprint 2 was prepared for draft PR review. `docs/sprint2_pr_summary.md`,
 `docs/sprint2_pr_body.md`, `docs/manual_pr_instructions.md`,
 `docs/claude_sprint2_review_bundle.md`, `docs/claude_sprint2_review_prompt.md`,
-and `docs/safety_spine_sprint_report.md` were added. Automatic PR creation may
-still require GitHub web confirmation because GitHub CLI is not installed locally.
+and `docs/safety_spine_sprint_report.md` were added. Draft PR #2 was opened from
+`feature/NELA-safety-spine-routing` to `develop`:
+`https://github.com/edentiram72-1/nela/pull/2`.
 
 The consolidation includes:
 
@@ -222,8 +223,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Pending Tasks
 
-- Create a draft PR from `feature/NELA-safety-spine-routing` to `develop`
-  through GitHub web UI using `docs/manual_pr_instructions.md`.
+- Send Draft PR #2 to Claude for implementation review:
+  `https://github.com/edentiram72-1/nela/pull/2`.
 - Do not merge further into `main` as part of Integration Sprint 1.
 - Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
