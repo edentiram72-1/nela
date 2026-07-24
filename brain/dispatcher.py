@@ -127,7 +127,7 @@ class AgentDispatcher:
                 id=permission_request.command_id,
             )
             try:
-                last_result = self._execute_agent(agent, command, task, permission)
+                last_result = self._execute_agent(agent, command, task, permission, plan_id)
             except Exception as error:  # Defensive boundary for all current and future Agents.
                 elapsed = time.monotonic() - attempt_started_at
                 last_result = AgentResult(
@@ -251,6 +251,7 @@ class AgentDispatcher:
         command: AgentCommand,
         task: Task,
         permission: PermissionResult,
+        plan_id: str,
     ) -> AgentResult:
         if not self._requires_isolation(task, permission):
             return agent.execute(command)
@@ -261,6 +262,9 @@ class AgentDispatcher:
         )
         runner_token = self.permission_engine.register_isolated_runner(runner)
         try:
+            if self._emergency_stop_active(permission):
+                runner.terminate()
+                return self._emergency_stop_result(task, plan_id, AgentResult(False, "Task was not executed."), 0)
             return self._agent_result_from_process(runner.run(_execute_agent_command, agent, command))
         finally:
             self.permission_engine.unregister_isolated_runner(runner_token)
