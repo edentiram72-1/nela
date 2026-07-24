@@ -6,7 +6,7 @@ Every significant change must update this file before handoff.
 
 ## Current Project Status
 
-Phase 1 Brain foundation, Integration Sprint 1, the Claude language/personality drop, the multi-agent architecture specifications, Sprint 2 Permission Engine implementation, and Claude Sprint 2 safety findings are being consolidated on `feature/NELA-safety-spine-routing`.
+Phase 1 Brain foundation, Integration Sprint 1, the Claude language/personality drop, the multi-agent architecture specifications, Sprint 2 Permission Engine implementation, and Claude Sprint 2 safety findings are consolidated into `develop`.
 
 The Brain now supports text and voice-transcript input, structured intent recognition, decision making, planning, context tracking, short-term and long-term memory orchestration, and Agent dispatch through a shared event bus.
 
@@ -54,6 +54,14 @@ Final commit `667c34cd07e2bc5722aaec35d2a830c95141ec52` adds a second guard afte
 isolated runner registration and before child process start to close the
 remaining check-then-act micro-window.
 
+On 2026-07-25, `codex/multi-agent-foundation-safety` was merged into `develop`
+with merge commit `8baae97dd2e39627d4555cd6abf1117e428a5cb9`. Claude's final
+review verdict for K1/R1 remained APPROVE for the branch head. Post-merge
+validation passed on `develop`: 124 unit tests, Hebrew language pack validation,
+and UI headless smoke. A Hebrew prototype command also routed through the Brain:
+`נלה, תפתחי את Spotify` produced `Intent: OpenApplication`, `Decision: delegate`,
+and Hebrew response `Spotify — פותחת.` using safe no-dispatch mode.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -80,11 +88,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Sprint 2: Safety Spine + Intelligent Routing**
+**Post-Sprint 2: Develop Consolidation + Prototype Validation**
 
 ## Active Branch
 
-`codex/multi-agent-foundation-safety`
+`develop`
 
 ## Recently Modified Files
 
@@ -242,24 +250,22 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Pending Tasks
 
-- Send Draft PR #2 to Claude for implementation review:
-  `https://github.com/edentiram72-1/nela/pull/2`.
-- Do not merge further into `main` as part of Integration Sprint 1.
+- Do not merge into `main` until the user explicitly approves a release step.
 - Tag a stable release only after the user explicitly approves a release step.
 - Provide `nela-memory-subsystem.zip` so a dedicated memory subsystem branch can be created and tested separately.
 - Use `docs/ai_inbox.md` as the shared queue for Claude, Codex, and ChatGPT.
 - Treat Phase A Safety Spine as the next implementation gate before any advanced Agents.
 - Continue `NELA-0004-task-idempotency` before enabling real side effects.
-- Review and merge Sprint 2 Permission Engine before implementing Browser Agent, Terminal Agent, Files Agent, Coding Agent, Cyber Agent, or communication Agents with real side effects.
+- Keep Browser Agent, Terminal Agent, Files Agent, Coding Agent, Cyber Agent, and communication Agents without real side effects until the remaining safety spine items are complete.
 - Continue the remaining hardening around the Permission Engine: durable audit storage, richer scope validation, rollback handling, and in-flight cancellation.
-- Send the refreshed K1 final review bundle for Claude verification after commit `667c34cd07e2bc5722aaec35d2a830c95141ec52`.
+- Send consolidated `develop` direct blob links or a regenerated bundle to Claude if an additional post-merge review is requested.
 - Continue `NELA-0007-event-bus-hardening` with subscriber isolation, bounded history, and trace/correlation conventions.
 - Continue `NELA-0008-capability-registry` so Planner/Dispatcher can reason about Agent capabilities and availability.
 - Continue `NELA-0009-plan-executor` before relying on parallel, conditional, cancellable, or async orchestration semantics.
 - Add `NELA-0016-audit-log-and-kill-switch` and `NELA-0017-agent-runtime-lifecycle` from `docs/ai_inbox.md`.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
-- Try interactive NELA sessions through `python3 -m core.app`.
-- Try the desktop UI shell with `python3 -m ui.app` on a machine with a graphical session.
+- Continue interactive NELA sessions through `python3 -m core.app`.
+- Continue desktop UI shell checks with `python3 -m ui.app` on a machine with a graphical session.
 - Send consolidated `develop` or `main` direct blob links to Claude for release verification.
 - Ask Claude to review `docs/claude_handoff_2026-07-24.md`, `docs/personality_bible.md`, `docs/hebrew_language_guide.md`, `docs/tone_of_voice.md`, `docs/conversation_rules.md`, `language/pack_schema.md`, and `language/hebrew/`.
 - Choose and implement a WebView-compatible host for the Living Eye.
@@ -300,6 +306,21 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Terminal and Coding manifests declare future capabilities for review only. Side-effecting terminal execution and coding write/commit capabilities are disabled.
 
 ## Validation
+
+Latest post-merge validation on `develop`:
+
+```text
+python3 -m unittest discover -s tests
+python3 -m scripts.validate_language_packs
+python3 -m ui.app --headless-smoke
+python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
+```
+
+Result: 124 tests passed; language pack validation passed; headless UI bootstrap
+succeeded; Hebrew no-dispatch prototype produced `Intent: OpenApplication`,
+`Decision: delegate`, one semantic launch task for Spotify, and response
+`Spotify — פותחת.` The desktop UI shell was also launched with `python3 -m ui.app`
+and remained running in the local graphical session.
 
 Latest Sprint 2 validation on `feature/NELA-safety-spine-routing`:
 
