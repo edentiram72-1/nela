@@ -1,0 +1,20 @@
+{
+  "owner": "local-owner",
+  "scope_type": "local_lab",
+  "targets": ["lab-web"],
+  "allowed_actions": [
+    "simulate_lab_adversary",
+    "validate_exploit_safely",
+    "run_local_fuzzing"
+  ],
+  "forbidden_actions": [
+    "external_targeting",
+    "persistence",
+    "credential_theft",
+    "malware_deployment",
+    "evasion",
+    "exfiltration"
+  ],
+  "approved_by": "local-owner",
+  "expires_at": "2026-08-01T00:00:00+00:00"
+}

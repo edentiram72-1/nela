@@ -26,6 +26,7 @@ The repository now contains a working foundation that can:
 - Track conversation context and running tasks.
 - Manage short-term and long-term memory layers.
 - Dispatch tasks to registered Agents through a shared contract.
+- Register a first-wave defensive multi-agent foundation for orchestration, planning, software engineering, QA, memory, learning, secure code review, vulnerability research, and anomaly discovery.
 - Publish lifecycle events through an in-process Event Bus.
 - Use safe mock Agents for MVP validation while Desktop Agent V1 begins real macOS application lifecycle control.
 - Launch a modular desktop UI shell that connects user text input to the existing Brain.
@@ -213,8 +214,35 @@ Implemented Agents:
 - Codex
 - Claude
 - Automation
+- Orchestrator
+- Planner
+- Learning
+- Code Architect
+- Backend
+- Frontend
+- Test/QA
+- Secure Code Reviewer
+- Vulnerability Research
+- Anomaly Discovery
+- Authorized Lab
 
 All non-Desktop Agents currently validate delegation and lifecycle behavior through safe mock behavior. They do not perform real side effects.
+
+The first specialist-agent layer is available through `agents.build_default_registry()`.
+The security agents are defensive-only: local code analysis, SAST-style checks,
+dependency/advisory correlation, config review scaffolding, local/lab fuzzing
+plans, anomaly detection, threat modeling, and remediation guidance. They do not
+build exploitation, persistence, credential theft, evasion, malware, phishing,
+DDoS, or attacks against external targets.
+The expanded foundation registers coding, research, quality, incident-response,
+security, and tool-facing agents through one registry. Active cyber work is
+allowed only in authorized local lab, CTF, owned-asset, or workspace-artifact
+scope and remains approval-gated with dry-run support by default.
+Authorized Lab mode registers targets, evaluates scoped authorization, writes
+audit decisions, and prepares local dry-run scans or fuzz cases without
+contacting public external systems.
+
+See `docs/multi_agent_foundation.md`, `docs/cyber_lab.md`, and `agents/README.md`.
 
 ### Desktop Agent V1
 
@@ -392,6 +420,7 @@ The Living Eye is driven by one state value. The current UI Event Bridge maps Br
 | `core/` | App startup, configuration, events, logging, and shared runtime primitives. |
 | `brain/` | Conversation orchestration, intent recognition, decisions, planning, context, memory orchestration, and dispatch coordination. |
 | `agents/` | Independent execution Agents and the shared Agent contract. |
+| `cyber_lab/` | Local cyber-lab authorization, target allowlist, audit, dry-run, and analysis helpers. |
 | `ui/` | Desktop UI shell, state manager, event bridge, theme tokens, animation hooks, and component placeholders. |
 | `design/` | Claude Living Eye prototype, app icon, and menu-bar icon. |
 | `memory/` | Short-term memory, long-term memory, vector storage, and user profile primitives. |

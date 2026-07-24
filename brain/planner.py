@@ -35,6 +35,7 @@ class RetryPolicy:
 class Task:
     description: str
     action: str
+    capability: str | None = None
     target_agent: str | None = None
     mode: TaskMode = TaskMode.SEQUENTIAL
     depends_on: tuple[str, ...] = ()
@@ -72,7 +73,7 @@ class Planner:
                 Task(
                     description=f"Request application launch: {intent.application or 'requested application'}",
                     action="launch_application",
-                    target_agent="desktop",
+                    capability="desktop.application.launch",
                     payload={"application": intent.application},
                     retry_policy=RetryPolicy(max_attempts=2, backoff_seconds=1.0),
                     timeout_seconds=20.0,
@@ -83,8 +84,13 @@ class Planner:
                 Task(
                     description=f"Request application close: {intent.application or 'requested application'}",
                     action="close_application",
-                    target_agent="desktop",
-                    payload={"application": intent.application},
+                    capability="desktop.application.close",
+                    payload={
+                        "application": intent.application,
+                        "confirmed": intent.parameters.get("confirmed", False),
+                        "confirmation_action_hash": intent.parameters.get("confirmation_action_hash"),
+                        "confirmation_expires_at": intent.parameters.get("confirmation_expires_at"),
+                    },
                     timeout_seconds=20.0,
                 )
             )
@@ -93,7 +99,7 @@ class Planner:
                 Task(
                     description=f"Bring application to foreground: {intent.application or 'requested application'}",
                     action="switch_application",
-                    target_agent="desktop",
+                    capability="desktop.application.focus",
                     payload={"application": intent.application},
                     timeout_seconds=10.0,
                 )
@@ -105,6 +111,7 @@ class Planner:
                 Task(
                     description="Store user-approved memory",
                     action="remember",
+                    capability="memory.write",
                     target_agent="memory",
                     payload={"content": intent.raw_text},
                     timeout_seconds=5.0,
@@ -115,11 +122,15 @@ class Planner:
                 Task(
                     description=f"Delegate request: {intent.raw_text}",
                     action=_action_to_command(intent.action),
+                    capability=str(intent.parameters.get("capability") or _action_to_command(intent.action)),
                     target_agent=target_agent,
                     payload={
                         "text": intent.raw_text,
                         "application": intent.application,
                         "resource": intent.resource,
+                        "confirmed": intent.parameters.get("confirmed", False),
+                        "confirmation_action_hash": intent.parameters.get("confirmation_action_hash"),
+                        "confirmation_expires_at": intent.parameters.get("confirmation_expires_at"),
                     },
                 )
             )
@@ -142,6 +153,7 @@ class Planner:
         launch = Task(
             description=f"Ensure application is available: {intent.application or 'media application'}",
             action="ensure_application",
+            capability="media.application.prepare" if agent else "desktop.application.launch",
             target_agent=agent or "desktop",
             payload={"application": intent.application},
             retry_policy=RetryPolicy(max_attempts=2, backoff_seconds=1.0),
@@ -150,6 +162,7 @@ class Planner:
         wait = Task(
             description="Wait until the application is ready",
             action="wait_until_ready",
+            capability="media.application.status" if agent else "desktop.application.status",
             target_agent=agent or "desktop",
             depends_on=(launch.id,),
             payload={"application": intent.application},
@@ -158,6 +171,7 @@ class Planner:
         search = Task(
             description="Find requested media resource",
             action="search_media",
+            capability="media.search",
             target_agent=agent,
             depends_on=(wait.id,),
             payload={"resource": intent.resource, "text": intent.raw_text},
@@ -166,6 +180,7 @@ class Planner:
         play = Task(
             description="Start media playback",
             action="play_media",
+            capability="media.play",
             target_agent=agent,
             depends_on=(search.id,),
             payload={"resource": intent.resource},
