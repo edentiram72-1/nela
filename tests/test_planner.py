@@ -24,7 +24,8 @@ class PlannerTests(unittest.TestCase):
         intent = IntentRouter().classify("Open Spotify")
         plan = Planner().create_plan(intent)
 
-        self.assertEqual(plan.tasks[0].target_agent, "desktop")
+        self.assertEqual(plan.tasks[0].capability, "desktop.application.launch")
+        self.assertIsNone(plan.tasks[0].target_agent)
         self.assertEqual(plan.tasks[0].retry_policy.max_attempts, 2)
         self.assertEqual(plan.tasks[0].timeout_seconds, 20.0)
 
@@ -33,7 +34,8 @@ class PlannerTests(unittest.TestCase):
         plan = Planner().create_plan(intent)
 
         self.assertEqual(plan.tasks[0].action, "close_application")
-        self.assertEqual(plan.tasks[0].target_agent, "desktop")
+        self.assertEqual(plan.tasks[0].capability, "desktop.application.close")
+        self.assertIsNone(plan.tasks[0].target_agent)
         self.assertEqual(plan.tasks[0].payload["application"], "Finder")
 
     def test_planner_routes_switch_application_to_desktop(self) -> None:
@@ -41,7 +43,8 @@ class PlannerTests(unittest.TestCase):
         plan = Planner().create_plan(intent)
 
         self.assertEqual(plan.tasks[0].action, "switch_application")
-        self.assertEqual(plan.tasks[0].target_agent, "desktop")
+        self.assertEqual(plan.tasks[0].capability, "desktop.application.focus")
+        self.assertIsNone(plan.tasks[0].target_agent)
         self.assertEqual(plan.tasks[0].payload["application"], "Spotify")
 
     def test_planner_can_cancel_plan(self) -> None:

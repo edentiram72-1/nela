@@ -93,6 +93,29 @@ Items waiting for Claude review or design input.
 
 Items ready for implementation.
 
+#### Phase A Safety Spine
+
+- Owner: Codex
+- Requester: Claude/User
+- Branch: `feature/NELA-sprint-2-permission-engine`
+- Status: in progress
+- Type: architecture + implementation + tests
+- Source specs:
+  - `docs/permission_model.md`
+  - `docs/nela_runtime_architecture.md`
+  - `docs/multi_agent_orchestration.md`
+  - `docs/ai_system_roadmap.md`
+- Goal: Implement the safety foundation before any new real Agents are added.
+- Ordered tasks:
+  - `NELA-0004-task-idempotency`: add idempotency metadata and retry policy.
+  - `NELA-0006-permission-policy`: implemented in Sprint 2 with central Permission Engine, Capability Registry, Agent manifests, confirmation gate, scoped sessions, audit log, kill switch, lock mode, and Dispatcher integration.
+  - `NELA-0007-event-bus-hardening`: add subscriber isolation, bounded history, and correlation/trace conventions.
+  - `NELA-0008-capability-registry`: initial implementation exists in Sprint 2; future plugin manifest loading still needed.
+  - `NELA-0009-plan-executor`: move execution semantics toward async/cancellable plan execution.
+  - `NELA-0016-audit-log-and-kill-switch`: add append-only action audit records and global halt/revoke behavior.
+  - `NELA-0017-agent-runtime-lifecycle`: add runtime health, lifecycle, backpressure, and worker boundaries.
+- Safety note: Cyber, Coding, Research, Browser, Terminal, Files, and communication Agents must not gain new real side effects before the Safety Spine is implemented and tested.
+
 #### Task Idempotency
 
 - Owner: Codex
@@ -110,13 +133,14 @@ Items ready for implementation.
 
 - Owner: Codex
 - Requester: Claude
-- Branch: TBD
-- Status: ready
+- Branch: `feature/NELA-sprint-2-permission-engine`
+- Status: in progress
 - Type: architecture + implementation + tests
 - Scope:
   - Add a central policy layer for destructive, external, private-data, system-setting, and communication actions.
   - Keep confirmation behavior consistent across Agents.
   - Avoid Agent-specific permission logic inside the Brain.
+  - Sprint 2 implemented the central gateway for current Agents; durable storage, richer scope validation, rollback, and future real Agent policies remain follow-up hardening.
 
 #### WebView UI Host Selection
 
@@ -150,6 +174,17 @@ Items blocked by missing information, credentials, assets, or user approval.
 - Blocker: `nela-memory-subsystem.zip` was not found in `/Users/edentiram/Downloads`, `/Users/edentiram/Downloads/files`, or the current attachment directory.
 - Next action: User provides the zip, then Codex creates a dedicated memory subsystem branch and validates it separately.
 
+#### Advanced Agent Implementation
+
+- Owner: Codex
+- Requester: Claude/User
+- Branch: TBD
+- Status: blocked
+- Type: implementation
+- Blocker: Sprint 2 implements the Permission Engine, but the full Safety Spine is not complete yet.
+- Scope: Coding Agent, Cyber Agent, Research Agent, advanced orchestration, and any new real side-effecting Agent capabilities.
+- Next action: Review/merge Sprint 2, then complete idempotency, event-bus hardening, durable audit storage, richer scope validation, rollback handling, runtime isolation, and plugin manifest loading.
+
 ### Done
 
 Completed inbox items.
@@ -161,6 +196,7 @@ Completed inbox items.
 - Claude Review Fixes: merged into `develop`.
 - Hebrew Language And Voice Foundation: merged into `develop`.
 - Confirmation Deadlock Fix: merged into `develop`.
+- Sprint 2 Permission Engine: implemented on `feature/NELA-sprint-2-permission-engine`; ready for review after push/PR.
 
 ## Inbox Item Template
 

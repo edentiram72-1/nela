@@ -50,6 +50,13 @@ class DecisionEngine:
                 reason="A previous confirmation is still pending.",
             )
 
+        if intent.action in {"OpenApplication", "CloseApplication", "SwitchApplication"} and not intent.application:
+            return Decision(
+                type=DecisionType.ASK_CLARIFICATION,
+                reason="Missing application slot.",
+                question="איזו אפליקציה לפתוח?",
+            )
+
         if intent.requires_confirmation:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,
@@ -64,6 +71,12 @@ class DecisionEngine:
                 should_remember=True,
             )
 
+        if intent.action in {"OpenApplication", "SwitchApplication", "PlayMedia"}:
+            return Decision(
+                type=DecisionType.DELEGATE,
+                reason="The request has enough information and a semantic capability.",
+            )
+
         if intent.target_agent:
             return Decision(
                 type=DecisionType.DELEGATE,
@@ -73,6 +86,5 @@ class DecisionEngine:
         return Decision(
             type=DecisionType.ASK_CLARIFICATION,
             reason="No target capability could be inferred.",
-            question="Which app or capability should handle this?",
+            question="מה תרצה שנלה תעשה?",
         )
-

@@ -292,3 +292,149 @@ Related files:
 - `language/validator.py`
 - `core/response.py`
 - `tests/test_language_engine.py`
+
+### DEC-0013: Make The Permission Model The Agent Safety Spine
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** NELA is expected to evolve into a multi-agent system with Coding, Cybersecurity, Research, orchestration, runtime lifecycle, and future external-action Agents. These capabilities cannot be safe if every Agent invents its own approval, scope, retry, and refusal rules.
+
+**Decision:** Treat `docs/permission_model.md` as the shared safety spine for future Agents. Every Agent action must declare a static capability tier from `T0` through `T4`; the system must never infer tiers at runtime. Unknown or unclassifiable actions fail closed as `T4`. The permission model gates future Coding, Cyber, Research, Browser, Terminal, Files, and communication Agent capabilities before execution.
+
+**Consequences:**
+
+- `NELA-0006-permission-policy`, `NELA-0008-capability-registry`, `NELA-0004-task-idempotency`, `NELA-0007-event-bus-hardening`, and `NELA-0009-plan-executor` become Phase A prerequisites before advanced real Agents.
+- Cybersecurity capabilities remain defensive, authorized, and lab-isolated by design.
+- Relationship/trust state can change tone but must not lower a capability tier.
+- The Brain stays semantic and agent-neutral; the Dispatcher/Runtime boundary owns authorization before `agent.execute()`.
+- Future specifications should reference the shared permission model instead of duplicating safety rules.
+
+**Related files:**
+
+- `docs/permission_model.md`
+- `docs/nela_runtime_architecture.md`
+- `docs/coding_agent_spec.md`
+- `docs/cyber_agent_spec.md`
+- `docs/multi_agent_orchestration.md`
+- `docs/ai_system_roadmap.md`
+- `docs/ai_inbox.md`
+
+### DEC-0014: Gate Agent Execution At The Dispatcher Boundary
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** Sprint 2 requires a Permission Engine that becomes the single
+gateway before every Agent execution without redesigning the Brain or building
+new real Agents.
+
+**Decision:** Implement `permissions/` as an independent subsystem and integrate
+it at `AgentDispatcher.dispatch()`. The Dispatcher authorizes each task before
+publishing execution lifecycle events or calling `agent.execute()`. Agents
+declare allowed actions through manifests; unknown actions fail closed as `T4`.
+
+**Consequences:**
+
+- The Brain remains semantic and agent-neutral.
+- Agent-specific permission checks are avoided.
+- Built-in and future Agents use the same T0-T4 gate, audit log, scoped session,
+  confirmation, kill switch, and lock mode semantics.
+- T2/T3 confirmation still flows through the existing conversation confirmation
+  system; the Permission Engine does not create a second user-dialog system.
+- Advanced scope validation, durable audit storage, rollback, and in-flight
+  cancellation remain future hardening work.
+
+**Related files:**
+
+- `permissions/`
+- `brain/dispatcher.py`
+- `brain/planner.py`
+- `core/events.py`
+- `docs/permission_engine.md`
+- `tests/test_permission_engine.py`
+
+### DEC-0015: Treat Claude Sprint 2 Findings As Ship Blockers
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+**Context:** Claude reviewed the Sprint 2 safety design and identified
+ship-blocking risks around WebView bridge authentication, kill switch process
+isolation, TOCTOU scope validation, confirmation binding, registry overwrite,
+audit tamper evidence, routing order, and prompt injection into routing.
+
+**Decision:** Track the findings as required safety gates on
+`feature/NELA-safety-spine-routing`. Additive code may land only when it keeps
+the Brain agent-neutral and prevents unrestricted Coding, Cyber, Browser, or
+Terminal capabilities from becoming active.
+
+**Consequences:**
+
+- Future WebView bridge code must use restricted local transport and per-launch
+  authentication.
+- Blocking/high-risk Agents must run behind a subprocess boundary before they
+  can claim forced termination semantics.
+- T2/T3 confirmations must be bound to exact action tuples.
+- Audit records must be tamper-evident.
+- Agent/capability registration must not silently overwrite existing entries.
+- Routing must authorize candidate capabilities before final Agent selection.
+
+**Related files:**
+
+- `docs/sprint2_claude_findings_status.md`
+- `docs/agent_registry.md`
+- `docs/audit_and_recovery.md`
+- `docs/capability_routing.md`
+- `docs/process_isolation.md`
+- `docs/secure_ui_bridge.md`
+- `ui/secure_bridge.py`
+- `agents/process_isolation.py`
+- `permissions/audit.py`
+- `permissions/confirmation.py`
+- `permissions/scope.py`
+- `brain/dispatcher.py`
+
+### DEC-0016: Wire Required K1/R1 Fixes Before Sprint 2 Merge
+
+**Date:** 2026-07-25
+**Status:** Accepted
+
+**Context:** Claude reviewed PR #2 and returned `APPROVE WITH REQUIRED FIXES`.
+The two before-merge blockers were K1, because process isolation existed but was
+not wired into Dispatcher execution, and R1, because Agent replacement could
+bypass insert-only registration guarantees.
+
+**Decision:** Before merging Sprint 2, the Dispatcher must route T2, T3, and
+explicitly isolated tasks through `IsolatedAgentProcessRunner`. The Dispatcher
+must track isolated task ID, correlation ID, Agent ID, capability, and process
+ID, and Kill Switch activation must cancel and terminate blocked isolated
+workers while revoking scoped sessions. Simple proven non-blocking T0/T1 tasks
+remain direct execution by default.
+
+Agent replacement is not a normal registration path. Runtime Agent replacement
+requires explicit `ReplacementAuthorization` bound to Agent ID, manifest
+version, and manifest fingerprint. Capability manifest replacement uses an
+explicit `replace_manifest()` path with matching fingerprint. Ordinary
+registration never replaces an existing Agent or manifest implicitly.
+
+**Consequences:**
+
+- K1 can be re-reviewed as a before-merge fix instead of a future-only
+  foundation.
+- R1 can be re-reviewed as closed against late Agent shadowing and manifest
+  replacement bypasses.
+- P1 stable file identity enforcement remains deferred until file-writing
+  capabilities are enabled.
+- L1 durable default audit persistence remains deferred until NELA 1.0 or
+  durable T2/T3 workflows.
+
+**Related files:**
+
+- `brain/dispatcher.py`
+- `agents/process_isolation.py`
+- `agents/registry.py`
+- `permissions/registry.py`
+- `permissions/models.py`
+- `tests/test_dispatcher.py`
+- `tests/test_agent_registry.py`

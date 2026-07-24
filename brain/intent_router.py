@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
+from brain.applications import resolve_application_alias
 
 
 class Priority(str, Enum):
@@ -86,7 +87,7 @@ class IntentRouter:
                 action=pattern.action,
                 raw_text=text,
                 confidence=0.82,
-                application=application,
+                application=resolve_application_alias(application),
                 resource=resource,
                 priority=priority,
                 parameters=parameters,
@@ -97,7 +98,7 @@ class IntentRouter:
             action="GeneralRequest",
             raw_text=text,
             confidence=0.45,
-            application=application,
+            application=resolve_application_alias(application),
             resource=resource,
             priority=priority,
             parameters=parameters,
@@ -124,33 +125,37 @@ def _detect_priority(normalized: str) -> Priority:
 
 def _extract_application(text: str) -> str | None:
     hebrew_match = re.search(
-        r"(?:תפתחי|פתחי|לפתוח|תסגרי|סגרי|לסגור|תעברי|לעבור)\s+(?:את|אל|ל)?\s*([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
+        r"(?:תפתחי|פתחי|לפתוח|תסגרי|סגרי|לסגור|תעברי|לעבור)\s+(?:את|אל|ל)?\s*([A-Za-zא-ת][\wא-ת-]*(?:\s+[A-Za-zא-ת][\wא-ת-]*)?)",
         text,
         flags=re.IGNORECASE,
     )
     if hebrew_match:
-        return _title_name(_trim_application_name(hebrew_match.group(1).strip()))
+        candidate = _title_name(_trim_application_name(hebrew_match.group(1).strip()))
+        return None if _is_generic_application_word(candidate) else candidate
     match = re.search(
         r"\b(?:open|launch|start|close|quit|focus)\s+([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
         text,
         flags=re.IGNORECASE,
     )
     if match:
-        return _title_name(_trim_application_name(match.group(1).strip()))
+        candidate = _title_name(_trim_application_name(match.group(1).strip()))
+        return None if _is_generic_application_word(candidate) else candidate
     match = re.search(
         r"\b(?:switch|bring)\s+(?:to\s+)?([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)",
         text,
         flags=re.IGNORECASE,
     )
     if match:
-        return _title_name(_trim_application_name(match.group(1).strip()))
+        candidate = _title_name(_trim_application_name(match.group(1).strip()))
+        return None if _is_generic_application_word(candidate) else candidate
     match = re.search(
         r"\bin\s+([A-Z][\w-]*(?:\s+[A-Z][\w-]*)?)",
         text,
         flags=re.IGNORECASE,
     )
     if match:
-        return _title_name(_trim_application_name(match.group(1).strip()))
+        candidate = _title_name(_trim_application_name(match.group(1).strip()))
+        return None if _is_generic_application_word(candidate) else candidate
     return None
 
 
@@ -189,3 +194,7 @@ def _trim_application_name(value: str) -> str:
             break
         parts.append(part)
     return " ".join(parts) if parts else value
+
+
+def _is_generic_application_word(value: str) -> bool:
+    return _normalize(value) in {"app", "application", "אפליקציה", "יישום"}
