@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 import re
 from types import MappingProxyType
 from typing import Any
@@ -115,11 +116,20 @@ class AuditLog:
         chained = replace(chained, entry_hash=entry_hash(chained))
         if self._sink is not None:
             try:
-                self._sink(chained.to_json())
+                self._write_to_sink(chained)
             except Exception as error:
                 raise AuditWriteError("Audit write failed.") from error
         self._records.append(chained)
         return chained
+
+    def _write_to_sink(self, record: AuditRecord) -> None:
+        line = record.to_json()
+        if callable(self._sink):
+            self._sink(line)
+            return
+        self._sink.write(line + "\n")
+        self._sink.flush()
+        os.fsync(self._sink.fileno())
 
     def records(self) -> tuple[AuditRecord, ...]:
         return tuple(self._records)

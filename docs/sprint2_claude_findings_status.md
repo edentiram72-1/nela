@@ -24,6 +24,7 @@ implementation directly.
 Implemented in `ui/secure_bridge.py`.
 
 - Uses a Unix domain socket, not TCP.
+- Restricts socket filesystem permissions to `0600`.
 - Uses a per-launch token.
 - Verifies the expected origin.
 - Does not expose `0.0.0.0`.
@@ -42,6 +43,8 @@ Implemented foundation in `agents/process_isolation.py`.
 - Blocking work can run in a child process.
 - Timeout terminates the process, then escalates to kill if needed.
 - A `before_terminate` hook allows session revocation before termination.
+- `ProcessOutcome.UNKNOWN` exists for child-process outcomes that cannot be
+  safely classified.
 
 Tests: `tests/test_process_isolation.py`.
 
@@ -56,6 +59,7 @@ Implemented foundation in `permissions/scope.py`.
 - Protected credential/security paths are denied.
 - Scoped filesystem actions require an active scoped session.
 - Symlink escape is denied by resolving the real target before authorization.
+- Existing targets record stable `st_dev` / `st_ino` identity when available.
 - Dispatcher calls permission authorization immediately before `agent.execute`.
 
 Tests: `tests/test_permission_engine.py`.
@@ -93,7 +97,7 @@ Implemented in `agents/registry.py` and `permissions/registry.py`.
 - `replace()` exists as an explicit replacement path.
 - Capability manifests reject duplicate registration by default.
 - Manifest identity and version are validated.
-- Registration attempts are recorded in `CapabilityRegistry.registration_audit`.
+- Registration attempts are recorded in registry audit trails.
 
 Tests: `tests/test_dispatcher.py`, `tests/test_permission_engine.py`.
 
@@ -105,12 +109,13 @@ Implemented in `permissions/audit.py`.
 - `AuditLog.verify_chain()` detects modification, deletion, and reordering.
 - Sensitive fields are redacted before serialization.
 - T2/T3 audit write failures fail closed in the Permission Engine.
+- File-like durable sinks are flushed and `fsync`ed.
 
 Tests: `tests/test_audit_log.py`, `tests/test_permission_engine.py`.
 
-Remaining work: durable disk persistence with fsync is still future work. The
-current implementation is tamper-evident in memory and supports a sink for future
-durable writes.
+Remaining work: production retention, rotation, and external storage policy are
+future work. The current implementation is tamper-evident in memory and can
+write durably to file-like sinks.
 
 ## T1 - Authorization Before Final Routing
 
@@ -160,9 +165,9 @@ python3 -m unittest discover -s tests
 python3 -m scripts.validate_language_packs
 python3 -m ui.app --headless-smoke
 python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
-python3 -m compileall permissions agents/process_isolation.py brain/dispatcher.py brain/planner.py brain/conversation.py brain/decision.py brain/intent_router.py ui/secure_bridge.py tests
+python3 -m compileall permissions agents/process_isolation.py agents/registry.py brain/dispatcher.py brain/planner.py brain/conversation.py brain/decision.py brain/intent_router.py ui/secure_bridge.py tests
 ```
 
-Result: 99 tests passed; language pack validation passed; UI headless smoke
+Result: 100 tests passed; language pack validation passed; UI headless smoke
 passed; Hebrew no-dispatch smoke produced `Intent: OpenApplication` and one
 semantic launch task; compileall completed successfully.

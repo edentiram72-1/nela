@@ -3,9 +3,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 import multiprocessing
 import time
 from typing import Any, Callable
+
+
+class ProcessOutcome(str, Enum):
+    COMPLETED = "completed"
+    FAILED = "failed"
+    TIMED_OUT = "timed_out"
+    UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True)
@@ -15,6 +23,7 @@ class ProcessExecutionResult:
     timed_out: bool = False
     exit_code: int | None = None
     data: dict[str, Any] = field(default_factory=dict)
+    outcome: ProcessOutcome = ProcessOutcome.UNKNOWN
 
 
 class IsolatedAgentProcessRunner:
@@ -46,6 +55,7 @@ class IsolatedAgentProcessRunner:
                 "Isolated Agent process timed out and was terminated.",
                 timed_out=True,
                 exit_code=process.exitcode,
+                outcome=ProcessOutcome.TIMED_OUT,
             )
 
         if queue.empty():
@@ -53,6 +63,7 @@ class IsolatedAgentProcessRunner:
                 process.exitcode == 0,
                 "Isolated Agent process exited without a result.",
                 exit_code=process.exitcode,
+                outcome=ProcessOutcome.UNKNOWN,
             )
         payload = queue.get()
         return ProcessExecutionResult(
@@ -60,6 +71,7 @@ class IsolatedAgentProcessRunner:
             str(payload["message"]),
             exit_code=process.exitcode,
             data=dict(payload.get("data") or {}),
+            outcome=ProcessOutcome.COMPLETED if payload["success"] else ProcessOutcome.FAILED,
         )
 
 

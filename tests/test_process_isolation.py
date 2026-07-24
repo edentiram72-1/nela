@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from agents.process_isolation import IsolatedAgentProcessRunner, blocking_sleep
+from agents.process_isolation import IsolatedAgentProcessRunner, ProcessOutcome, blocking_sleep
 
 
 class ProcessIsolationTests(unittest.TestCase):
@@ -11,6 +11,7 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertTrue(result.success)
         self.assertFalse(result.timed_out)
+        self.assertEqual(result.outcome, ProcessOutcome.COMPLETED)
         self.assertEqual(result.data["result"], "done")
 
     def test_timeout_terminates_process_after_revocation_hook(self) -> None:
@@ -21,6 +22,7 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertFalse(result.success)
         self.assertTrue(result.timed_out)
+        self.assertEqual(result.outcome, ProcessOutcome.TIMED_OUT)
         self.assertEqual(revoked, [True])
 
 

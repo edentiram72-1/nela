@@ -21,6 +21,8 @@ class ScopeValidationResult:
     allowed: bool
     reason: str
     normalized_target: str | None = None
+    st_dev: int | None = None
+    st_ino: int | None = None
 
 
 def validate_scopes(
@@ -69,7 +71,12 @@ def _validate_filesystem_scope(
         except OSError:
             continue
         if _is_within(canonical, root_path):
-            return ScopeValidationResult(True, "Filesystem scope allowed.", str(canonical))
+            return ScopeValidationResult(
+                True,
+                "Filesystem scope allowed.",
+                str(canonical),
+                *_file_identity(canonical),
+            )
 
     return ScopeValidationResult(False, "Path target is outside the allowed filesystem scope.", str(canonical))
 
@@ -89,6 +96,14 @@ def _canonicalize_path(path: str) -> Path:
         return candidate.resolve(strict=False)
     parent = candidate.parent if str(candidate.parent) else Path(".")
     return parent.resolve(strict=True) / candidate.name
+
+
+def _file_identity(path: Path) -> tuple[int | None, int | None]:
+    try:
+        stat_result = path.stat()
+    except OSError:
+        return None, None
+    return stat_result.st_dev, stat_result.st_ino
 
 
 def _is_within(path: Path, root: Path) -> bool:

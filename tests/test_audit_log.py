@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from dataclasses import replace
+import tempfile
 import unittest
 
 from permissions import AuditLog, AuditRecord, PermissionDecision, PermissionTier
@@ -70,6 +71,15 @@ class AuditLogTests(unittest.TestCase):
         with self.assertRaises(AuditWriteError):
             log.append(make_record())
         self.assertEqual(log.records(), ())
+
+    def test_file_sink_is_flushed_and_durable(self) -> None:
+        with tempfile.TemporaryFile("w+", encoding="utf-8") as sink:
+            log = AuditLog(sink=sink)
+
+            log.append(make_record())
+            sink.seek(0)
+
+            self.assertIn('"entry_hash":', sink.read())
 
     def test_filtering_by_time_capability_agent_result_and_session(self) -> None:
         log = AuditLog()

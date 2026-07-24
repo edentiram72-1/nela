@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import socket
+import stat
 import tempfile
 import unittest
 
@@ -18,6 +19,7 @@ class SecureBridgeTests(unittest.TestCase):
             self.assertTrue(path.exists())
             self.assertIsNotNone(bridge._socket)
             self.assertEqual(bridge._socket.family, socket.AF_UNIX)
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
             bridge.close()
             self.assertFalse(path.exists())
 

@@ -14,14 +14,20 @@ class AgentRegistry:
 
     def __init__(self) -> None:
         self._agents: dict[str, BaseAgent] = {}
+        self.registration_audit: list[dict[str, str]] = []
 
     def register(self, agent: BaseAgent) -> None:
         if agent.name in self._agents:
+            self.registration_audit.append({"agent": agent.name, "result": "rejected_duplicate"})
             raise DuplicateAgentError(f"Agent '{agent.name}' is already registered.")
-        self._agents[agent.name] = agent
+        self._store(agent, result="registered")
 
     def replace(self, agent: BaseAgent) -> None:
-        self._agents[agent.name] = agent
+        self._store(agent, result="replaced")
+
+    def _store(self, agent: BaseAgent, result: str) -> None:
+        self._agents.update({agent.name: agent})
+        self.registration_audit.append({"agent": agent.name, "result": result})
 
     def unregister(self, name: str) -> bool:
         return self._agents.pop(name, None) is not None

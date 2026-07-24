@@ -204,7 +204,7 @@ Brain.
 python3 -m unittest discover -s tests
 ```
 
-Result: 99 tests passed.
+Result: 100 tests passed.
 
 Additional smoke checks:
 

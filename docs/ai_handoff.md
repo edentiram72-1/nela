@@ -48,6 +48,7 @@ The consolidation includes:
 - Multi-agent architecture specifications: shared T0-T4 permission model, runtime lifecycle architecture, Coding Agent spec, defensive Cyber Agent spec, multi-agent orchestration spec, and AI system roadmap.
 - Sprint 2 Permission Engine: T0-T4 tiers, Capability Registry, Agent manifests, authentication checks, confirmation gate, scoped sessions, in-memory audit log, kill switch, lock mode, permission events, UI state mapping for permission events, and Dispatcher integration before `agent.execute()`.
 - Claude Sprint 2 findings: secure local bridge foundation, subprocess isolation foundation, symlink-aware scope validation, exact confirmation binding, insert-only Agent registration, tamper-evident audit hash chain, and authorization-before-final-routing foundation.
+- Mechanical safety-spine verification criteria are documented in `docs/safety_spine_verification_criteria.md`.
 
 Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
@@ -275,7 +276,7 @@ python3 -m ui.app --headless-smoke
 python3 -m core.app --once "נלה, תפתחי את Spotify" --no-dispatch
 ```
 
-Result: 99 tests passed; language pack validation passed; headless UI bootstrap succeeded; Hebrew no-dispatch smoke produced `Intent: OpenApplication` and one semantic launch task.
+Result: 100 tests passed; language pack validation passed; headless UI bootstrap succeeded; Hebrew no-dispatch smoke produced `Intent: OpenApplication` and one semantic launch task.
 
 Additional syntax validation:
 

@@ -39,6 +39,7 @@ class SecureLocalBridge:
         path = self.socket_dir / f"nela-{uuid4().hex[:12]}.sock"
         server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         server.bind(str(path))
+        path.chmod(0o600)
         server.listen(1)
         self._socket = server
         self.socket_path = path
