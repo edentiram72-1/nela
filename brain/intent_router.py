@@ -90,6 +90,23 @@ DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
         ),
     ),
     IntentPattern(
+        "CyberDefenseSweep",
+        (
+            "תעשי הגנה",
+            "תתחילי להגן",
+            "תגני",
+            "הגני",
+            "תבני מערך סייבר",
+            "תבני מערך הגנה",
+            "מערך סייבר",
+            "מערך הגנה",
+            "בדיקת הגנה",
+            "defense sweep",
+            "protect",
+        ),
+        domain="cyber_defense",
+    ),
+    IntentPattern(
         "CapabilitiesQuestion",
         (
             "מה את יודעת לעשות",

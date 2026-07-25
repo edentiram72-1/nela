@@ -44,7 +44,7 @@ from agents.role_agents import (
     ThreatIntelligenceAgent,
     TrendMonitorAgent,
 )
-from agents.security import AnomalyDiscoveryAgent, AuthorizedLabAgent, SecureCodeReviewerAgent, VulnerabilityResearchAgent
+from agents.security import AnomalyDiscoveryAgent, AuthorizedLabAgent, CyberDefenseAgent, SecureCodeReviewerAgent, VulnerabilityResearchAgent
 from agents.test_qa import TestQAAgent
 from agents.automation import AutomationAgent
 from agents.terminal import TerminalAgent
@@ -80,6 +80,7 @@ def build_default_agents(
         DocumentationResearcherAgent(),
         TrendMonitorAgent(),
         SecurityResearcherAgent(),
+        CyberDefenseAgent(),
         SecureCodeReviewerAgent(),
         VulnerabilityResearchAgent(),
         InfrastructureSecurityAgent(),

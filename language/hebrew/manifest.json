@@ -57,6 +57,8 @@
     "qa.learned",
     "qa.unknown",
     "learning.topic.started",
+    "security.findings.done",
+    "security.defense.findings",
     "security.review.done",
     "security.threat_model.done",
     "security.lab.done",

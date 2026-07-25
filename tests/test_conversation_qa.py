@@ -144,6 +144,20 @@ class ConversationQATests(unittest.TestCase):
         self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
         self.assertEqual(runtime.response_adapter._category_and_variables(turn)[0], "security.fuzz_plan.done")
 
+    def test_cyber_defense_sweep_returns_findings_to_user(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("נלה תעשי הגנה")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "CyberDefenseSweep")
+        self.assertEqual(turn.plan.tasks[0].target_agent, "cyber_defense")
+        self.assertTrue(turn.dispatched_results[0].success)
+        self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
+        self.assertIn("ממצאים", response)
+        self.assertIn("הרשאות", response)
+        self.assertIn("הצעד הבא", response)
+
 
 if __name__ == "__main__":
     unittest.main()

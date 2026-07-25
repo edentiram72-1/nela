@@ -154,6 +154,17 @@ class Planner:
                     timeout_seconds=10.0,
                 )
             )
+        elif intent.action == "CyberDefenseSweep":
+            tasks.append(
+                Task(
+                    description="Build defensive cyber posture findings",
+                    action="defense_posture_check",
+                    capability="defense_posture_check",
+                    target_agent="cyber_defense",
+                    payload={"target": intent.resource or "NELA local workspace", "text": intent.raw_text},
+                    timeout_seconds=10.0,
+                )
+            )
         elif intent.action == "ThreatModel":
             tasks.append(
                 Task(

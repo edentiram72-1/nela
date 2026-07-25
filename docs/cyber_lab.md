@@ -73,6 +73,9 @@ The Brain can route a small safe set of Hebrew/English security requests to
 existing defensive Agents:
 
 - `SecurityCapabilitiesQuestion`: explains NELA's defensive cyber boundaries.
+- `CyberDefenseSweep`: creates a first defensive posture report through
+  `cyber_defense`, including findings, severity, recommendations, and next
+  steps.
 - `SecurityReview`: delegates passive code/security text review to
   `secure_code_reviewer`.
 - `ThreatModel`: delegates threat-model scaffolding to `secure_code_reviewer`.
@@ -101,3 +104,17 @@ User: "תכיני תוכנית fuzz מקומית לפרסר"
   -> anomaly_discovery.create_local_fuzz_plan
   -> Permission tier T0
 ```
+
+Example defense findings route:
+
+```text
+User: "נלה תעשי הגנה"
+  -> CyberDefenseSweep
+  -> cyber_defense.defense_posture_check
+  -> Permission tier T0
+  -> Hebrew response with findings, severity, recommendation, and next step
+```
+
+The first posture check intentionally starts with safe defensive fundamentals:
+authorized scope, access control, audit coverage, dependency/config hardening,
+and recovery readiness.

@@ -43,7 +43,7 @@ class AnomalyDiscoveryAgent(SpecialistAgent):
                         category="anomaly",
                         location=f"{label}[{index}]",
                         evidence=f"value={value}; mean={baseline:.2f}; z={z_score:.2f}",
-                        recommendation="Inspect local logs, recent changes, and input shape around this observation.",
+                        recommendation="לבדוק לוגים מקומיים, שינויים אחרונים וצורת קלט סביב התצפית הזאת.",
                     )
                 )
         return AgentWorkProduct(
@@ -70,5 +70,5 @@ class AnomalyDiscoveryAgent(SpecialistAgent):
                     ),
                 ),
             ),
-            next_steps=("Implement the harness in tests before increasing input volume.",),
+            next_steps=("לבנות harness בבדיקות לפני שמגדילים את נפח הקלטים.",),
         )

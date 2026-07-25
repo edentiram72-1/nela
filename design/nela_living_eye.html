@@ -179,12 +179,14 @@ svg{ width:100%; height:100%; overflow:visible; }
 .msg{
   max-width:78%; padding:10px 16px; border-radius:18px;
   font-size:15px; line-height:1.45; font-weight:300;
+  white-space:pre-wrap; overflow-wrap:anywhere;
   animation: rise .5s cubic-bezier(.2,.9,.3,1.2);
 }
 @keyframes rise{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:none;} }
 .msg.user{ align-self:flex-end; background:#241a4a; border:1px solid var(--hairline); }
 .msg.nela{
-  align-self:flex-start; background:linear-gradient(135deg, rgba(255,255,255,.05), transparent);
+  align-self:flex-start; max-width:88%;
+  background:linear-gradient(135deg, rgba(255,255,255,.05), transparent);
   border:1px solid var(--hairline); border-left:2px solid var(--st-b);
   transition: border-color 1s ease;
 }

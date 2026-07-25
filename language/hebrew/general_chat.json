@@ -315,6 +315,46 @@
         }
       ]
     },
+    "security.findings.done": {
+      "description": "Defensive action completed with findings",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.findings.done.primary",
+          "text": "סיימתי פעולת הגנה ומצאתי {findings_count_label}:\n{findings}\nהצעד הבא: {next_steps}",
+          "vars": [
+            "findings_count_label",
+            "findings",
+            "next_steps"
+          ],
+          "weight": 1.4
+        },
+        {
+          "id": "security.findings.done.tight",
+          "text": "יש לי {findings_count_label}:\n{findings}\nממשיכים מכאן: {next_steps}",
+          "vars": [
+            "findings_count_label",
+            "findings",
+            "next_steps"
+          ]
+        }
+      ]
+    },
+    "security.defense.findings": {
+      "description": "Cyber defense sweep findings",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.defense.findings.primary",
+          "text": "הפעלתי מערך הגנה ראשוני ומצאתי {findings_count_label} לטיפול:\n{findings}\nהצעד הבא: {next_steps}",
+          "vars": [
+            "findings_count_label",
+            "findings",
+            "next_steps"
+          ]
+        }
+      ]
+    },
     "security.review.done": {
       "description": "Defensive security review completed",
       "eye_state": "success",

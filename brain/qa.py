@@ -99,6 +99,7 @@ def _agent_list(agents: tuple[str, ...], limit: int = 12) -> str:
 
 def _is_security_agent(agent: str) -> bool:
     return agent in {
+        "cyber_defense",
         "secure_code_reviewer",
         "vulnerability_research",
         "security_researcher",

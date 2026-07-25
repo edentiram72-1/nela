@@ -87,6 +87,14 @@ natural assistant-status question instead of technical Agent status, `מה את
 routes to `LearningAgent.recommend_learning_plan` with a Hebrew response. Generic
 clarification prompts were changed from English to Hebrew.
 
+On 2026-07-25, `CyberDefenseAgent` was added as the first central defensive
+cyber posture Agent. `CyberDefenseSweep` routes requests such as `נלה תעשי
+הגנה`, `תתחילי להגן`, and `תבני מערך סייבר` to
+`cyber_defense.defense_posture_check`. Security responses now surface findings
+to the user in Hebrew, including severity, recommendation, and next steps. This
+remains T0 passive/defensive posture work and does not add external targeting or
+offensive capability.
+
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
 `127.0.0.1` only, injects a per-launch token, verifies the expected same origin,

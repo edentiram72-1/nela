@@ -34,8 +34,8 @@ class SecureCodeReviewerAgent(SpecialistAgent):
             summary=summary,
             findings=tuple(findings),
             next_steps=(
-                "Confirm findings against real code context.",
-                "Patch root causes and add regression tests for each accepted issue.",
+                "לאמת את הממצאים מול הקוד האמיתי.",
+                "לתקן את שורש הבעיה ולהוסיף בדיקת רגרסיה לכל ממצא שאושר.",
             ),
         )
 
@@ -48,14 +48,14 @@ class SecureCodeReviewerAgent(SpecialistAgent):
                 severity=RiskLevel.MEDIUM,
                 category="threat_model",
                 location=asset,
-                recommendation="Document expected inputs, authentication, authorization, logging, and failure behavior.",
+                recommendation="לתעד קלטים צפויים, אימות, הרשאות, לוגים והתנהגות כשל.",
             )
             for boundary in trust_boundaries
         )
         return AgentWorkProduct(
             summary=f"Threat model scaffold prepared for {asset}.",
             findings=findings,
-            next_steps=("Convert accepted risks into implementation tasks.",),
+            next_steps=("להפוך סיכונים שאושרו למשימות יישום קטנות.",),
         )
 
 
@@ -68,14 +68,14 @@ def _source_files(payload: dict[str, object]) -> dict[str, str]:
 
 def _scan_source(path: str, source: str) -> list[TaskFinding]:
     checks: tuple[tuple[str, str, RiskLevel, str], ...] = (
-        (r"\beval\s*\(", "Dynamic eval usage", RiskLevel.HIGH, "Replace eval with a typed parser or explicit dispatch table."),
-        (r"\bexec\s*\(", "Dynamic exec usage", RiskLevel.HIGH, "Remove exec or isolate trusted code generation behind review and tests."),
-        (r"shell\s*=\s*True", "Shell execution enabled", RiskLevel.HIGH, "Use argument arrays with shell disabled."),
-        (r"pickle\.loads?\s*\(", "Unsafe pickle deserialization", RiskLevel.HIGH, "Use a safe serialization format for untrusted data."),
-        (r"yaml\.load\s*\((?![^)]*SafeLoader)", "YAML load without SafeLoader", RiskLevel.MEDIUM, "Use yaml.safe_load or SafeLoader."),
-        (r"verify\s*=\s*False", "TLS certificate verification disabled", RiskLevel.HIGH, "Keep TLS verification enabled and fix trust roots explicitly."),
-        (r"hashlib\.(md5|sha1)\s*\(", "Weak hash algorithm", RiskLevel.MEDIUM, "Use SHA-256 or a password-specific hashing scheme where appropriate."),
-        (r"(password|api_key|secret|token)\s*=\s*['\"][^'\"]{8,}", "Possible hardcoded secret", RiskLevel.CRITICAL, "Move secrets to a managed secret store or environment variable."),
+        (r"\beval\s*\(", "Dynamic eval usage", RiskLevel.HIGH, "להחליף eval בפרסר טיפוסי או בטבלת פעולות מפורשת."),
+        (r"\bexec\s*\(", "Dynamic exec usage", RiskLevel.HIGH, "להסיר exec או לבודד יצירת קוד מאושרת מאחורי סקירה ובדיקות."),
+        (r"shell\s*=\s*True", "Shell execution enabled", RiskLevel.HIGH, "להריץ פקודות כמערך ארגומנטים בלי shell."),
+        (r"pickle\.loads?\s*\(", "Unsafe pickle deserialization", RiskLevel.HIGH, "להשתמש בפורמט סריאליזציה בטוח עבור מידע לא מהימן."),
+        (r"yaml\.load\s*\((?![^)]*SafeLoader)", "YAML load without SafeLoader", RiskLevel.MEDIUM, "להשתמש ב-yaml.safe_load או SafeLoader."),
+        (r"verify\s*=\s*False", "TLS certificate verification disabled", RiskLevel.HIGH, "להשאיר אימות TLS פעיל ולתקן trust roots במפורש."),
+        (r"hashlib\.(md5|sha1)\s*\(", "Weak hash algorithm", RiskLevel.MEDIUM, "להשתמש ב-SHA-256 או במנגנון ייעודי לסיסמאות."),
+        (r"(password|api_key|secret|token)\s*=\s*['\"][^'\"]{8,}", "Possible hardcoded secret", RiskLevel.CRITICAL, "להעביר סודות למשתני סביבה או למנהל סודות ייעודי."),
     )
     findings: list[TaskFinding] = []
     for line_number, line in enumerate(source.splitlines(), start=1):
