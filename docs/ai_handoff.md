@@ -80,6 +80,13 @@ questions. Active cyber execution remains blocked behind the existing
 authorization, scoped-session, confirmation, audit, isolation, and kill-switch
 model.
 
+On 2026-07-25, the same branch improved first-contact conversation behavior.
+Short greetings now receive warmer Hebrew replies, `מה מצב` is treated as a
+natural assistant-status question instead of technical Agent status, `מה את
+יודעת על סייבר` routes to defensive cyber capabilities, and `תלמדי <topic>`
+routes to `LearningAgent.recommend_learning_plan` with a Hebrew response. Generic
+clarification prompts were changed from English to Hebrew.
+
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
 `127.0.0.1` only, injects a per-launch token, verifies the expected same origin,

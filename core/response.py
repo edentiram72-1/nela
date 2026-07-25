@@ -89,6 +89,9 @@ class NelaResponseAdapter:
             return "learning.saved", variables
         if turn.intent.action == "TeachResponse":
             return "learning.saved", variables
+        if turn.intent.action == "LearnTopic":
+            variables["topic"] = str(turn.intent.parameters.get("topic", "הנושא הזה"))
+            return "learning.topic.started", variables
         if turn.intent.action == "SecurityReview":
             return "security.review.done", variables
         if turn.intent.action == "ThreatModel":

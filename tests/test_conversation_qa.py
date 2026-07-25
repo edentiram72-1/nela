@@ -54,6 +54,26 @@ class ConversationQATests(unittest.TestCase):
         self.assertIsNone(turn.plan)
         self.assertRegex(response, r"[\u0590-\u05ff]")
 
+    def test_greeting_gets_natural_hebrew_response(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("שלום")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "Greeting")
+        self.assertIsNone(turn.plan)
+        self.assertRegex(response, r"שלום|היי|אני")
+
+    def test_human_status_question_gets_natural_status(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("מה מצב")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "HumanStatusQuestion")
+        self.assertIsNone(turn.plan)
+        self.assertRegex(response, r"מצב|איתך|מוכנה|ערה")
+
     def test_teach_response_then_answer_from_learned_store(self) -> None:
         runtime, temp_dir = make_runtime()
         with temp_dir:
@@ -70,12 +90,24 @@ class ConversationQATests(unittest.TestCase):
     def test_security_capabilities_question_explains_defensive_boundary(self) -> None:
         runtime, temp_dir = make_runtime()
         with temp_dir:
-            turn = runtime.conversation.handle_text("מה את יודעת בסייבר?")
+            turn = runtime.conversation.handle_text("מה את יודעת על סייבר?")
             response = runtime.response_adapter.render_turn(turn)
 
         self.assertEqual(turn.intent.action, "SecurityCapabilitiesQuestion")
         self.assertIsNone(turn.plan)
         self.assertRegex(response, r"סייבר|אבטחה|הגנתי|הגנתי")
+
+    def test_learning_topic_request_routes_to_learning_agent(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("תלמדי אבטחה")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "LearnTopic")
+        self.assertIsNotNone(turn.plan)
+        self.assertEqual(turn.plan.tasks[0].target_agent, "learning")
+        self.assertTrue(turn.dispatched_results[0].success)
+        self.assertIn("אבטחה", response)
 
     def test_defensive_security_review_routes_to_security_agent(self) -> None:
         runtime, temp_dir = make_runtime()

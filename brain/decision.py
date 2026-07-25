@@ -35,14 +35,14 @@ class DecisionEngine:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,
                 reason="The request is empty.",
-                question="What would you like me to do?",
+                question="אני כאן. מה בא לך שנעשה?",
             )
 
         if intent.confidence < 0.5:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,
                 reason="Intent confidence is below execution threshold.",
-                question="Can you clarify what you want NELA to do?",
+                question="לא לגמרי הבנתי. אפשר לנסח לי את זה כפעולה או שאלה?",
             )
 
         if context.pending_confirmations:
@@ -75,7 +75,7 @@ class DecisionEngine:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,
                 reason="The requested action requires confirmation.",
-                question="Should I continue with this action?",
+                question="סגרנו שאמשיך עם הפעולה הזאת?",
             )
 
         if intent.action == "Remember":

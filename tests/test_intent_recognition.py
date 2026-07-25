@@ -67,6 +67,11 @@ class IntentRecognitionTests(unittest.TestCase):
 
         self.assertEqual(intent.action, "AgentStatusQuestion")
 
+    def test_short_status_question_is_human_status_not_agent_status(self) -> None:
+        intent = IntentRouter().classify("מה מצב")
+
+        self.assertEqual(intent.action, "HumanStatusQuestion")
+
     def test_unknown_question_gets_general_question_intent(self) -> None:
         intent = IntentRouter().classify("מה קורה בירח?")
 
@@ -88,9 +93,16 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.target_agent, "secure_code_reviewer")
 
     def test_recognizes_security_capabilities_question(self) -> None:
-        intent = IntentRouter().classify("מה את יודעת בסייבר?")
+        intent = IntentRouter().classify("מה את יודעת על סייבר?")
 
         self.assertEqual(intent.action, "SecurityCapabilitiesQuestion")
+
+    def test_recognizes_learning_topic_request(self) -> None:
+        intent = IntentRouter().classify("תלמדי אבטחה")
+
+        self.assertEqual(intent.action, "LearnTopic")
+        self.assertEqual(intent.target_agent, "learning")
+        self.assertEqual(intent.parameters["topic"], "אבטחה")
 
     def test_recognizes_local_lab_target_registration(self) -> None:
         intent = IntentRouter().classify("תרשמי יעד מעבדה http://localhost:3000")

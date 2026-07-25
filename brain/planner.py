@@ -132,6 +132,17 @@ class Planner:
                     timeout_seconds=5.0,
                 )
             )
+        elif intent.action == "LearnTopic":
+            tasks.append(
+                Task(
+                    description="Prepare a learning path for the requested topic",
+                    action="recommend_learning_plan",
+                    capability="recommend_learning_plan",
+                    target_agent="learning",
+                    payload={"topic": intent.parameters.get("topic", intent.raw_text)},
+                    timeout_seconds=5.0,
+                )
+            )
         elif intent.action == "SecurityReview":
             tasks.append(
                 Task(

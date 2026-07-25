@@ -18,6 +18,7 @@ CONVERSATIONAL_ACTIONS = frozenset(
         "IdentityQuestion",
         "CapabilitiesQuestion",
         "SecurityCapabilitiesQuestion",
+        "HumanStatusQuestion",
         "AgentStatusQuestion",
         "GeneralQuestion",
     }
@@ -83,6 +84,8 @@ class KnowledgeEngine:
             return KnowledgeAnswer("qa.capabilities", "capabilities", variables)
         if intent.action == "SecurityCapabilitiesQuestion":
             return KnowledgeAnswer("qa.security_capabilities", "security_capabilities", variables)
+        if intent.action == "HumanStatusQuestion":
+            return KnowledgeAnswer("qa.human_status", "human_status", variables)
         if intent.action == "AgentStatusQuestion":
             return KnowledgeAnswer("qa.agent_status", "agent_status", variables)
         return KnowledgeAnswer("qa.unknown", "unknown", variables)
