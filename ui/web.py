@@ -43,7 +43,14 @@ class NelaWebHandler(BaseHTTPRequestHandler):
             self._send_html(self._inject_launch_token(self.server.index_path.read_text(encoding="utf-8")))
             return
         if parsed.path == "/health":
-            self._send_json({"ok": True})
+            agents = self.server.runtime.dispatcher.discover_agents()
+            self._send_json(
+                {
+                    "ok": True,
+                    "agents": list(agents),
+                    "agent_count": len(agents),
+                }
+            )
             return
         self.send_error(404, "Not found")
 
