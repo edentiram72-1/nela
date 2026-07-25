@@ -64,6 +64,13 @@ class DecisionEngine:
                 question="איזו אפליקציה לפתוח?",
             )
 
+        if intent.action == "PlayMedia" and not intent.application:
+            return Decision(
+                type=DecisionType.ASK_CLARIFICATION,
+                reason="Missing media application slot.",
+                question="באיזו אפליקציה לנגן את זה?",
+            )
+
         if intent.requires_confirmation:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,

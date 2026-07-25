@@ -339,10 +339,10 @@ svg{ width:100%; height:100%; overflow:visible; }
 
 <section class="chat" aria-label="Conversation with NELA">
   <div class="thread" id="thread">
-    <div class="msg nela">I'm here. The eye above is my face — watch it change as I work.</div>
+    <div class="msg nela">אני כאן. כתוב לי בעברית, ואני אעביר את זה דרך ה-Brain.</div>
   </div>
   <form class="composer" id="composer">
-    <input id="input" type="text" placeholder="Talk to NELA…" autocomplete="off" aria-label="Message NELA">
+    <input id="input" type="text" placeholder="דבר עם נלה..." autocomplete="off" aria-label="Message NELA">
     <button class="send" type="submit" aria-label="Send">▲</button>
   </form>
 </section>
@@ -441,26 +441,62 @@ addEventListener('pointermove', e=>{
   gaze.style.transform = `translate(${dx*26}px, ${dy*20}px)`;
 });
 
-/* ---------- demo conversation loop ---------- */
+/* ---------- conversation loop: browser UI -> local NELA Brain ---------- */
 const thread = document.getElementById('thread');
 function say(text, who){
   const d = document.createElement('div');
   d.className = 'msg '+who; d.textContent = text;
   thread.appendChild(d); thread.scrollTop = thread.scrollHeight;
 }
-document.getElementById('composer').addEventListener('submit', e=>{
+function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+async function callBrain(text){
+  if(location.protocol === 'file:'){
+    await sleep(600);
+    return {
+      ok: true,
+      response: 'אני פתוחה כקובץ בלבד. כדי שאענה באמת, פתח אותי דרך python3 -m ui.app.',
+      eye_state: 'waiting'
+    };
+  }
+  const result = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type':'application/json',
+      'X-NELA-Launch-Token': window.NELA_BRIDGE_TOKEN || ''
+    },
+    body: JSON.stringify({message:text})
+  });
+  const payload = await result.json();
+  if(!result.ok || payload.ok === false){
+    throw new Error(payload.response || 'NELA Brain request failed');
+  }
+  return payload;
+}
+document.getElementById('composer').addEventListener('submit', async e=>{
   e.preventDefault();
   const input = document.getElementById('input');
+  const send = document.querySelector('.send');
   const text = input.value.trim();
   if(!text) return;
   say(text,'user'); input.value='';
+  input.disabled = true; send.disabled = true;
   setState('listening');
-  setTimeout(()=>setState('thinking'), 700);
-  setTimeout(()=>setState('executing'), 2100);
-  setTimeout(()=>setState('speaking'), 3400);
-  setTimeout(()=>{ say('Done — that ran through listening → thinking → executing → speaking. Try the state panel for the rest.','nela'); }, 3500);
-  setTimeout(()=>setState('success'), 5200);
-  setTimeout(()=>setState('idle'), 6800);
+  await sleep(350);
+  setState('thinking');
+  try{
+    const payload = await callBrain(text);
+    if((payload.plan_tasks || []).length){ setState('executing'); await sleep(450); }
+    setState('speaking');
+    say(payload.response || 'יש.', 'nela');
+    await sleep(700);
+    setState(payload.eye_state || 'success');
+  }catch(error){
+    setState('error');
+    say('נתקעתי רגע: '+error.message, 'nela');
+  }finally{
+    input.disabled = false; send.disabled = false; input.focus();
+    setTimeout(()=>setState('idle'), 1800);
+  }
 });
 </script>
 </body>

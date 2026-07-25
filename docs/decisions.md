@@ -435,3 +435,37 @@ registration, and local-only fuzz planning.
 - `docs/language_system.md`
 - `docs/cyber_lab.md`
 - `tests/test_conversation_qa.py`
+
+### DEC-0017: Use Token-Authenticated Local Browser Prototype Before Production WebView
+
+**Date:** 2026-07-25
+**Status:** Accepted
+
+**Context:** Claude's Living Eye prototype is authored as HTML/CSS/SVG and
+cannot be faithfully rendered by the temporary Tkinter shell. NELA needs a
+small visible integration path that lets the user type Hebrew into the animated
+Eye interface and route the message through the existing Brain without
+redesigning the UI or introducing a production WebView bridge prematurely.
+
+**Decision:** Add a local browser prototype host in `ui/web.py` that serves
+`design/nela_living_eye.html` on `127.0.0.1` only and routes `/api/chat`
+messages through the existing runtime. The bridge uses a per-launch token,
+requires the token in `X-NELA-Launch-Token`, and verifies the expected same
+origin before handling chat requests. This is an interim demo host, not the
+final production WebView architecture.
+
+**Consequences:**
+
+- The animated Living Eye can be exercised against the real Brain with one
+  local UI command.
+- The UI bridge is not exposed on `0.0.0.0`.
+- Requests without the launch token or expected origin are rejected.
+- Production WebView selection and the secure bridge architecture from A1
+  remain future work before shipping a permanent desktop shell.
+
+**Related files:**
+
+- `ui/app.py`
+- `ui/web.py`
+- `design/nela_living_eye.html`
+- `tests/test_ui_web.py`
