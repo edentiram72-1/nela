@@ -1,4 +1,5 @@
 import unittest
+import os
 import time
 import threading
 
@@ -88,6 +89,8 @@ class BlockingSensitiveAgent(BaseAgent):
         if marker_path:
             with Path(str(marker_path)).open("a", encoding="utf-8") as marker:
                 marker.write("started\n")
+                marker.flush()
+                os.fsync(marker.fileno())
         time.sleep(float(command.payload.get("sleep_seconds", 5.0)))
         return AgentResult(True, "finished")
 
