@@ -102,6 +102,15 @@ to clarification. Hebrew clarification templates were also cleaned up so
 unknown requests no longer duplicate question marks or wrap full questions in
 awkward phrasing.
 
+On 2026-07-26, `codex/nela-real-actions-cyber-learning` started the first
+local real-action layer for defensive cyber learning. NELA can route natural
+Hebrew requests such as `נלה תבדקי את הפרויקט לאבטחה` to
+`secure_code_reviewer.scan_workspace_security` and `תעשי בדיקת תלותים` to
+`vulnerability_research.scan_workspace_dependencies`. Both actions are local,
+read-only, and defensive: they parse workspace files/manifests, emit normalized
+findings and next steps, avoid external targeting, and redact likely hardcoded
+secret evidence.
+
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
 `127.0.0.1` only, injects a per-launch token, verifies the expected same origin,
@@ -137,11 +146,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Post-Sprint 2: Runtime Language Learning + Defensive Security Routing + Secure Visual Prototype**
+**Post-Sprint 2: Runtime Language Learning + Defensive Security Routing + Secure Visual Prototype + Local Defensive Actions**
 
 ## Active Branch
 
-`codex/nela-language-learning-cyber`
+`codex/nela-real-actions-cyber-learning`
 
 ## Recently Modified Files
 

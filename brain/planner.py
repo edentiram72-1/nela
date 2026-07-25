@@ -143,6 +143,32 @@ class Planner:
                     timeout_seconds=5.0,
                 )
             )
+        elif intent.action == "WorkspaceSecurityScan":
+            tasks.append(
+                Task(
+                    description="Run a defensive security scan on the local workspace",
+                    action="scan_workspace_security",
+                    capability="scan_workspace_security",
+                    target_agent="secure_code_reviewer",
+                    payload={
+                        "root": intent.resource or ".",
+                        "max_files": 120,
+                        "max_bytes_per_file": 200_000,
+                    },
+                    timeout_seconds=20.0,
+                )
+            )
+        elif intent.action == "DependencyScan":
+            tasks.append(
+                Task(
+                    description="Run a local dependency and CVE correlation scan",
+                    action="scan_workspace_dependencies",
+                    capability="scan_workspace_dependencies",
+                    target_agent="vulnerability_research",
+                    payload={"root": intent.resource or "."},
+                    timeout_seconds=20.0,
+                )
+            )
         elif intent.action == "SecurityReview":
             tasks.append(
                 Task(

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import re
 
 from agents.base import AgentCommand
-from agents.foundation import SpecialistAgent
+from agents.foundation import SpecialistAgent, artifact
 from agents.task_schema import AgentDomain, AgentWorkProduct, RiskLevel, TaskFinding
 
 
@@ -19,6 +20,7 @@ class SecureCodeReviewerAgent(SpecialistAgent):
         return {
             **super()._handlers(),
             "review_code_security": self._review_code_security,
+            "scan_workspace_security": self._scan_workspace_security,
             "threat_model": self._threat_model,
         }
 
@@ -36,6 +38,38 @@ class SecureCodeReviewerAgent(SpecialistAgent):
             next_steps=(
                 "לאמת את הממצאים מול הקוד האמיתי.",
                 "לתקן את שורש הבעיה ולהוסיף בדיקת רגרסיה לכל ממצא שאושר.",
+            ),
+        )
+
+    def _scan_workspace_security(self, command: AgentCommand) -> AgentWorkProduct:
+        root = Path(str(command.payload.get("root", "."))).expanduser().resolve()
+        if _contains_duplicate_suffix(root):
+            return AgentWorkProduct(
+                summary="Workspace scan refused because the requested path looks like a local duplicate file.",
+                next_steps=("Choose the canonical project path, not a duplicate file with a numeric suffix.",),
+            )
+        max_files = int(command.payload.get("max_files", 120))
+        max_bytes = int(command.payload.get("max_bytes_per_file", 200_000))
+        files = _workspace_source_files(root, max_files=max_files, max_bytes=max_bytes)
+        findings: list[TaskFinding] = []
+        for path, source in files.items():
+            findings.extend(_scan_source(path, source))
+        skipped_note = ""
+        if len(files) >= max_files:
+            skipped_note = f" Limit reached at {max_files} file(s)."
+        return AgentWorkProduct(
+            summary=f"Workspace defensive security scan completed for {len(files)} file(s).{skipped_note}",
+            findings=tuple(findings),
+            artifacts=(
+                artifact(
+                    "scan_manifest",
+                    "workspace_security_scan",
+                    tuple(files.keys()) or ("No supported source files found.",),
+                ),
+            ),
+            next_steps=(
+                "לתעדף ממצאים קריטיים וגבוהים לפני הרחבת ה-scan.",
+                "להוסיף בדיקות רגרסיה לתיקוני אבטחה שאושרו.",
             ),
         )
 
@@ -66,6 +100,66 @@ def _source_files(payload: dict[str, object]) -> dict[str, str]:
     return {str(payload.get("path", "inline")): str(payload.get("source", ""))}
 
 
+def _workspace_source_files(root: Path, max_files: int, max_bytes: int) -> dict[str, str]:
+    if not root.exists():
+        return {}
+    paths = [root] if root.is_file() else sorted(path for path in root.rglob("*") if path.is_file())
+    files: dict[str, str] = {}
+    for path in paths:
+        if len(files) >= max_files:
+            break
+        if not _is_supported_source_file(path) or _is_ignored_path(path):
+            continue
+        try:
+            if path.stat().st_size > max_bytes:
+                continue
+            display_path = str(path.relative_to(root)) if root.is_dir() else path.name
+            files[display_path] = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+    return files
+
+
+def _is_supported_source_file(path: Path) -> bool:
+    if path.name in {"Dockerfile", "Containerfile", ".env.example"}:
+        return True
+    return path.suffix.lower() in {
+        ".py",
+        ".js",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".json",
+        ".yaml",
+        ".yml",
+        ".toml",
+        ".ini",
+        ".cfg",
+        ".env",
+        ".sh",
+    }
+
+
+def _is_ignored_path(path: Path) -> bool:
+    ignored_parts = {
+        ".git",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".venv",
+        "__pycache__",
+        "build",
+        "dist",
+        "logs",
+        "node_modules",
+        "venv",
+    }
+    return any(part in ignored_parts for part in path.parts)
+
+
+def _contains_duplicate_suffix(path: Path) -> bool:
+    return bool(re.search(r"\s[23](?:\.[^.]+)?$", path.name))
+
+
 def _scan_source(path: str, source: str) -> list[TaskFinding]:
     checks: tuple[tuple[str, str, RiskLevel, str], ...] = (
         (r"\beval\s*\(", "Dynamic eval usage", RiskLevel.HIGH, "להחליף eval בפרסר טיפוסי או בטבלת פעולות מפורשת."),
@@ -76,6 +170,11 @@ def _scan_source(path: str, source: str) -> list[TaskFinding]:
         (r"verify\s*=\s*False", "TLS certificate verification disabled", RiskLevel.HIGH, "להשאיר אימות TLS פעיל ולתקן trust roots במפורש."),
         (r"hashlib\.(md5|sha1)\s*\(", "Weak hash algorithm", RiskLevel.MEDIUM, "להשתמש ב-SHA-256 או במנגנון ייעודי לסיסמאות."),
         (r"(password|api_key|secret|token)\s*=\s*['\"][^'\"]{8,}", "Possible hardcoded secret", RiskLevel.CRITICAL, "להעביר סודות למשתני סביבה או למנהל סודות ייעודי."),
+        (r"\bdebug\s*[:=]\s*true\b", "Debug mode enabled", RiskLevel.MEDIUM, "לוודא ש-debug כבוי בסביבות שאינן פיתוח מקומי."),
+        (r"0\.0\.0\.0", "Broad network bind", RiskLevel.MEDIUM, "להגביל bind מקומי או לתעד במפורש למה החשיפה נדרשת."),
+        (r"\b(cors|origin).*(\*|allow_all)", "Permissive CORS/origin policy", RiskLevel.HIGH, "להגדיר origins מאושרים במפורש במקום wildcard."),
+        (r"\b(chmod\s+777|mode\s*[:=]\s*777)\b", "Overly permissive file mode", RiskLevel.HIGH, "להחליף בהרשאות מינימליות לפי הצורך."),
+        (r"\b(image|container_image)\s*:\s*[^#\n]*:latest\b", "Floating container tag", RiskLevel.MEDIUM, "לקבע image tag או digest כדי למנוע שינוי לא צפוי בפריסה."),
     )
     findings: list[TaskFinding] = []
     for line_number, line in enumerate(source.splitlines(), start=1):
@@ -87,8 +186,15 @@ def _scan_source(path: str, source: str) -> list[TaskFinding]:
                         severity=severity,
                         category="sast",
                         location=f"{path}:{line_number}",
-                        evidence=line.strip()[:160],
+                        evidence=_safe_evidence(title, line),
                         recommendation=recommendation,
                     )
                 )
     return findings
+
+
+def _safe_evidence(title: str, line: str) -> str:
+    stripped = line.strip()[:160]
+    if title == "Possible hardcoded secret":
+        return re.sub(r"(['\"])[^'\"]{4,}(['\"])", r"\1[redacted]\2", stripped)
+    return stripped

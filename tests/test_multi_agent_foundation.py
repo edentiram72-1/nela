@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 from agents import build_default_registry
 from agents.base import AgentCommand
@@ -103,6 +105,26 @@ class MultiAgentFoundationTests(unittest.TestCase):
         findings = result.data["work_product"]["findings"]
         self.assertEqual(len(findings), 2)
         self.assertEqual(findings[1]["category"], "cve_correlation")
+
+    def test_vulnerability_research_scans_workspace_dependency_files(self) -> None:
+        registry = build_default_registry()
+        agent = registry.get("vulnerability_research")
+        assert agent is not None
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "requirements.txt").write_text("demo-lib\nrequests==2.31.0\n", encoding="utf-8")
+            result = agent.execute(
+                AgentCommand(
+                    action="scan_workspace_dependencies",
+                    payload={"root": str(root)},
+                )
+            )
+
+        self.assertTrue(result.success)
+        work_product = result.data["work_product"]
+        self.assertIn("Workspace dependency scan", work_product["summary"])
+        self.assertEqual(work_product["findings"][0]["title"], "Dependency is not pinned: demo-lib")
 
     def test_sandbox_profiles_are_conservative_for_security_agents(self) -> None:
         profiles = default_tool_permissions()

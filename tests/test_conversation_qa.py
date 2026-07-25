@@ -1,3 +1,4 @@
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -120,6 +121,44 @@ class ConversationQATests(unittest.TestCase):
         self.assertTrue(turn.dispatched_results[0].success)
         self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
         self.assertEqual(runtime.response_adapter._category_and_variables(turn)[0], "security.review.done")
+
+    def test_workspace_security_scan_runs_local_sast_action(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            old_cwd = Path.cwd()
+            os.chdir(temp_dir.name)
+            try:
+                Path("unsafe_demo.py").write_text("password = 'super-secret-value'\n", encoding="utf-8")
+                turn = runtime.conversation.handle_text("נלה תבדקי את הפרויקט לאבטחה")
+                response = runtime.response_adapter.render_turn(turn)
+            finally:
+                os.chdir(old_cwd)
+
+        self.assertEqual(turn.intent.action, "WorkspaceSecurityScan")
+        self.assertEqual(turn.plan.tasks[0].target_agent, "secure_code_reviewer")
+        self.assertEqual(turn.plan.tasks[0].action, "scan_workspace_security")
+        self.assertTrue(turn.dispatched_results[0].success)
+        self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
+        self.assertIn("ממצ", response)
+
+    def test_dependency_scan_routes_to_vulnerability_research(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            old_cwd = Path.cwd()
+            os.chdir(temp_dir.name)
+            try:
+                Path("requirements.txt").write_text("demo-lib\nrequests==2.31.0\n", encoding="utf-8")
+                turn = runtime.conversation.handle_text("תעשי בדיקת תלותים")
+                response = runtime.response_adapter.render_turn(turn)
+            finally:
+                os.chdir(old_cwd)
+
+        self.assertEqual(turn.intent.action, "DependencyScan")
+        self.assertEqual(turn.plan.tasks[0].target_agent, "vulnerability_research")
+        self.assertEqual(turn.plan.tasks[0].action, "scan_workspace_dependencies")
+        self.assertTrue(turn.dispatched_results[0].success)
+        self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
+        self.assertIn("תלות", response)
 
     def test_register_local_cyber_lab_target_routes_through_authorized_lab(self) -> None:
         runtime, temp_dir = make_runtime()

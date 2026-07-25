@@ -72,6 +72,11 @@ deterministic fuzz cases, findings, and next steps.
 The Brain can route a small safe set of Hebrew/English security requests to
 existing defensive Agents:
 
+- `WorkspaceSecurityScan`: runs a local SAST-style scan over supported source
+  and config files in the current workspace through `secure_code_reviewer`.
+- `DependencyScan`: parses local dependency manifests through
+  `vulnerability_research` and reports version hygiene / supplied advisory
+  correlations.
 - `SecurityCapabilitiesQuestion`: explains NELA's defensive cyber boundaries.
 - `CyberDefenseSweep`: creates a first defensive posture report through
   `cyber_defense`, including findings, severity, recommendations, and next
@@ -119,3 +124,20 @@ User: "תעשי בדיקה של אבטחה"
 The first posture check intentionally starts with safe defensive fundamentals:
 authorized scope, access control, audit coverage, dependency/config hardening,
 and recovery readiness.
+
+Example local code/dependency routes:
+
+```text
+User: "נלה תבדקי את הפרויקט לאבטחה"
+  -> WorkspaceSecurityScan
+  -> secure_code_reviewer.scan_workspace_security
+  -> Permission tier T0
+
+User: "תעשי בדיקת תלותים"
+  -> DependencyScan
+  -> vulnerability_research.scan_workspace_dependencies
+  -> Permission tier T0
+```
+
+Both routes are local and defensive. They do not contact external targets, do
+not exploit vulnerabilities, and redact likely hardcoded secrets from evidence.

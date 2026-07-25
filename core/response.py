@@ -96,6 +96,10 @@ class NelaResponseAdapter:
             return "learning.topic.started", variables
         if turn.intent.action == "SecurityReview":
             return _security_category("security.review.done", variables), variables
+        if turn.intent.action == "WorkspaceSecurityScan":
+            return _security_category("security.review.done", variables), variables
+        if turn.intent.action == "DependencyScan":
+            return _security_category("security.review.done", variables), variables
         if turn.intent.action == "CyberDefenseSweep":
             if int(variables.get("findings_count", 0) or 0) > 0:
                 return "security.defense.findings", variables
@@ -182,5 +186,15 @@ def _finding_title(title: str) -> str:
         "TLS certificate verification disabled": "אימות תעודת TLS כבוי",
         "Weak hash algorithm": "אלגוריתם hash חלש",
         "Possible hardcoded secret": "ייתכן שיש סוד קשיח בקוד",
+        "Debug mode enabled": "מצב debug פעיל",
+        "Broad network bind": "חשיפת רשת רחבה",
+        "Permissive CORS/origin policy": "מדיניות CORS פתוחה מדי",
+        "Overly permissive file mode": "הרשאות קובץ רחבות מדי",
+        "Floating container tag": "תג container לא מקובע",
+        "Dependency file could not be parsed": "קובץ תלותים לא ניתן לפענוח",
     }
+    if title.startswith("Dependency is not pinned:"):
+        return title.replace("Dependency is not pinned:", "תלות לא מקובעת:")
+    if title.startswith("Known advisory for"):
+        return title.replace("Known advisory for", "התראת אבטחה ידועה עבור")
     return known.get(title, title)
