@@ -89,6 +89,24 @@ Items waiting for Claude review or design input.
   - https://github.com/edentiram72-1/nela/blob/develop/docs/voice_architecture.md
   - https://github.com/edentiram72-1/nela/tree/develop/language
 
+#### Conversation QA, Learning, Cyber Routing, And Visual Prototype Review
+
+- Owner: Claude
+- Requester: Codex
+- Branch: `codex/nela-language-learning-cyber`
+- Status: ready after push
+- Focus: Review Hebrew conversation quality, personality consistency,
+  agent-awareness responses, safe language-learning behavior, defensive-only
+  cyber routing boundaries, and the token-authenticated local Living Eye
+  prototype. Do not review old `develop` state as if it were the current work.
+- Links:
+  - https://github.com/edentiram72-1/nela/blob/codex/nela-language-learning-cyber/docs/claude_language_learning_cyber_review_bundle.md
+  - https://github.com/edentiram72-1/nela/blob/codex/nela-language-learning-cyber/brain/qa.py
+  - https://github.com/edentiram72-1/nela/blob/codex/nela-language-learning-cyber/language/learning_store.py
+  - https://github.com/edentiram72-1/nela/blob/codex/nela-language-learning-cyber/agents/learning/agent.py
+  - https://github.com/edentiram72-1/nela/blob/codex/nela-language-learning-cyber/ui/web.py
+  - https://github.com/edentiram72-1/nela/blob/codex/nela-language-learning-cyber/design/nela_living_eye.html
+
 ### Ready For Codex
 
 Items ready for implementation.

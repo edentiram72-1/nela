@@ -51,9 +51,52 @@ body{
   color: var(--starlight);
   font-family:'Assistant', system-ui, sans-serif;
   display:grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto 1fr auto;
   overflow:hidden;
   transition: background 1.2s ease;
+}
+
+.topbar{
+  min-height:76px;
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items:center;
+  gap:16px;
+  padding:14px clamp(16px,4vw,46px) 0;
+}
+.brand-lockup{
+  display:flex; align-items:center; gap:12px;
+  font-family:'Syne',sans-serif; font-weight:800;
+  letter-spacing:.18em; text-transform:uppercase;
+  color:var(--starlight); font-size:13px;
+}
+.brand-mark{
+  width:28px; height:28px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, var(--st-b), var(--st-c));
+  box-shadow:0 0 22px var(--glow);
+}
+.top-status{
+  justify-self:center;
+  font:500 12px 'Space Grotesk',monospace;
+  color:var(--dim); letter-spacing:.08em;
+}
+.top-status strong{ color:var(--st-b); font-weight:500; }
+.mode-pill{
+  justify-self:end;
+  border:1px solid var(--hairline);
+  color:var(--starlight);
+  background:rgba(255,255,255,.045);
+  border-radius:999px;
+  padding:8px 12px;
+  font:600 13px 'Assistant',sans-serif;
+}
+.workspace{
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(280px,1fr) minmax(260px,340px);
+  gap:24px;
+  align-items:center;
+  padding:6px clamp(16px,4vw,46px) 0;
 }
 
 /* ============================================================
@@ -63,17 +106,18 @@ body{
   display:grid;
   place-items:center;
   position:relative;
-  padding: 24px 16px 0;
+  min-height:0;
+  padding: 8px 0 0;
 }
 .wordmark{
-  position:absolute; top:26px; left:50%; transform:translateX(-50%);
+  position:absolute; top:8px; left:50%; transform:translateX(-50%);
   font-family:'Syne',sans-serif; font-weight:800; letter-spacing:.42em;
   font-size:14px; color:var(--dim); text-transform:uppercase;
   padding-left:.42em; /* optically center around tracking */
   user-select:none;
 }
 .state-word{
-  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
   font-family:'Space Grotesk',monospace; font-size:12px; letter-spacing:.28em;
   text-transform:uppercase; color:var(--st-b);
   transition: color 1s ease;
@@ -81,7 +125,7 @@ body{
 }
 
 .eye-wrap{
-  width:min(52vh, 78vw, 460px);
+  width:min(54vh, 68vw, 500px);
   aspect-ratio:1;
   position:relative;
   filter: drop-shadow(0 0 46px var(--glow)) drop-shadow(0 0 120px var(--glow));
@@ -167,24 +211,119 @@ svg{ width:100%; height:100%; overflow:visible; }
 [data-state="executing"] .mote{ animation-duration: calc(var(--dur,9s) / 3); }
 
 /* ============================================================
+   Agent cockpit
+   ============================================================ */
+.status-panel{
+  align-self:center;
+  border:1px solid var(--hairline);
+  border-radius:8px;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
+  box-shadow:0 18px 54px rgba(0,0,0,.34);
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-height:420px;
+}
+.panel-title{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  font:700 11px 'Space Grotesk',monospace;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--dim);
+}
+.live-dot{
+  width:8px; height:8px; border-radius:50%;
+  background:var(--st-b); box-shadow:0 0 12px var(--st-b);
+}
+.stat-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.stat{
+  min-height:64px;
+  border:1px solid var(--hairline);
+  border-radius:8px;
+  padding:10px;
+  background:rgba(0,0,0,.16);
+}
+.stat span{
+  display:block;
+  color:var(--dim);
+  font:500 10px 'Space Grotesk',monospace;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.stat strong{
+  display:block;
+  margin-top:6px;
+  color:var(--starlight);
+  font:600 18px 'Assistant',sans-serif;
+  line-height:1.05;
+}
+.quick-actions{
+  display:grid; gap:8px;
+}
+.quick-actions button{
+  border:1px solid var(--hairline);
+  border-radius:8px;
+  background:rgba(255,255,255,.045);
+  color:var(--starlight);
+  padding:9px 10px;
+  text-align:start;
+  font:600 14px 'Assistant',sans-serif;
+  cursor:pointer;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.quick-actions button:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(95,232,216,.42);
+}
+.quick-actions button:active{ transform:scale(.98); }
+.activity{
+  border-top:1px solid var(--hairline);
+  padding-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-height:120px;
+}
+.activity-line{
+  display:grid;
+  grid-template-columns:88px 1fr;
+  gap:10px;
+  color:var(--dim);
+  font-size:13px;
+  line-height:1.35;
+}
+.activity-line strong{
+  color:var(--st-b);
+  font:500 11px 'Space Grotesk',monospace;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.activity-line span{
+  overflow-wrap:anywhere;
+}
+
+/* ============================================================
    Chat beneath the eye
    ============================================================ */
 .chat{
-  width:min(680px, 94vw);
+  width:min(860px, 94vw);
   margin: 0 auto;
-  padding: 10px 0 26px;
+  padding: 8px 0 24px;
   display:flex; flex-direction:column; gap:14px;
 }
-.thread{ display:flex; flex-direction:column; gap:10px; min-height:96px; max-height:26vh; overflow-y:auto; padding:0 4px; }
+.thread{ display:flex; flex-direction:column; gap:10px; min-height:112px; max-height:27vh; overflow-y:auto; padding:0 4px; }
 .msg{
   max-width:78%; padding:10px 16px; border-radius:18px;
   font-size:15px; line-height:1.45; font-weight:300;
+  white-space:pre-wrap; overflow-wrap:anywhere;
   animation: rise .5s cubic-bezier(.2,.9,.3,1.2);
 }
 @keyframes rise{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:none;} }
 .msg.user{ align-self:flex-end; background:#241a4a; border:1px solid var(--hairline); }
 .msg.nela{
-  align-self:flex-start; background:linear-gradient(135deg, rgba(255,255,255,.05), transparent);
+  align-self:flex-start; max-width:88%;
+  background:linear-gradient(135deg, rgba(255,255,255,.05), transparent);
   border:1px solid var(--hairline); border-left:2px solid var(--st-b);
   transition: border-color 1s ease;
 }
@@ -209,13 +348,15 @@ svg{ width:100%; height:100%; overflow:visible; }
   display:grid; place-items:center; color:#fff; font-size:17px;
 }
 .send:active{ transform:scale(.92); }
+.send:disabled,
+.composer input:disabled{ opacity:.55; cursor:not-allowed; }
 
 /* ============================================================
    State console (prototype only)
    ============================================================ */
 .console{
   position:fixed; top:16px; right:16px;
-  display:flex; flex-direction:column; gap:5px;
+  display:none; flex-direction:column; gap:5px;
   background: rgba(10,6,26,.72); backdrop-filter: blur(14px);
   border:1px solid var(--hairline); border-radius:16px; padding:12px;
 }
@@ -234,7 +375,13 @@ svg{ width:100%; height:100%; overflow:visible; }
 .dot{ width:8px; height:8px; border-radius:50%; background:var(--c); box-shadow:0 0 8px var(--c); }
 
 @media (max-width:640px){
-  .console{ flex-direction:row; flex-wrap:wrap; top:auto; bottom:96px; right:8px; left:8px; }
+  body{ overflow:auto; }
+  .topbar{ grid-template-columns:1fr; gap:8px; }
+  .top-status,.mode-pill{ justify-self:start; }
+  .workspace{ grid-template-columns:1fr; padding-top:12px; }
+  .status-panel{ min-height:auto; }
+  .stat-grid{ grid-template-columns:1fr 1fr; }
+  .console{ display:none; }
   .console h2{ display:none; }
 }
 @media (prefers-reduced-motion: reduce){
@@ -244,7 +391,14 @@ svg{ width:100%; height:100%; overflow:visible; }
 </head>
 <body data-state="idle">
 
-<main class="stage">
+<header class="topbar" aria-label="NELA status">
+  <div class="brand-lockup"><span class="brand-mark"></span><span>NELA OS</span></div>
+  <div class="top-status">Brain <strong id="brainStatus">online</strong> · Agents <strong id="agentCount">44</strong></div>
+  <div class="mode-pill" id="labMode">Authorized Lab: dry-run</div>
+</header>
+
+<main class="workspace">
+<section class="stage" aria-label="NELA eye">
   <div class="wordmark">N E L A</div>
 
   <div class="eye-wrap" id="eyeWrap" aria-label="NELA state indicator" role="img">
@@ -335,14 +489,34 @@ svg{ width:100%; height:100%; overflow:visible; }
   </div>
 
   <div class="state-word" id="stateWord">idle</div>
+</section>
+
+<aside class="status-panel" aria-label="NELA cockpit">
+  <div class="panel-title"><span>Neural cockpit</span><span class="live-dot"></span></div>
+  <div class="stat-grid">
+    <div class="stat"><span>Intent</span><strong id="intentStat">idle</strong></div>
+    <div class="stat"><span>Decision</span><strong id="decisionStat">ready</strong></div>
+    <div class="stat"><span>Tasks</span><strong id="taskStat">0</strong></div>
+    <div class="stat"><span>Last run</span><strong id="runStat">clean</strong></div>
+  </div>
+  <div class="quick-actions" aria-label="Quick actions">
+    <button type="button" data-prompt="בדקי את הקוד שלי לחולשות והציעי תיקונים">סקירת קוד מאובטחת</button>
+    <button type="button" data-prompt="הכיני תוכנית fuzzing מקומית ל-http://localhost:3000 במצב dry-run">מעבדת localhost</button>
+    <button type="button" data-prompt="תכנני משימה לסוכני Backend Frontend Test QA ו-Secure Code Reviewer">תכנון multi-agent</button>
+  </div>
+  <div class="activity" id="activity">
+    <div class="activity-line"><strong>status</strong><span>Ready for a local, defensive task.</span></div>
+    <div class="activity-line"><strong>lab</strong><span>External active targets stay blocked.</span></div>
+  </div>
+</aside>
 </main>
 
 <section class="chat" aria-label="Conversation with NELA">
   <div class="thread" id="thread">
-    <div class="msg nela">I'm here. The eye above is my face — watch it change as I work.</div>
+    <div class="msg nela">אני כאן. כתוב לי בעברית, ואני אעביר את זה דרך ה-Brain.</div>
   </div>
   <form class="composer" id="composer">
-    <input id="input" type="text" placeholder="Talk to NELA…" autocomplete="off" aria-label="Message NELA">
+    <input id="input" type="text" placeholder="דבר עם נלה..." autocomplete="off" aria-label="Message NELA">
     <button class="send" type="submit" aria-label="Send">▲</button>
   </form>
 </section>
@@ -441,27 +615,129 @@ addEventListener('pointermove', e=>{
   gaze.style.transform = `translate(${dx*26}px, ${dy*20}px)`;
 });
 
-/* ---------- demo conversation loop ---------- */
+/* ---------- conversation loop: browser UI -> local NELA Brain ---------- */
 const thread = document.getElementById('thread');
+const inputEl = document.getElementById('input');
+const sendEl = document.querySelector('.send');
+const brainStatus = document.getElementById('brainStatus');
+const agentCount = document.getElementById('agentCount');
+const intentStat = document.getElementById('intentStat');
+const decisionStat = document.getElementById('decisionStat');
+const taskStat = document.getElementById('taskStat');
+const runStat = document.getElementById('runStat');
+const activity = document.getElementById('activity');
 function say(text, who){
   const d = document.createElement('div');
   d.className = 'msg '+who; d.textContent = text;
   thread.appendChild(d); thread.scrollTop = thread.scrollHeight;
 }
-document.getElementById('composer').addEventListener('submit', e=>{
+function activityLine(label, text){
+  const line = document.createElement('div');
+  line.className = 'activity-line';
+  const key = document.createElement('strong');
+  key.textContent = label;
+  const value = document.createElement('span');
+  value.textContent = text;
+  line.append(key, value);
+  return line;
+}
+function setActivity(lines){
+  activity.replaceChildren(...lines.map(([label,text])=>activityLine(label,text)));
+}
+function setStats(payload){
+  intentStat.textContent = payload.intent || 'idle';
+  decisionStat.textContent = payload.decision || 'ready';
+  const tasks = payload.plan_tasks || [];
+  const results = payload.agent_results || [];
+  taskStat.textContent = String(tasks.length);
+  runStat.textContent = payload.ok === false ? 'blocked' : (results.some(r=>!r.success) ? 'check' : 'clean');
+  const lines = [];
+  if(tasks.length){
+    lines.push(['plan', tasks.slice(0,3).join(' · ')]);
+  }
+  if(results.length){
+    lines.push(['agents', results.map(r=>`${r.success ? 'ok' : 'fail'} ${r.message}`).slice(0,3).join(' · ')]);
+  }
+  if(!lines.length){
+    lines.push(['status', 'Ready for the next local task.']);
+  }
+  lines.push(['guard', 'Authorized Lab keeps active checks local and scoped.']);
+  setActivity(lines);
+}
+async function refreshHealth(){
+  if(location.protocol === 'file:') return;
+  try{
+    const result = await fetch('/health');
+    const payload = await result.json();
+    brainStatus.textContent = payload.ok ? 'online' : 'offline';
+    agentCount.textContent = String(payload.agent_count || (payload.agents || []).length || '—');
+  }catch(error){
+    brainStatus.textContent = 'offline';
+    runStat.textContent = 'offline';
+  }
+}
+function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+async function callBrain(text){
+  if(location.protocol === 'file:'){
+    await sleep(600);
+    return {
+      ok: true,
+      response: 'אני פתוחה כקובץ בלבד. כדי שאענה באמת, פתח אותי דרך python3 -m ui.app.',
+      eye_state: 'waiting'
+    };
+  }
+  const result = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type':'application/json',
+      'X-NELA-Launch-Token': window.NELA_BRIDGE_TOKEN || ''
+    },
+    body: JSON.stringify({message:text})
+  });
+  const payload = await result.json();
+  if(!result.ok || payload.ok === false){
+    throw new Error(payload.response || 'NELA Brain request failed');
+  }
+  return payload;
+}
+document.getElementById('composer').addEventListener('submit', async e=>{
   e.preventDefault();
-  const input = document.getElementById('input');
-  const text = input.value.trim();
+  const text = inputEl.value.trim();
   if(!text) return;
-  say(text,'user'); input.value='';
-  setState('listening');
-  setTimeout(()=>setState('thinking'), 700);
-  setTimeout(()=>setState('executing'), 2100);
-  setTimeout(()=>setState('speaking'), 3400);
-  setTimeout(()=>{ say('Done — that ran through listening → thinking → executing → speaking. Try the state panel for the rest.','nela'); }, 3500);
-  setTimeout(()=>setState('success'), 5200);
-  setTimeout(()=>setState('idle'), 6800);
+  await submitPrompt(text);
 });
+async function submitPrompt(text){
+  say(text,'user'); inputEl.value='';
+  inputEl.disabled = true; sendEl.disabled = true;
+  setState('listening');
+  setStats({intent:'input', decision:'received', plan_tasks:[], agent_results:[]});
+  await sleep(350);
+  setState('thinking');
+  try{
+    const payload = await callBrain(text);
+    if((payload.plan_tasks || []).length){ setState('executing'); await sleep(450); }
+    setState('speaking');
+    say(payload.response || 'יש.', 'nela');
+    setStats(payload);
+    await sleep(700);
+    setState(payload.eye_state || 'success');
+  }catch(error){
+    setState('error');
+    say('נתקעתי רגע: '+error.message, 'nela');
+    setStats({ok:false, intent:'error', decision:'blocked', plan_tasks:[], agent_results:[]});
+  }finally{
+    inputEl.disabled = false; sendEl.disabled = false; inputEl.focus();
+    setTimeout(()=>setState('idle'), 1800);
+  }
+}
+document.querySelectorAll('.quick-actions button').forEach(button=>{
+  button.addEventListener('click', ()=>{
+    const prompt = button.dataset.prompt || '';
+    inputEl.value = prompt;
+    inputEl.focus();
+  });
+});
+refreshHealth();
 </script>
 </body>
 </html>

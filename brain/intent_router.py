@@ -53,6 +53,97 @@ class IntentPattern:
 
 
 DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
+    IntentPattern("Greeting", ("שלום", "היי", "הי", "בוקר טוב", "ערב טוב", "hello", "hi")),
+    IntentPattern("Thanks", ("תודה", "תודה רבה", "thanks", "thank you")),
+    IntentPattern(
+        "SecurityReview",
+        ("סקירת אבטחה", "בדיקת אבטחה", "תבדקי אבטחה", "תבדקי את הקוד לאבטחה", "security review", "secure code review"),
+        domain="secure_code_reviewer",
+    ),
+    IntentPattern("ThreatModel", ("מודל איומים", "threat model"), domain="secure_code_reviewer"),
+    IntentPattern(
+        "CyberLabStatus",
+        ("מצב מעבדת סייבר", "סטטוס סייבר", "מצב הסייבר", "cyber lab status"),
+        domain="authorized_lab",
+    ),
+    IntentPattern(
+        "CyberLabRegisterTarget",
+        ("תרשמי יעד מעבדה", "תוסיפי יעד מעבדה", "register lab target"),
+        domain="authorized_lab",
+    ),
+    IntentPattern(
+        "LocalFuzzPlan",
+        ("תוכנית fuzz", "תכנון fuzz", "תכיני fuzz", "local fuzz plan", "fuzz plan"),
+        domain="anomaly_discovery",
+    ),
+    IntentPattern(
+        "SecurityCapabilitiesQuestion",
+        (
+            "מה את יודעת בסייבר",
+            "מה את יודעת על סייבר",
+            "מה את יודעת באבטחה",
+            "מה את יודעת על אבטחה",
+            "מה יכולות האבטחה שלך",
+            "יכולות אבטחה",
+            "יכולות סייבר",
+            "cyber capabilities",
+        ),
+    ),
+    IntentPattern(
+        "CyberDefenseSweep",
+        (
+            "תעשי הגנה",
+            "תתחילי להגן",
+            "תגני",
+            "הגני",
+            "תבני מערך סייבר",
+            "תבני מערך הגנה",
+            "מערך סייבר",
+            "מערך הגנה",
+            "בדיקה של אבטחה",
+            "בדיקת הגנה",
+            "בדיקה הגנתית",
+            "בדיקה אבטחתית",
+            "בדיקת סייבר",
+            "בדיקת ממצאי אבטחה",
+            "תעשי בדיקת סייבר",
+            "תעשי בדיקה של סייבר",
+            "defense sweep",
+            "defense check",
+            "security posture",
+            "protect",
+        ),
+        domain="cyber_defense",
+    ),
+    IntentPattern(
+        "CapabilitiesQuestion",
+        (
+            "מה את יודעת לעשות",
+            "מה את יכולה לעשות",
+            "איך את יכולה לעזור",
+            "איזה יכולות יש לך",
+            "מה היכולות שלך",
+            "help",
+            "capabilities",
+        ),
+    ),
+    IntentPattern(
+        "AgentStatusQuestion",
+        (
+            "איזה סוכנים מחוברים",
+            "מי מחובר",
+            "מה מצב הסוכנים",
+            "סטטוס סוכנים",
+            "agent status",
+            "status",
+        ),
+    ),
+    IntentPattern(
+        "HumanStatusQuestion",
+        ("מה מצב", "מה המצב", "מה קורה", "איך הולך", "איך את", "מה איתך", "how are you"),
+    ),
+    IntentPattern("IdentityQuestion", ("מי את", "מה את", "מי את נלה", "ספרי על עצמך", "who are you")),
+    IntentPattern("LearnTopic", ("תלמדי", "למדי", "תלמדני", "learn about", "study"), domain="learning"),
     IntentPattern("Remember", ("remember", "save this", "learn this", "תזכרי", "תזכור", "תשמרי")),
     IntentPattern("CloseApplication", ("close", "quit", "תסגרי", "סגרי", "לסגור"), requires_confirmation=True),
     IntentPattern("SwitchApplication", ("switch to", "focus", "bring to front", "תעברי", "לעבור אל")),
@@ -73,12 +164,24 @@ class IntentRouter:
     def classify(self, text: str, context: dict[str, Any] | None = None) -> Intent:
         normalized = _normalize(text)
         priority = _detect_priority(normalized)
+        taught_response = _extract_teach_response(text)
+        if taught_response is not None:
+            return Intent(
+                action="TeachResponse",
+                raw_text=text,
+                confidence=0.88,
+                priority=priority,
+                parameters={**taught_response, "domain": "learning"},
+            )
+
         pattern = self._match_pattern(normalized)
         application = _extract_application(text)
         resource = _extract_resource(text)
         parameters: dict[str, Any] = {}
         if pattern and pattern.domain:
             parameters["domain"] = pattern.domain
+        if pattern and pattern.action == "LearnTopic":
+            parameters["topic"] = _extract_learning_topic(text)
         if _looks_like_follow_up(normalized) and context:
             parameters["follow_up_to"] = context.get("last_intent")
 
@@ -88,10 +191,21 @@ class IntentRouter:
                 raw_text=text,
                 confidence=0.82,
                 application=resolve_application_alias(application),
-                resource=resource,
+                resource=resource or _extract_url(text),
                 priority=priority,
                 parameters=parameters,
                 requires_confirmation=pattern.requires_confirmation,
+            )
+
+        if _looks_like_question(normalized):
+            return Intent(
+                action="GeneralQuestion",
+                raw_text=text,
+                confidence=0.62,
+                application=resolve_application_alias(application),
+                resource=resource or _extract_url(text),
+                priority=priority,
+                parameters=parameters,
             )
 
         return Intent(
@@ -99,13 +213,17 @@ class IntentRouter:
             raw_text=text,
             confidence=0.45,
             application=resolve_application_alias(application),
-            resource=resource,
+            resource=resource or _extract_url(text),
             priority=priority,
             parameters=parameters,
         )
 
     def _match_pattern(self, normalized: str) -> IntentPattern | None:
         for pattern in self._patterns:
+            if pattern.action == "HumanStatusQuestion":
+                if any(_is_exact_short_phrase(normalized, keyword) for keyword in pattern.keywords):
+                    return pattern
+                continue
             if any(_contains_keyword(normalized, keyword) for keyword in pattern.keywords):
                 return pattern
         return None
@@ -169,13 +287,86 @@ def _extract_resource(text: str) -> str | None:
     return None
 
 
+def _extract_url(text: str) -> str | None:
+    match = re.search(r"\b(?:https?://|localhost:)\S+", text, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return match.group(0).rstrip(".,;!?")
+
+
+def _extract_teach_response(text: str) -> dict[str, str] | None:
+    patterns = (
+        r"(?:תלמדי|למדי|תלמדני).*?כשאני אומר(?:ת)?\s+(.+?)\s+(?:תעני|תגידי|תאמרי)\s+(.+)",
+        r"כשאני אומר(?:ת)?\s+(.+?)\s+(?:תעני|תגידי|תאמרי)\s+(.+)",
+        r"(?:learn|teach).*?when i say\s+(.+?)\s+(?:answer|reply|say)\s+(.+)",
+        r"(?:learn response|teach response|למדי תשובה|תלמדי תשובה)\s*:\s*(.+?)\s*=>\s*(.+)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        trigger = _strip_teach_delimiters(match.group(1))
+        response = _strip_teach_delimiters(match.group(2))
+        if trigger and response:
+            return {"trigger": trigger, "response": response}
+    return None
+
+
+def _strip_teach_delimiters(value: str) -> str:
+    return value.strip(" \t\n\r\"'׳״.,;:!?")
+
+
+def _extract_learning_topic(text: str) -> str:
+    patterns = (
+        r"(?:נלה[,\s]+)?(?:תלמדי|למדי|תלמדני)\s+(.+)",
+        r"(?:learn about|study)\s+(.+)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            topic = _strip_teach_delimiters(match.group(1))
+            if topic:
+                return topic
+    return "הנושא שביקשת"
+
+
 def _looks_like_follow_up(normalized: str) -> bool:
     return normalized.startswith(("also ", "then ", "and ", "do that", "same "))
+
+
+def _looks_like_question(normalized: str) -> bool:
+    question_words = (
+        "what",
+        "who",
+        "how",
+        "why",
+        "when",
+        "where",
+        "which",
+        "can you",
+        "do you",
+        "מה",
+        "מי",
+        "איך",
+        "למה",
+        "מתי",
+        "איפה",
+        "איזה",
+        "האם",
+        "אפשר",
+    )
+    return normalized.endswith("?") or normalized.startswith(question_words)
 
 
 def _contains_keyword(normalized: str, keyword: str) -> bool:
     escaped = re.escape(_normalize(keyword))
     return re.search(rf"(?<!\w){escaped}(?!\w)", normalized) is not None
+
+
+def _is_exact_short_phrase(normalized: str, keyword: str) -> bool:
+    value = normalized.strip(" ?!.,;:׳״\"'")
+    expected = _normalize(keyword).strip(" ?!.,;:׳״\"'")
+    return value == expected
 
 
 def _slug(value: str) -> str:

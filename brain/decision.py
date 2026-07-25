@@ -7,6 +7,7 @@ from enum import Enum
 
 from brain.context import ContextSnapshot
 from brain.intent_router import Intent
+from brain.qa import CONVERSATIONAL_ACTIONS
 
 
 class DecisionType(str, Enum):
@@ -34,20 +35,26 @@ class DecisionEngine:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,
                 reason="The request is empty.",
-                question="What would you like me to do?",
+                question="אני כאן. מה בא לך שנעשה?",
             )
 
         if intent.confidence < 0.5:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,
                 reason="Intent confidence is below execution threshold.",
-                question="Can you clarify what you want NELA to do?",
+                question="לא לגמרי הבנתי. אפשר לנסח לי את זה כפעולה או שאלה?",
             )
 
         if context.pending_confirmations:
             return Decision(
                 type=DecisionType.WAIT,
                 reason="A previous confirmation is still pending.",
+            )
+
+        if intent.action in CONVERSATIONAL_ACTIONS:
+            return Decision(
+                type=DecisionType.EXECUTE_IMMEDIATELY,
+                reason="The request can be answered by the conversation QA layer.",
             )
 
         if intent.action in {"OpenApplication", "CloseApplication", "SwitchApplication"} and not intent.application:
@@ -57,11 +64,18 @@ class DecisionEngine:
                 question="איזו אפליקציה לפתוח?",
             )
 
+        if intent.action == "PlayMedia" and not intent.application:
+            return Decision(
+                type=DecisionType.ASK_CLARIFICATION,
+                reason="Missing media application slot.",
+                question="באיזו אפליקציה לנגן את זה?",
+            )
+
         if intent.requires_confirmation:
             return Decision(
                 type=DecisionType.ASK_CLARIFICATION,
                 reason="The requested action requires confirmation.",
-                question="Should I continue with this action?",
+                question="סגרנו שאמשיך עם הפעולה הזאת?",
             )
 
         if intent.action == "Remember":

@@ -117,6 +117,103 @@ class Planner:
                     timeout_seconds=5.0,
                 )
             )
+        elif intent.action == "TeachResponse":
+            tasks.append(
+                Task(
+                    description="Teach NELA a user-provided response pair",
+                    action="teach_response",
+                    capability="teach_response",
+                    target_agent="learning",
+                    payload={
+                        "trigger": intent.parameters.get("trigger", ""),
+                        "response": intent.parameters.get("response", ""),
+                        "tags": ("conversation", "hebrew", "user_taught"),
+                    },
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "LearnTopic":
+            tasks.append(
+                Task(
+                    description="Prepare a learning path for the requested topic",
+                    action="recommend_learning_plan",
+                    capability="recommend_learning_plan",
+                    target_agent="learning",
+                    payload={"topic": intent.parameters.get("topic", intent.raw_text)},
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "SecurityReview":
+            tasks.append(
+                Task(
+                    description="Run defensive security review on supplied text or code",
+                    action="review_code_security",
+                    capability="review_code_security",
+                    target_agent="secure_code_reviewer",
+                    payload={"source": intent.raw_text, "path": "conversation"},
+                    timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "CyberDefenseSweep":
+            tasks.append(
+                Task(
+                    description="Build defensive cyber posture findings",
+                    action="defense_posture_check",
+                    capability="defense_posture_check",
+                    target_agent="cyber_defense",
+                    payload={"target": intent.resource or "NELA local workspace", "text": intent.raw_text},
+                    timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "ThreatModel":
+            tasks.append(
+                Task(
+                    description="Prepare a defensive threat model",
+                    action="threat_model",
+                    capability="threat_model",
+                    target_agent="secure_code_reviewer",
+                    payload={"asset": intent.resource or intent.raw_text},
+                    timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "CyberLabStatus":
+            tasks.append(
+                Task(
+                    description="Read authorized cyber lab status",
+                    action="lab_status",
+                    capability="lab_status",
+                    target_agent="authorized_lab",
+                    payload={},
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "CyberLabRegisterTarget":
+            tasks.append(
+                Task(
+                    description="Register a local or owned cyber lab target",
+                    action="register_lab_target",
+                    capability="register_lab_target",
+                    target_agent="authorized_lab",
+                    payload={
+                        "target": intent.resource or "localhost",
+                        "scope_type": "local_lab",
+                        "owner": "local-owner",
+                        "proof": "declared local or owned lab target from conversation",
+                    },
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "LocalFuzzPlan":
+            tasks.append(
+                Task(
+                    description="Prepare a local-only fuzzing plan",
+                    action="create_local_fuzz_plan",
+                    capability="create_local_fuzz_plan",
+                    target_agent="anomaly_discovery",
+                    payload={"target": intent.resource or intent.raw_text},
+                    timeout_seconds=10.0,
+                )
+            )
         else:
             tasks.append(
                 Task(

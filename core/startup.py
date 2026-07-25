@@ -25,14 +25,17 @@ from brain.dispatcher import AgentDispatcher
 from brain.intent_router import IntentRouter
 from brain.memory_manager import MemoryManager
 from brain.planner import Planner
+from brain.qa import KnowledgeEngine
 from core.config import AppConfig
 from core.events import EventBus
 from core.logger import configure_logging
 from core.response import NelaResponseAdapter
 from language.engine import HebrewLanguageEngine, LanguageEngine
+from language.learning_store import LearnedResponseStore
 from memory.long_term import LongTermMemory
 from memory.short_term import ShortTermMemory
 from voice.providers.factory import create_speech_provider
+from agents.factory import build_default_agents
 
 
 @dataclass
@@ -53,7 +56,8 @@ def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
 
     events = EventBus()
     dispatcher = AgentDispatcher(events=events)
-    _register_builtin_agents(dispatcher, events, runtime_config)
+    learned_responses = LearnedResponseStore(runtime_config.data_dir / "language" / "learned_responses.json")
+    _register_builtin_agents(dispatcher, events, runtime_config, learned_responses)
     language = HebrewLanguageEngine(personality_name=runtime_config.language_personality)
     response_adapter = NelaResponseAdapter(language=language, dispatcher=dispatcher, config=runtime_config)
     context = ContextEngine()
@@ -70,6 +74,7 @@ def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
         context=context,
         dispatcher=dispatcher,
         events=events,
+        knowledge=KnowledgeEngine(learned_responses=learned_responses),
     )
 
     return NelaRuntime(
@@ -84,7 +89,12 @@ def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
     )
 
 
-def _register_builtin_agents(dispatcher: AgentDispatcher, events: EventBus, config: AppConfig) -> None:
+def _register_builtin_agents(
+    dispatcher: AgentDispatcher,
+    events: EventBus,
+    config: AppConfig,
+    learned_responses: LearnedResponseStore,
+) -> None:
     for agent in (
         TerminalAgent(),
         BrowserAgent(),
@@ -107,3 +117,21 @@ def _register_builtin_agents(dispatcher: AgentDispatcher, events: EventBus, conf
         DesktopAgent(),
     ):
         dispatcher.register_agent(agent)
+
+    _register_specialist_agents(dispatcher, config, learned_responses)
+
+
+def _register_specialist_agents(
+    dispatcher: AgentDispatcher,
+    config: AppConfig,
+    learned_responses: LearnedResponseStore,
+) -> None:
+    """Register first-wave specialist Agents without replacing live runtime Agents."""
+
+    registered = set(dispatcher.discover_agents())
+    learning_store_path = config.data_dir / "language" / "learned_responses.json"
+    for agent in build_default_agents(learning_store_path=learning_store_path, learning_store=learned_responses):
+        if agent.name in registered:
+            continue
+        dispatcher.register_agent(agent)
+        registered.add(agent.name)

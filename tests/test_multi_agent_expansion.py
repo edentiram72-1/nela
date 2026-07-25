@@ -33,6 +33,7 @@ EXPECTED_AGENT_NAMES = {
     "documentation_researcher",
     "trend_monitor",
     "security_researcher",
+    "cyber_defense",
     "secure_code_reviewer",
     "vulnerability_research",
     "infrastructure_security",

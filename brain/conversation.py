@@ -15,6 +15,7 @@ from brain.applications import resolve_application_alias
 from brain.intent_router import Intent, IntentRouter
 from brain.memory_manager import MemoryManager
 from brain.planner import Plan, Planner, Task, TaskMode, _action_to_command
+from brain.qa import CONVERSATIONAL_ACTIONS, KnowledgeEngine
 from core.events import Event, EventBus, EventTypes
 from permissions.confirmation import action_tuple_hash
 
@@ -47,6 +48,7 @@ class ConversationEngine:
         auto_dispatch: bool = True,
         confirmation_ttl_seconds: int = 300,
         max_unclear_confirmation_replies: int = 2,
+        knowledge: KnowledgeEngine | None = None,
     ) -> None:
         self.intent_router = intent_router
         self.decision_engine = decision_engine
@@ -58,6 +60,7 @@ class ConversationEngine:
         self.auto_dispatch = auto_dispatch
         self.confirmation_ttl = timedelta(seconds=confirmation_ttl_seconds)
         self.max_unclear_confirmation_replies = max_unclear_confirmation_replies
+        self.knowledge = knowledge or KnowledgeEngine()
         self.logger = logging.getLogger("nela.brain")
 
     def handle_text(self, text: str) -> ConversationTurn:
@@ -173,6 +176,25 @@ class ConversationEngine:
                 decision=decision,
                 plan=None,
                 message=decision.question or decision.reason,
+            )
+
+        if intent.action in CONVERSATIONAL_ACTIONS:
+            answer = self.knowledge.answer(intent, self.dispatcher, self.context.snapshot(), self.memory)
+            answered_intent = replace(
+                intent,
+                parameters={
+                    **intent.parameters,
+                    "response_category": answer.category,
+                    "response_variables": answer.variables,
+                },
+            )
+            return ConversationTurn(
+                user_text=text,
+                input_mode=input_mode,
+                intent=answered_intent,
+                decision=decision,
+                plan=None,
+                message=answer.message,
             )
 
         if decision.should_remember:

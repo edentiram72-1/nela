@@ -56,6 +56,19 @@ class NelaResponseAdapter:
             "intent": turn.intent.action,
             "task_hint": turn.message,
         }
+        if turn.dispatched_results:
+            first_result = turn.dispatched_results[0]
+            variables["summary"] = first_result.message
+            variables["task_hint"] = first_result.message
+            findings = _summarize_findings(turn.dispatched_results)
+            variables.update(findings)
+        response_variables = turn.intent.parameters.get("response_variables")
+        if isinstance(response_variables, dict):
+            variables.update(response_variables)
+
+        response_category = turn.intent.parameters.get("response_category")
+        if isinstance(response_category, str) and response_category:
+            return response_category, variables
 
         if turn.decision.type in {DecisionType.ASK_CLARIFICATION, DecisionType.WAIT}:
             variables["question"] = turn.message
@@ -76,6 +89,98 @@ class NelaResponseAdapter:
             return "media.play", variables
         if turn.intent.action == "Remember":
             return "learning.saved", variables
+        if turn.intent.action == "TeachResponse":
+            return "learning.saved", variables
+        if turn.intent.action == "LearnTopic":
+            variables["topic"] = str(turn.intent.parameters.get("topic", "הנושא הזה"))
+            return "learning.topic.started", variables
+        if turn.intent.action == "SecurityReview":
+            return _security_category("security.review.done", variables), variables
+        if turn.intent.action == "CyberDefenseSweep":
+            if int(variables.get("findings_count", 0) or 0) > 0:
+                return "security.defense.findings", variables
+            return "security.review.done", variables
+        if turn.intent.action == "ThreatModel":
+            return _security_category("security.threat_model.done", variables), variables
+        if turn.intent.action == "CyberLabRegisterTarget":
+            return "security.lab.done", variables
+        if turn.intent.action == "CyberLabStatus":
+            return "security.lab.status", variables
+        if turn.intent.action == "LocalFuzzPlan":
+            return _security_category("security.fuzz_plan.done", variables), variables
         if turn.plan:
             return "success.short", variables
         return "smalltalk.daily", variables
+
+
+def _security_category(default_category: str, variables: dict[str, object]) -> str:
+    if int(variables.get("findings_count", 0) or 0) > 0:
+        return "security.findings.done"
+    return default_category
+
+
+def _summarize_findings(results: tuple[AgentResult, ...]) -> dict[str, object]:
+    findings: list[dict[str, object]] = []
+    next_steps: list[str] = []
+    for result in results:
+        product = result.data.get("work_product")
+        if not isinstance(product, dict):
+            continue
+        raw_findings = product.get("findings", ())
+        if isinstance(raw_findings, list):
+            findings.extend(item for item in raw_findings if isinstance(item, dict))
+        raw_next_steps = product.get("next_steps", ())
+        if isinstance(raw_next_steps, list):
+            next_steps.extend(str(item) for item in raw_next_steps)
+
+    finding_lines = []
+    for index, finding in enumerate(findings[:4], start=1):
+        severity = _severity_label(str(finding.get("severity", "info")))
+        title = _finding_title(str(finding.get("title", "ממצא הגנתי")))
+        recommendation = str(finding.get("recommendation") or "").strip()
+        if recommendation:
+            finding_lines.append(f"{index}. {severity}: {title}. המלצה: {recommendation}")
+        else:
+            finding_lines.append(f"{index}. {severity}: {title}.")
+
+    return {
+        "findings_count": len(findings),
+        "findings_count_label": _count_label(len(findings)),
+        "findings": "\n".join(finding_lines) if finding_lines else "לא נמצאו ממצאים חריגים בבדיקה הזאת.",
+        "next_steps": " ".join(next_steps[:2]) if next_steps else "להמשיך בבדיקה הגנתית ממוקדת לפי scope מאושר.",
+    }
+
+
+def _severity_label(severity: str) -> str:
+    labels = {
+        "critical": "קריטי",
+        "high": "גבוה",
+        "medium": "בינוני",
+        "low": "נמוך",
+        "info": "מידע",
+    }
+    return labels.get(severity.lower(), "מידע")
+
+
+def _count_label(count: int) -> str:
+    if count == 0:
+        return "אין ממצאים"
+    if count == 1:
+        return "ממצא אחד"
+    if count == 2:
+        return "שני ממצאים"
+    return f"{count} ממצאים"
+
+
+def _finding_title(title: str) -> str:
+    known = {
+        "Dynamic eval usage": "שימוש ב-eval דינמי",
+        "Dynamic exec usage": "שימוש ב-exec דינמי",
+        "Shell execution enabled": "הרצת shell פעילה",
+        "Unsafe pickle deserialization": "טעינת pickle לא בטוחה",
+        "YAML load without SafeLoader": "טעינת YAML בלי SafeLoader",
+        "TLS certificate verification disabled": "אימות תעודת TLS כבוי",
+        "Weak hash algorithm": "אלגוריתם hash חלש",
+        "Possible hardcoded secret": "ייתכן שיש סוד קשיח בקוד",
+    }
+    return known.get(title, title)

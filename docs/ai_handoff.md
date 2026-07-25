@@ -62,6 +62,52 @@ and UI headless smoke. A Hebrew prototype command also routed through the Brain:
 `נלה, תפתחי את Spotify` produced `Intent: OpenApplication`, `Decision: delegate`,
 and Hebrew response `Spotify — פותחת.` using safe no-dispatch mode.
 
+On 2026-07-25, `codex/nela-conversation-agent-qa` started the first safe
+conversation and Agent-awareness layer. The runtime now registers first-wave
+specialist Agents from `agents.factory` without replacing existing live Agents,
+and the Brain has a modular `KnowledgeEngine` for safe Hebrew Q&A about NELA's
+identity, current capabilities, connected Agents, status, greetings, thanks, and
+unknown open questions. This does not enable real side effects for Browser,
+Terminal, Coding, Cyber, or communication Agents.
+
+On 2026-07-25, `codex/nela-language-learning-cyber` added runtime language
+learning and defensive cyber routing. NELA can now learn user-provided
+trigger/response pairs through `LearningAgent` and answer matching future turns
+through `KnowledgeEngine` and `qa.learned`. Security routing now recognizes
+defensive security review, threat-model scaffolding, cyber lab status, local lab
+target registration, local-only fuzz planning, and security capability
+questions. Active cyber execution remains blocked behind the existing
+authorization, scoped-session, confirmation, audit, isolation, and kill-switch
+model.
+
+On 2026-07-25, the same branch improved first-contact conversation behavior.
+Short greetings now receive warmer Hebrew replies, `מה מצב` is treated as a
+natural assistant-status question instead of technical Agent status, `מה את
+יודעת על סייבר` routes to defensive cyber capabilities, and `תלמדי <topic>`
+routes to `LearningAgent.recommend_learning_plan` with a Hebrew response. Generic
+clarification prompts were changed from English to Hebrew.
+
+On 2026-07-25, `CyberDefenseAgent` was added as the first central defensive
+cyber posture Agent. `CyberDefenseSweep` routes requests such as `נלה תעשי
+הגנה`, `תתחילי להגן`, and `תבני מערך סייבר` to
+`cyber_defense.defense_posture_check`. Security responses now surface findings
+to the user in Hebrew, including severity, recommendation, and next steps. This
+remains T0 passive/defensive posture work and does not add external targeting or
+offensive capability.
+
+On 2026-07-25, the same branch broadened natural Hebrew routing for immediate
+defensive checks. Requests such as `תעשי בדיקה של אבטחה`, `בדיקה אבטחתית`, and
+`בדיקת סייבר` now route directly to `CyberDefenseSweep` instead of falling back
+to clarification. Hebrew clarification templates were also cleaned up so
+unknown requests no longer duplicate question marks or wrap full questions in
+awkward phrasing.
+
+The same branch now includes a token-authenticated local browser prototype for
+Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
+`127.0.0.1` only, injects a per-launch token, verifies the expected same origin,
+and routes Hebrew chat messages through the existing Brain. This is an interim
+visible demo host, not the final production WebView shell.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -79,6 +125,9 @@ The consolidation includes:
 - Sprint 2 Permission Engine: T0-T4 tiers, Capability Registry, Agent manifests, authentication checks, confirmation gate, scoped sessions, in-memory audit log, kill switch, lock mode, permission events, UI state mapping for permission events, and Dispatcher integration before `agent.execute()`.
 - Claude Sprint 2 findings: secure local bridge foundation, subprocess isolation foundation, symlink-aware scope validation, exact confirmation binding, insert-only Agent registration, tamper-evident audit hash chain, and authorization-before-final-routing foundation.
 - Mechanical safety-spine verification criteria are documented in `docs/safety_spine_verification_criteria.md`.
+- Conversation QA foundation: `brain/qa.py`, conversational intent routing, QA
+  response categories in the Hebrew language pack, and startup registration for
+  non-conflicting specialist Agents.
 
 Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
@@ -88,11 +137,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Post-Sprint 2: Develop Consolidation + Prototype Validation**
+**Post-Sprint 2: Runtime Language Learning + Defensive Security Routing + Secure Visual Prototype**
 
 ## Active Branch
 
-`develop`
+`codex/nela-language-learning-cyber`
 
 ## Recently Modified Files
 
@@ -118,6 +167,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `brain/applications.py`
 - `brain/memory_manager.py`
 - `brain/planner.py`
+- `brain/qa.py`
+- `language/learning_store.py`
+- `agents/learning/agent.py`
+- `tests/test_conversation_qa.py`
+- `tests/test_ui_web.py`
 - `permissions/__init__.py`
 - `permissions/audit.py`
 - `permissions/engine.py`
@@ -217,6 +271,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `tests/test_intent_recognition.py`
 - `tests/test_planner.py`
 - `ui/app.py`
+- `ui/web.py`
 - `ui/window.py`
 - `ui/router.py`
 - `ui/state.py`
@@ -265,8 +320,14 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Add `NELA-0016-audit-log-and-kill-switch` and `NELA-0017-agent-runtime-lifecycle` from `docs/ai_inbox.md`.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Continue interactive NELA sessions through `python3 -m core.app`.
+- Expand the QA layer with project-aware answers after the memory subsystem is
+  durable.
+- Add safe user-facing descriptions for each specialist Agent before exposing
+  them as selectable actions in the UI.
 - Continue desktop UI shell checks with `python3 -m ui.app` on a machine with a graphical session.
 - Send consolidated `develop` or `main` direct blob links to Claude for release verification.
+- Send `docs/claude_language_learning_cyber_review_bundle.md` to Claude for the
+  next focused review of the current branch.
 - Ask Claude to review `docs/claude_handoff_2026-07-24.md`, `docs/personality_bible.md`, `docs/hebrew_language_guide.md`, `docs/tone_of_voice.md`, `docs/conversation_rules.md`, `language/pack_schema.md`, and `language/hebrew/`.
 - Choose and implement a WebView-compatible host for the Living Eye.
 - Add a durable persistence backend for long-term memory.
@@ -280,7 +341,9 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Desktop Agent V1 performs real macOS application lifecycle actions for supported applications only. Other Agents remain safe mock placeholders.
 - Live validation opened/foregrounded Finder only. Do not live-test close commands on user applications unless the user explicitly approves the target app.
 - UI foundation intentionally has no Claude visual design yet. Eye, theme, animation, and component APIs expose states and tokens so Claude assets can be dropped in later without changing Brain architecture.
-- Living Eye artifacts are present, but the Tkinter shell still renders a placeholder Eye component. Embedding `design/nela_living_eye.html` into the live app needs a future UI host decision, such as WebView, Electron, or Tauri.
+- Living Eye artifacts now run through a token-authenticated local browser
+  prototype, but the production desktop shell still needs a future
+  WebView-compatible host decision, such as WebView, Electron, or Tauri.
 - `DEC-0007` accepts that the production visual shell should use a WebView-compatible host. Tkinter remains temporary infrastructure only.
 - Memory subsystem integration is blocked because `nela-memory-subsystem.zip` was not provided with the current files.
 - The AI Inbox is repository-based only. It does not connect directly to Claude, Codex, or ChatGPT.
@@ -304,8 +367,42 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Cybersecurity capabilities must remain blocked until the permission model, capability registry, audit logging, kill switch, and isolated lab architecture exist.
 - Sprint 2 Permission Engine exists and Claude Sprint 2 blocking findings have foundation implementations, but Cybersecurity capabilities must still remain blocked until isolated lab architecture, durable audit storage, task idempotency, and production event-bus hardening are complete.
 - Terminal and Coding manifests declare future capabilities for review only. Side-effecting terminal execution and coding write/commit capabilities are disabled.
+- The new conversation QA layer is deterministic and local. It is not yet a
+  general LLM-backed knowledge system and should answer unknown open questions
+  honestly instead of pretending to know.
 
 ## Validation
+
+Latest validation on `codex/nela-language-learning-cyber`:
+
+```text
+python3 -m scripts.validate_language_packs
+python3 -m unittest discover -s tests
+python3 -m ui.app --headless-smoke
+python3 -m core.app --once "מי את?" --no-dispatch
+python3 -m compileall brain core agents language ui tests
+```
+
+Result: 144 tests passed; language pack validation passed; headless UI
+bootstrap succeeded; Hebrew identity QA returned a Hebrew response through the
+Brain; compileall completed successfully.
+
+Latest conversation QA validation on `codex/nela-conversation-agent-qa`:
+
+```text
+python3 -m unittest discover -s tests
+python3 -m scripts.validate_language_packs
+python3 -m ui.app --headless-smoke
+python3 -m compileall brain core agents language tests ui
+python3 -m core.app --once "מי את?" --no-dispatch
+python3 -m core.app --once "מה את יודעת לעשות?" --no-dispatch
+python3 -m core.app --once "מה מצב?" --no-dispatch
+python3 -m core.app --once "מה קורה בירח?" --no-dispatch
+```
+
+Result: 132 tests passed; language pack validation passed; headless UI bootstrap
+succeeded; conversational Hebrew questions now return Hebrew answers without
+creating Agent execution plans.
 
 Latest post-merge validation on `develop`:
 

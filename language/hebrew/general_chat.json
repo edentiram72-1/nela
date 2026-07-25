@@ -138,6 +138,276 @@
           "weight": 0.7
         }
       ]
+    },
+    "qa.greeting": {
+      "description": "Greeting response",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.greeting.here",
+          "text": "שלום. אני כאן איתך, ערה ומוכנה לעבוד. מה עושים קודם?"
+        },
+        {
+          "id": "qa.greeting.withyou",
+          "text": "היי, אני איתך. אפשר לדבר, ללמד אותי משהו, או לתת לי פעולה להריץ."
+        },
+        {
+          "id": "qa.greeting.start",
+          "text": "שלום עדן. העין שלי על זה. מה מתחילים?"
+        }
+      ]
+    },
+    "qa.thanks": {
+      "description": "Thanks response",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "qa.thanks.easy",
+          "text": "בשמחה. אני פה."
+        },
+        {
+          "id": "qa.thanks.smooth",
+          "text": "הלך חלק. ממשיכים?"
+        }
+      ]
+    },
+    "qa.identity": {
+      "description": "NELA identity answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.identity.local",
+          "text": "אני נלה — עוזרת AI מקומית שמתחילה לחבר מוח, זיכרון, קול, עין וסוכנים. כרגע אני עובדת בזהירות: חושבת דרך ה-Brain ומעבירה פעולות לסוכנים."
+        }
+      ]
+    },
+    "qa.capabilities": {
+      "description": "Current capabilities answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.capabilities.connected",
+          "text": "כרגע אני יודעת לדבר בעברית, לזהות כוונות, לזכור דברים בסיסיים, לפתוח אפליקציות מאושרות, להציג את העין החיה, ולהכיר {agent_count} סוכנים. חלקם עדיין במצב תכנון או קריאה בלבד.",
+          "vars": [
+            "agent_count"
+          ]
+        },
+        {
+          "id": "qa.capabilities.agents",
+          "text": "יש לי שכבת Brain פעילה ושכבת סוכנים. מחוברים כרגע: {agents}. פעולות רגישות עדיין עוברות דרך הרשאות ואישור.",
+          "vars": [
+            "agents"
+          ]
+        }
+      ]
+    },
+    "qa.security_capabilities": {
+      "description": "Current defensive security capabilities answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.security.safe_scope",
+          "text": "בסייבר אני מחוברת רק לצד ההגנתי: סקירת קוד, מודל איומים, בדיקות תלויות, תכנון fuzz מקומי ומעבדת localhost/נכס שבבעלותך. אין לי מסלול לפעולות מול צד שלישי.",
+          "weight": 1.3
+        },
+        {
+          "id": "qa.security.agents",
+          "text": "סוכני האבטחה שאני רואה: {security_agents}. פעולות רגישות עוברות הרשאות, scope, אישור ויומן ביקורת.",
+          "vars": [
+            "security_agents"
+          ]
+        }
+      ]
+    },
+    "qa.human_status": {
+      "description": "Natural status answer for casual how-are-you prompts",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.human_status.ready",
+          "text": "אני במצב טוב: ערה, מחוברת ל-Brain, ורצה דרך הסוכנים בזהירות. אפשר להתחיל לעבוד."
+        },
+        {
+          "id": "qa.human_status.forward",
+          "text": "מצב טוב. אני כאן, זוכרת את ההקשר, ומוכנה לקבל שאלה, פקודה או משהו חדש ללמוד."
+        },
+        {
+          "id": "qa.human_status.withyou",
+          "text": "אני איתך. כרגע הכי נכון להריץ משימה קטנה, לבדוק שהיא עובדת, ואז לבנות עוד שכבה."
+        }
+      ]
+    },
+    "qa.agent_status": {
+      "description": "Agent status answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.status.counts",
+          "text": "מחוברים {agent_count} סוכנים, מתוכם {healthy_count} מדווחים תקינות. משימות רצות עכשיו: {running_tasks}.",
+          "vars": [
+            "agent_count",
+            "healthy_count",
+            "running_tasks"
+          ]
+        },
+        {
+          "id": "qa.status.names",
+          "text": "הסוכנים שאני רואה עכשיו: {agents}. הכוונה האחרונה הייתה: {last_intent}.",
+          "vars": [
+            "agents",
+            "last_intent"
+          ]
+        }
+      ]
+    },
+    "qa.learned": {
+      "description": "Answer from user-taught learned responses",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.learned.answer",
+          "text": "{answer}",
+          "vars": [
+            "answer"
+          ],
+          "weight": 1.4
+        },
+        {
+          "id": "qa.learned.source",
+          "text": "{answer}",
+          "vars": [
+            "answer"
+          ]
+        }
+      ]
+    },
+    "qa.unknown": {
+      "description": "Honest fallback for general questions",
+      "eye_state": "waiting",
+      "variants": [
+        {
+          "id": "qa.unknown.boundary",
+          "text": "אני עדיין לומדת לענות על שאלות פתוחות, אבל אני יכולה לעזור כבר עכשיו עם מצב נלה, סוכנים, למידה, סייבר הגנתי ופעולות מקומיות בטוחות."
+        },
+        {
+          "id": "qa.unknown.next",
+          "text": "עוד אין לי מקור ידע כללי לשאלה הזאת. תן לי ניסוח קצר יותר או תהפוך את זה למשימה, ואני אנסה להתקדם משם."
+        }
+      ]
+    },
+    "learning.topic.started": {
+      "description": "Learning plan prepared for a requested topic",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "learning.topic.started.security",
+          "text": "סגור. התחלתי לבנות לעצמי מסלול למידה על {topic}: להבין מושגים, לאסוף דוגמאות בטוחות, ואז להפוך את זה לתשובות ופעולות קטנות.",
+          "vars": [
+            "topic"
+          ]
+        },
+        {
+          "id": "learning.topic.started.plan",
+          "text": "אני על זה. {topic} נכנס למסלול למידה: קודם ידע בסיסי, אחר כך בדיקות מקומיות, ואז חיבור הדרגתי לסוכנים.",
+          "vars": [
+            "topic"
+          ]
+        }
+      ]
+    },
+    "security.findings.done": {
+      "description": "Defensive action completed with findings",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.findings.done.primary",
+          "text": "סיימתי פעולת הגנה ומצאתי {findings_count_label}:\n{findings}\nהצעד הבא: {next_steps}",
+          "vars": [
+            "findings_count_label",
+            "findings",
+            "next_steps"
+          ],
+          "weight": 1.4
+        },
+        {
+          "id": "security.findings.done.tight",
+          "text": "יש לי {findings_count_label}:\n{findings}\nממשיכים מכאן: {next_steps}",
+          "vars": [
+            "findings_count_label",
+            "findings",
+            "next_steps"
+          ]
+        }
+      ]
+    },
+    "security.defense.findings": {
+      "description": "Cyber defense sweep findings",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.defense.findings.primary",
+          "text": "הפעלתי מערך הגנה ראשוני ומצאתי {findings_count_label} לטיפול:\n{findings}\nהצעד הבא: {next_steps}",
+          "vars": [
+            "findings_count_label",
+            "findings",
+            "next_steps"
+          ]
+        }
+      ]
+    },
+    "security.review.done": {
+      "description": "Defensive security review completed",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.review.done.summary",
+          "text": "סיימתי סקירה הגנתית והעברתי את הממצאים לשכבת הסוכנים."
+        },
+        {
+          "id": "security.review.done.safe",
+          "text": "בדיקת האבטחה ההגנתית הסתיימה."
+        }
+      ]
+    },
+    "security.threat_model.done": {
+      "description": "Threat model completed",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.threat.done.summary",
+          "text": "הכנתי מודל איומים ראשוני."
+        }
+      ]
+    },
+    "security.lab.done": {
+      "description": "Cyber lab local target updated",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.lab.done.target",
+          "text": "רשמתי את יעד המעבדה המקומי."
+        }
+      ]
+    },
+    "security.lab.status": {
+      "description": "Cyber lab status read",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "security.lab.status.summary",
+          "text": "בדקתי את מצב מעבדת הסייבר."
+        }
+      ]
+    },
+    "security.fuzz_plan.done": {
+      "description": "Local fuzz plan prepared",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.fuzz.done.local",
+          "text": "הכנתי תוכנית fuzz מקומית בלבד."
+        }
+      ]
     }
   }
 }

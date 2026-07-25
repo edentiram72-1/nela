@@ -30,6 +30,9 @@ class StartupTests(unittest.TestCase):
         self.assertIn("voice", runtime.dispatcher.discover_agents())
         self.assertIn("memory", runtime.dispatcher.discover_agents())
         self.assertIn("claude", runtime.dispatcher.discover_agents())
+        self.assertIn("secure_code_reviewer", runtime.dispatcher.discover_agents())
+        self.assertIn("orchestrator", runtime.dispatcher.discover_agents())
+        self.assertIn("test_qa", runtime.dispatcher.discover_agents())
 
 
 if __name__ == "__main__":

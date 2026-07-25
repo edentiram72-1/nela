@@ -394,3 +394,78 @@ Terminal capabilities from becoming active.
 - `permissions/confirmation.py`
 - `permissions/scope.py`
 - `brain/dispatcher.py`
+
+### DEC-0016: Runtime Language Learning And Defensive Cyber Routing
+
+**Date:** 2026-07-25
+**Status:** Accepted
+
+**Context:** NELA needs to start learning user-provided words, short phrases,
+and Q&A responses while also exposing the already-built defensive security
+Agents through the Brain. This must not hardcode personality text in Brain code
+or enable unrestricted cyber actions.
+
+**Decision:** Store user-taught trigger/response pairs as local runtime data in
+`data/language/learned_responses.json`, written only through `LearningAgent`
+behind the Dispatcher and Permission Engine. `KnowledgeEngine` may read the same
+store and answer matching future turns through the semantic `qa.learned`
+category. Cyber/security conversation routing is limited to defensive,
+read-only or local-lab-safe actions: security capability explanation, passive
+security review, threat-model scaffolding, lab status, local lab target
+registration, and local-only fuzz planning.
+
+**Consequences:**
+
+- Claude-authored language packs remain the source for NELA's authored tone.
+- User-taught responses are local, reviewable data rather than code changes.
+- Learning writes are `T1`; passive security reads/plans are `T0`; lab target
+  registration is `T1`.
+- Active cyber actions still require authorization, scoped sessions,
+  confirmation, audit records, process isolation, and the kill switch.
+- No external targeting, exploitation, credential theft, persistence, evasion,
+  malware, or exfiltration path is introduced.
+
+**Related files:**
+
+- `language/learning_store.py`
+- `agents/learning/agent.py`
+- `brain/qa.py`
+- `brain/intent_router.py`
+- `brain/planner.py`
+- `docs/language_system.md`
+- `docs/cyber_lab.md`
+- `tests/test_conversation_qa.py`
+
+### DEC-0017: Use Token-Authenticated Local Browser Prototype Before Production WebView
+
+**Date:** 2026-07-25
+**Status:** Accepted
+
+**Context:** Claude's Living Eye prototype is authored as HTML/CSS/SVG and
+cannot be faithfully rendered by the temporary Tkinter shell. NELA needs a
+small visible integration path that lets the user type Hebrew into the animated
+Eye interface and route the message through the existing Brain without
+redesigning the UI or introducing a production WebView bridge prematurely.
+
+**Decision:** Add a local browser prototype host in `ui/web.py` that serves
+`design/nela_living_eye.html` on `127.0.0.1` only and routes `/api/chat`
+messages through the existing runtime. The bridge uses a per-launch token,
+requires the token in `X-NELA-Launch-Token`, and verifies the expected same
+origin before handling chat requests. This is an interim demo host, not the
+final production WebView architecture.
+
+**Consequences:**
+
+- The animated Living Eye can be exercised against the real Brain with one
+  local UI command.
+- The UI bridge is not exposed on `0.0.0.0`.
+- Requests without the launch token or expected origin are rejected.
+- Production WebView selection and the secure bridge architecture from A1
+  remain future work before shipping a permanent desktop shell.
+
+**Related files:**
+
+- `ui/app.py`
+- `ui/web.py`
+- `design/nela_living_eye.html`
+- `tests/test_ui_web.py`
