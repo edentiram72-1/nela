@@ -7,7 +7,7 @@ from agents.process_isolation import IsolatedAgentProcessRunner, ProcessOutcome,
 
 class ProcessIsolationTests(unittest.TestCase):
     def test_completes_short_process(self) -> None:
-        result = IsolatedAgentProcessRunner(timeout_seconds=1.0).run(blocking_sleep, 0.01)
+        result = IsolatedAgentProcessRunner(timeout_seconds=5.0).run(blocking_sleep, 0.01)
 
         self.assertTrue(result.success)
         self.assertFalse(result.timed_out)

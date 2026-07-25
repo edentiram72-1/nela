@@ -115,9 +115,7 @@ class NelaWebHandler(BaseHTTPRequestHandler):
             return False
 
         origin = self.headers.get("Origin", "")
-        host, port = self.server.server_address
-        expected = f"http://{host}:{port}"
-        return origin == expected
+        return _is_allowed_local_origin(origin, self.server.server_address[1])
 
     def _inject_launch_token(self, html: str) -> str:
         token_script = (
@@ -150,6 +148,13 @@ def _open_browser(url: str) -> None:
         subprocess.run(["open", "-a", "Google Chrome", url], check=False)
         return
     subprocess.run([sys.executable, "-m", "webbrowser", url], check=False)
+
+
+def _is_allowed_local_origin(origin: str, port: int) -> bool:
+    parsed = urlparse(origin)
+    if parsed.scheme != "http" or parsed.port != port:
+        return False
+    return parsed.hostname in {"127.0.0.1", "localhost", "::1"}
 
 
 def _turn_payload(turn: ConversationTurn, response: str) -> dict[str, Any]:

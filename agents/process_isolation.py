@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 import multiprocessing
+import queue as queue_errors
 import threading
 import time
 from typing import Any, Callable
@@ -56,33 +57,61 @@ class IsolatedAgentProcessRunner:
             self._clear_process(process)
             return result
 
-        process.join(self.timeout_seconds)
-        with self._lock:
-            was_terminated = self._termination_requested
-        if process.is_alive():
-            self.terminate()
-            result = self._timeout_result(process)
-            self._clear_process(process)
-            return result
+        deadline = time.monotonic() + self.timeout_seconds
+        while True:
+            with self._lock:
+                was_terminated = self._termination_requested
+            if was_terminated:
+                self._terminate_process(process)
+                result = self._terminated_result(process)
+                self._clear_process(process)
+                return result
 
-        self._clear_process(process)
-        if was_terminated:
-            return self._terminated_result(process)
-        if queue.empty():
-            return ProcessExecutionResult(
-                process.exitcode == 0,
-                "Isolated Agent process exited without a result.",
-                exit_code=process.exitcode,
-                outcome=ProcessOutcome.UNKNOWN,
-            )
-        payload = queue.get()
-        return ProcessExecutionResult(
-            bool(payload["success"]),
-            str(payload["message"]),
-            exit_code=process.exitcode,
-            data=dict(payload.get("data") or {}),
-            outcome=ProcessOutcome.COMPLETED if payload["success"] else ProcessOutcome.FAILED,
-        )
+            try:
+                payload = queue.get(timeout=0.05)
+                process.join(1.0)
+                self._clear_process(process)
+                return ProcessExecutionResult(
+                    bool(payload["success"]),
+                    str(payload["message"]),
+                    exit_code=process.exitcode,
+                    data=dict(payload.get("data") or {}),
+                    outcome=ProcessOutcome.COMPLETED if payload["success"] else ProcessOutcome.FAILED,
+                )
+            except queue_errors.Empty:
+                pass
+
+            if not process.is_alive():
+                process.join(0)
+                with self._lock:
+                    was_terminated = self._termination_requested
+                self._clear_process(process)
+                if was_terminated or (process.exitcode is not None and process.exitcode < 0):
+                    return self._terminated_result(process)
+                try:
+                    payload = queue.get(timeout=0.2)
+                except queue_errors.Empty:
+                    return ProcessExecutionResult(
+                        process.exitcode == 0,
+                        "Isolated Agent process exited without a result.",
+                        exit_code=process.exitcode,
+                        outcome=ProcessOutcome.UNKNOWN,
+                    )
+                return ProcessExecutionResult(
+                    bool(payload["success"]),
+                    str(payload["message"]),
+                    exit_code=process.exitcode,
+                    data=dict(payload.get("data") or {}),
+                    outcome=ProcessOutcome.COMPLETED if payload["success"] else ProcessOutcome.FAILED,
+                )
+
+            if time.monotonic() >= deadline:
+                self._terminate_process(process)
+                with self._lock:
+                    was_terminated = self._termination_requested
+                result = self._terminated_result(process) if was_terminated else self._timeout_result(process)
+                self._clear_process(process)
+                return result
 
     def terminate(self) -> bool:
         """Request termination of the currently running isolated process."""

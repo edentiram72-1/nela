@@ -98,6 +98,12 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.action, "WorkspaceSecurityScan")
         self.assertEqual(intent.target_agent, "secure_code_reviewer")
 
+    def test_recognizes_workspace_security_scan_with_common_hebrew_spelling(self) -> None:
+        intent = IntentRouter().classify("תבדקי פרוייקט אבטחה")
+
+        self.assertEqual(intent.action, "WorkspaceSecurityScan")
+        self.assertEqual(intent.target_agent, "secure_code_reviewer")
+
     def test_recognizes_dependency_scan_intent(self) -> None:
         intent = IntentRouter().classify("תעשי בדיקת תלותים")
 
