@@ -33,6 +33,7 @@ from language.engine import HebrewLanguageEngine, LanguageEngine
 from memory.long_term import LongTermMemory
 from memory.short_term import ShortTermMemory
 from voice.providers.factory import create_speech_provider
+from agents.factory import build_default_agents
 
 
 @dataclass
@@ -107,3 +108,16 @@ def _register_builtin_agents(dispatcher: AgentDispatcher, events: EventBus, conf
         DesktopAgent(),
     ):
         dispatcher.register_agent(agent)
+
+    _register_specialist_agents(dispatcher)
+
+
+def _register_specialist_agents(dispatcher: AgentDispatcher) -> None:
+    """Register first-wave specialist Agents without replacing live runtime Agents."""
+
+    registered = set(dispatcher.discover_agents())
+    for agent in build_default_agents():
+        if agent.name in registered:
+            continue
+        dispatcher.register_agent(agent)
+        registered.add(agent.name)

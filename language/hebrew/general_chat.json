@@ -138,6 +138,101 @@
           "weight": 0.7
         }
       ]
+    },
+    "qa.greeting": {
+      "description": "Greeting response",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.greeting.here",
+          "text": "אני כאן. אפשר לשאול אותי שאלה או לבקש פעולה קטנה."
+        },
+        {
+          "id": "qa.greeting.withyou",
+          "text": "כן, אני איתך. מה נריץ?"
+        }
+      ]
+    },
+    "qa.thanks": {
+      "description": "Thanks response",
+      "eye_state": "idle",
+      "variants": [
+        {
+          "id": "qa.thanks.easy",
+          "text": "בשמחה. אני פה."
+        },
+        {
+          "id": "qa.thanks.smooth",
+          "text": "הלך חלק. ממשיכים?"
+        }
+      ]
+    },
+    "qa.identity": {
+      "description": "NELA identity answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.identity.local",
+          "text": "אני נלה — עוזרת AI מקומית שמתחילה לחבר מוח, זיכרון, קול, עין וסוכנים. כרגע אני עובדת בזהירות: חושבת דרך ה-Brain ומעבירה פעולות לסוכנים."
+        }
+      ]
+    },
+    "qa.capabilities": {
+      "description": "Current capabilities answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.capabilities.connected",
+          "text": "כרגע אני יודעת לדבר בעברית, לזהות כוונות, לזכור דברים בסיסיים, לפתוח אפליקציות מאושרות, להציג את העין החיה, ולהכיר {agent_count} סוכנים. חלקם עדיין במצב תכנון או קריאה בלבד.",
+          "vars": [
+            "agent_count"
+          ]
+        },
+        {
+          "id": "qa.capabilities.agents",
+          "text": "יש לי שכבת Brain פעילה ושכבת סוכנים. מחוברים כרגע: {agents}. פעולות רגישות עדיין עוברות דרך הרשאות ואישור.",
+          "vars": [
+            "agents"
+          ]
+        }
+      ]
+    },
+    "qa.agent_status": {
+      "description": "Agent status answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.status.counts",
+          "text": "מחוברים {agent_count} סוכנים, מתוכם {healthy_count} מדווחים תקינות. משימות רצות עכשיו: {running_tasks}.",
+          "vars": [
+            "agent_count",
+            "healthy_count",
+            "running_tasks"
+          ]
+        },
+        {
+          "id": "qa.status.names",
+          "text": "הסוכנים שאני רואה עכשיו: {agents}. הכוונה האחרונה הייתה: {last_intent}.",
+          "vars": [
+            "agents",
+            "last_intent"
+          ]
+        }
+      ]
+    },
+    "qa.unknown": {
+      "description": "Honest fallback for general questions",
+      "eye_state": "waiting",
+      "variants": [
+        {
+          "id": "qa.unknown.boundary",
+          "text": "אני עדיין לומדת לענות על שאלות פתוחות. כרגע אני טובה במיוחד בשאלות על היכולות שלי, מצב הסוכנים, זיכרון בסיסי ופעולות מקומיות בטוחות."
+        },
+        {
+          "id": "qa.unknown.next",
+          "text": "אין לי עדיין מקור ידע חיצוני מחובר לשאלה הזאת. אפשר לנסח את זה כמשימה, או לבקש ממני להסביר מה אני כן יודעת לעשות."
+        }
+      ]
     }
   }
 }

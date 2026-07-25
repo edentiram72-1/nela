@@ -51,6 +51,28 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.action, "OpenApplication")
         self.assertEqual(intent.application, "Spotify")
 
+    def test_hebrew_identity_question_is_conversational(self) -> None:
+        intent = IntentRouter().classify("מי את?")
+
+        self.assertEqual(intent.action, "IdentityQuestion")
+        self.assertGreaterEqual(intent.confidence, 0.5)
+
+    def test_hebrew_capabilities_question_is_conversational(self) -> None:
+        intent = IntentRouter().classify("מה את יודעת לעשות?")
+
+        self.assertEqual(intent.action, "CapabilitiesQuestion")
+
+    def test_hebrew_agent_status_question_is_conversational(self) -> None:
+        intent = IntentRouter().classify("איזה סוכנים מחוברים?")
+
+        self.assertEqual(intent.action, "AgentStatusQuestion")
+
+    def test_unknown_question_gets_general_question_intent(self) -> None:
+        intent = IntentRouter().classify("מה קורה בירח?")
+
+        self.assertEqual(intent.action, "GeneralQuestion")
+        self.assertGreaterEqual(intent.confidence, 0.5)
+
 
 if __name__ == "__main__":
     unittest.main()

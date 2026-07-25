@@ -62,6 +62,14 @@ and UI headless smoke. A Hebrew prototype command also routed through the Brain:
 `נלה, תפתחי את Spotify` produced `Intent: OpenApplication`, `Decision: delegate`,
 and Hebrew response `Spotify — פותחת.` using safe no-dispatch mode.
 
+On 2026-07-25, `codex/nela-conversation-agent-qa` started the first safe
+conversation and Agent-awareness layer. The runtime now registers first-wave
+specialist Agents from `agents.factory` without replacing existing live Agents,
+and the Brain has a modular `KnowledgeEngine` for safe Hebrew Q&A about NELA's
+identity, current capabilities, connected Agents, status, greetings, thanks, and
+unknown open questions. This does not enable real side effects for Browser,
+Terminal, Coding, Cyber, or communication Agents.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -79,6 +87,9 @@ The consolidation includes:
 - Sprint 2 Permission Engine: T0-T4 tiers, Capability Registry, Agent manifests, authentication checks, confirmation gate, scoped sessions, in-memory audit log, kill switch, lock mode, permission events, UI state mapping for permission events, and Dispatcher integration before `agent.execute()`.
 - Claude Sprint 2 findings: secure local bridge foundation, subprocess isolation foundation, symlink-aware scope validation, exact confirmation binding, insert-only Agent registration, tamper-evident audit hash chain, and authorization-before-final-routing foundation.
 - Mechanical safety-spine verification criteria are documented in `docs/safety_spine_verification_criteria.md`.
+- Conversation QA foundation: `brain/qa.py`, conversational intent routing, QA
+  response categories in the Hebrew language pack, and startup registration for
+  non-conflicting specialist Agents.
 
 Claude collaboration is repository-based only. There is no direct Claude connection. Use direct GitHub `blob/` links, `docs/ai_inbox.md`, or regenerate a review bundle with `python3 -m scripts.export_claude_review_bundle`.
 
@@ -88,11 +99,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Post-Sprint 2: Develop Consolidation + Prototype Validation**
+**Post-Sprint 2: Conversation QA + Agent Awareness**
 
 ## Active Branch
 
-`develop`
+`codex/nela-conversation-agent-qa`
 
 ## Recently Modified Files
 
@@ -118,6 +129,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `brain/applications.py`
 - `brain/memory_manager.py`
 - `brain/planner.py`
+- `brain/qa.py`
+- `tests/test_conversation_qa.py`
 - `permissions/__init__.py`
 - `permissions/audit.py`
 - `permissions/engine.py`
@@ -265,6 +278,10 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Add `NELA-0016-audit-log-and-kill-switch` and `NELA-0017-agent-runtime-lifecycle` from `docs/ai_inbox.md`.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Continue interactive NELA sessions through `python3 -m core.app`.
+- Expand the QA layer with project-aware answers after the memory subsystem is
+  durable.
+- Add safe user-facing descriptions for each specialist Agent before exposing
+  them as selectable actions in the UI.
 - Continue desktop UI shell checks with `python3 -m ui.app` on a machine with a graphical session.
 - Send consolidated `develop` or `main` direct blob links to Claude for release verification.
 - Ask Claude to review `docs/claude_handoff_2026-07-24.md`, `docs/personality_bible.md`, `docs/hebrew_language_guide.md`, `docs/tone_of_voice.md`, `docs/conversation_rules.md`, `language/pack_schema.md`, and `language/hebrew/`.
@@ -304,8 +321,28 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Cybersecurity capabilities must remain blocked until the permission model, capability registry, audit logging, kill switch, and isolated lab architecture exist.
 - Sprint 2 Permission Engine exists and Claude Sprint 2 blocking findings have foundation implementations, but Cybersecurity capabilities must still remain blocked until isolated lab architecture, durable audit storage, task idempotency, and production event-bus hardening are complete.
 - Terminal and Coding manifests declare future capabilities for review only. Side-effecting terminal execution and coding write/commit capabilities are disabled.
+- The new conversation QA layer is deterministic and local. It is not yet a
+  general LLM-backed knowledge system and should answer unknown open questions
+  honestly instead of pretending to know.
 
 ## Validation
+
+Latest conversation QA validation on `codex/nela-conversation-agent-qa`:
+
+```text
+python3 -m unittest discover -s tests
+python3 -m scripts.validate_language_packs
+python3 -m ui.app --headless-smoke
+python3 -m compileall brain core agents language tests ui
+python3 -m core.app --once "מי את?" --no-dispatch
+python3 -m core.app --once "מה את יודעת לעשות?" --no-dispatch
+python3 -m core.app --once "מה מצב?" --no-dispatch
+python3 -m core.app --once "מה קורה בירח?" --no-dispatch
+```
+
+Result: 132 tests passed; language pack validation passed; headless UI bootstrap
+succeeded; conversational Hebrew questions now return Hebrew answers without
+creating Agent execution plans.
 
 Latest post-merge validation on `develop`:
 

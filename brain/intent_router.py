@@ -53,6 +53,34 @@ class IntentPattern:
 
 
 DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
+    IntentPattern("Greeting", ("שלום", "היי", "הי", "בוקר טוב", "ערב טוב", "hello", "hi")),
+    IntentPattern("Thanks", ("תודה", "תודה רבה", "thanks", "thank you")),
+    IntentPattern(
+        "CapabilitiesQuestion",
+        (
+            "מה את יודעת לעשות",
+            "מה את יכולה לעשות",
+            "איך את יכולה לעזור",
+            "איזה יכולות יש לך",
+            "מה היכולות שלך",
+            "help",
+            "capabilities",
+        ),
+    ),
+    IntentPattern(
+        "AgentStatusQuestion",
+        (
+            "איזה סוכנים מחוברים",
+            "מי מחובר",
+            "מה מצב הסוכנים",
+            "סטטוס סוכנים",
+            "מה המצב",
+            "מה מצב",
+            "agent status",
+            "status",
+        ),
+    ),
+    IntentPattern("IdentityQuestion", ("מי את", "מה את", "מי את נלה", "ספרי על עצמך", "who are you")),
     IntentPattern("Remember", ("remember", "save this", "learn this", "תזכרי", "תזכור", "תשמרי")),
     IntentPattern("CloseApplication", ("close", "quit", "תסגרי", "סגרי", "לסגור"), requires_confirmation=True),
     IntentPattern("SwitchApplication", ("switch to", "focus", "bring to front", "תעברי", "לעבור אל")),
@@ -92,6 +120,17 @@ class IntentRouter:
                 priority=priority,
                 parameters=parameters,
                 requires_confirmation=pattern.requires_confirmation,
+            )
+
+        if _looks_like_question(normalized):
+            return Intent(
+                action="GeneralQuestion",
+                raw_text=text,
+                confidence=0.62,
+                application=resolve_application_alias(application),
+                resource=resource,
+                priority=priority,
+                parameters=parameters,
             )
 
         return Intent(
@@ -171,6 +210,30 @@ def _extract_resource(text: str) -> str | None:
 
 def _looks_like_follow_up(normalized: str) -> bool:
     return normalized.startswith(("also ", "then ", "and ", "do that", "same "))
+
+
+def _looks_like_question(normalized: str) -> bool:
+    question_words = (
+        "what",
+        "who",
+        "how",
+        "why",
+        "when",
+        "where",
+        "which",
+        "can you",
+        "do you",
+        "מה",
+        "מי",
+        "איך",
+        "למה",
+        "מתי",
+        "איפה",
+        "איזה",
+        "האם",
+        "אפשר",
+    )
+    return normalized.endswith("?") or normalized.startswith(question_words)
 
 
 def _contains_keyword(normalized: str, keyword: str) -> bool:

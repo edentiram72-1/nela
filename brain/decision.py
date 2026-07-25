@@ -7,6 +7,7 @@ from enum import Enum
 
 from brain.context import ContextSnapshot
 from brain.intent_router import Intent
+from brain.qa import CONVERSATIONAL_ACTIONS
 
 
 class DecisionType(str, Enum):
@@ -48,6 +49,12 @@ class DecisionEngine:
             return Decision(
                 type=DecisionType.WAIT,
                 reason="A previous confirmation is still pending.",
+            )
+
+        if intent.action in CONVERSATIONAL_ACTIONS:
+            return Decision(
+                type=DecisionType.EXECUTE_IMMEDIATELY,
+                reason="The request can be answered by the conversation QA layer.",
             )
 
         if intent.action in {"OpenApplication", "CloseApplication", "SwitchApplication"} and not intent.application:

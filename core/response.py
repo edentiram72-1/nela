@@ -56,6 +56,13 @@ class NelaResponseAdapter:
             "intent": turn.intent.action,
             "task_hint": turn.message,
         }
+        response_variables = turn.intent.parameters.get("response_variables")
+        if isinstance(response_variables, dict):
+            variables.update(response_variables)
+
+        response_category = turn.intent.parameters.get("response_category")
+        if isinstance(response_category, str) and response_category:
+            return response_category, variables
 
         if turn.decision.type in {DecisionType.ASK_CLARIFICATION, DecisionType.WAIT}:
             variables["question"] = turn.message
