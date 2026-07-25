@@ -130,6 +130,51 @@ New categories require two edits:
 
 Keep Brain modules unchanged when adding phrases.
 
+## Runtime Learned Responses
+
+NELA can now learn simple user-taught trigger/response pairs at runtime without
+editing the core Hebrew pack.
+
+Flow:
+
+```text
+User: "נלה תלמדי שכשאני אומר בוקר טוב תעני בוקר אור"
+  |
+  v
+IntentRouter -> TeachResponse
+  |
+  v
+Planner -> learning.teach_response
+  |
+  v
+Permission Engine -> T1 local scoped write
+  |
+  v
+LearningAgent -> data/language/learned_responses.json
+  |
+  v
+KnowledgeEngine answers future matching turns with qa.learned
+```
+
+This is intentionally separate from Claude-authored phrase packs:
+
+- Claude/personality packs remain authoritative for NELA's voice.
+- User-taught responses are local runtime data.
+- The Brain stays semantic and does not hardcode Hebrew responses.
+- Learned responses are exact/simple trigger matches in this phase, not an
+  unrestricted knowledge base.
+
+Supported examples:
+
+```text
+נלה תלמדי שכשאני אומר בוקר טוב תעני בוקר אור
+כשאני אומר מצב בית תעני הכל רגוע
+learn response: ping => pong
+```
+
+Future extensions should add review, editing, deletion, tagging, and conflict
+resolution before large-scale phrase ingestion.
+
 ## Personality Profiles
 
 Personality profiles under `language/personality/` influence selection with metadata only:

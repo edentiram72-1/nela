@@ -66,3 +66,38 @@ result = lab.execute(
 
 The output is a normalized `work_product` containing the lab decision, audit ID,
 deterministic fuzz cases, findings, and next steps.
+
+## Conversation Routing
+
+The Brain can route a small safe set of Hebrew/English security requests to
+existing defensive Agents:
+
+- `SecurityCapabilitiesQuestion`: explains NELA's defensive cyber boundaries.
+- `SecurityReview`: delegates passive code/security text review to
+  `secure_code_reviewer`.
+- `ThreatModel`: delegates threat-model scaffolding to `secure_code_reviewer`.
+- `CyberLabStatus`: reads the current authorized lab state through
+  `authorized_lab`.
+- `CyberLabRegisterTarget`: registers a local/owned lab target through
+  `authorized_lab`.
+- `LocalFuzzPlan`: prepares a local-only fuzzing plan through
+  `anomaly_discovery`.
+
+This does not enable external targeting or active offensive behavior. Active
+lab execution remains gated by authorization, target allowlists, scoped
+sessions, confirmation, dry-run behavior, audit records, process isolation, and
+the kill switch.
+
+Example local route:
+
+```text
+User: "תרשמי יעד מעבדה http://localhost:3000"
+  -> CyberLabRegisterTarget
+  -> authorized_lab.register_lab_target
+  -> Permission tier T1
+
+User: "תכיני תוכנית fuzz מקומית לפרסר"
+  -> LocalFuzzPlan
+  -> anomaly_discovery.create_local_fuzz_plan
+  -> Permission tier T0
+```

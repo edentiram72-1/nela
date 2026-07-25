@@ -56,6 +56,31 @@ DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
     IntentPattern("Greeting", ("שלום", "היי", "הי", "בוקר טוב", "ערב טוב", "hello", "hi")),
     IntentPattern("Thanks", ("תודה", "תודה רבה", "thanks", "thank you")),
     IntentPattern(
+        "SecurityReview",
+        ("סקירת אבטחה", "בדיקת אבטחה", "תבדקי אבטחה", "תבדקי את הקוד לאבטחה", "security review", "secure code review"),
+        domain="secure_code_reviewer",
+    ),
+    IntentPattern("ThreatModel", ("מודל איומים", "threat model"), domain="secure_code_reviewer"),
+    IntentPattern(
+        "CyberLabStatus",
+        ("מצב מעבדת סייבר", "סטטוס סייבר", "מצב הסייבר", "cyber lab status"),
+        domain="authorized_lab",
+    ),
+    IntentPattern(
+        "CyberLabRegisterTarget",
+        ("תרשמי יעד מעבדה", "תוסיפי יעד מעבדה", "register lab target"),
+        domain="authorized_lab",
+    ),
+    IntentPattern(
+        "LocalFuzzPlan",
+        ("תוכנית fuzz", "תכנון fuzz", "תכיני fuzz", "local fuzz plan", "fuzz plan"),
+        domain="anomaly_discovery",
+    ),
+    IntentPattern(
+        "SecurityCapabilitiesQuestion",
+        ("מה את יודעת בסייבר", "מה יכולות האבטחה שלך", "יכולות אבטחה", "יכולות סייבר", "cyber capabilities"),
+    ),
+    IntentPattern(
         "CapabilitiesQuestion",
         (
             "מה את יודעת לעשות",
@@ -101,6 +126,16 @@ class IntentRouter:
     def classify(self, text: str, context: dict[str, Any] | None = None) -> Intent:
         normalized = _normalize(text)
         priority = _detect_priority(normalized)
+        taught_response = _extract_teach_response(text)
+        if taught_response is not None:
+            return Intent(
+                action="TeachResponse",
+                raw_text=text,
+                confidence=0.88,
+                priority=priority,
+                parameters={**taught_response, "domain": "learning"},
+            )
+
         pattern = self._match_pattern(normalized)
         application = _extract_application(text)
         resource = _extract_resource(text)
@@ -116,7 +151,7 @@ class IntentRouter:
                 raw_text=text,
                 confidence=0.82,
                 application=resolve_application_alias(application),
-                resource=resource,
+                resource=resource or _extract_url(text),
                 priority=priority,
                 parameters=parameters,
                 requires_confirmation=pattern.requires_confirmation,
@@ -128,7 +163,7 @@ class IntentRouter:
                 raw_text=text,
                 confidence=0.62,
                 application=resolve_application_alias(application),
-                resource=resource,
+                resource=resource or _extract_url(text),
                 priority=priority,
                 parameters=parameters,
             )
@@ -138,7 +173,7 @@ class IntentRouter:
             raw_text=text,
             confidence=0.45,
             application=resolve_application_alias(application),
-            resource=resource,
+            resource=resource or _extract_url(text),
             priority=priority,
             parameters=parameters,
         )
@@ -206,6 +241,35 @@ def _extract_resource(text: str) -> str | None:
     if playlist:
         return playlist.group(1).strip()
     return None
+
+
+def _extract_url(text: str) -> str | None:
+    match = re.search(r"\b(?:https?://|localhost:)\S+", text, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return match.group(0).rstrip(".,;!?")
+
+
+def _extract_teach_response(text: str) -> dict[str, str] | None:
+    patterns = (
+        r"(?:תלמדי|למדי|תלמדני).*?כשאני אומר(?:ת)?\s+(.+?)\s+(?:תעני|תגידי|תאמרי)\s+(.+)",
+        r"כשאני אומר(?:ת)?\s+(.+?)\s+(?:תעני|תגידי|תאמרי)\s+(.+)",
+        r"(?:learn|teach).*?when i say\s+(.+?)\s+(?:answer|reply|say)\s+(.+)",
+        r"(?:learn response|teach response|למדי תשובה|תלמדי תשובה)\s*:\s*(.+?)\s*=>\s*(.+)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        trigger = _strip_teach_delimiters(match.group(1))
+        response = _strip_teach_delimiters(match.group(2))
+        if trigger and response:
+            return {"trigger": trigger, "response": response}
+    return None
+
+
+def _strip_teach_delimiters(value: str) -> str:
+    return value.strip(" \t\n\r\"'׳״.,;:!?")
 
 
 def _looks_like_follow_up(normalized: str) -> bool:

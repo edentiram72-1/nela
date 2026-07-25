@@ -51,8 +51,15 @@
     "qa.thanks",
     "qa.identity",
     "qa.capabilities",
+    "qa.security_capabilities",
     "qa.agent_status",
-    "qa.unknown"
+    "qa.learned",
+    "qa.unknown",
+    "security.review.done",
+    "security.threat_model.done",
+    "security.lab.done",
+    "security.lab.status",
+    "security.fuzz_plan.done"
   ],
   "tones": [
     "calm",

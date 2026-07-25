@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from agents.backend import BackendAgent
 from agents.browser import BrowserAgent
 from agents.code_architect import CodeArchitectAgent
@@ -46,16 +48,21 @@ from agents.security import AnomalyDiscoveryAgent, AuthorizedLabAgent, SecureCod
 from agents.test_qa import TestQAAgent
 from agents.automation import AutomationAgent
 from agents.terminal import TerminalAgent
+from language.learning_store import LearnedResponseStore
 
 
-def build_default_agents():
+def build_default_agents(
+    learning_store_path: Path | str | None = None,
+    learning_store: LearnedResponseStore | None = None,
+):
     """Instantiate the defensive multi-agent foundation in stable registry order."""
 
+    response_store = learning_store or LearnedResponseStore(learning_store_path)
     return (
         OrchestratorAgent(),
         PlannerAgent(),
         MemoryAgent(),
-        LearningAgent(),
+        LearningAgent(store=response_store),
         QualitySelfEvaluationAgent(),
         CodeArchitectAgent(),
         BackendAgent(),
@@ -99,8 +106,11 @@ def build_default_agents():
     )
 
 
-def build_default_registry() -> AgentRegistry:
+def build_default_registry(
+    learning_store_path: Path | str | None = None,
+    learning_store: LearnedResponseStore | None = None,
+) -> AgentRegistry:
     registry = AgentRegistry()
-    for agent in build_default_agents():
+    for agent in build_default_agents(learning_store_path=learning_store_path, learning_store=learning_store):
         registry.register(agent)
     return registry

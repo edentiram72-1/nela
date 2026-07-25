@@ -70,6 +70,16 @@ identity, current capabilities, connected Agents, status, greetings, thanks, and
 unknown open questions. This does not enable real side effects for Browser,
 Terminal, Coding, Cyber, or communication Agents.
 
+On 2026-07-25, `codex/nela-language-learning-cyber` added runtime language
+learning and defensive cyber routing. NELA can now learn user-provided
+trigger/response pairs through `LearningAgent` and answer matching future turns
+through `KnowledgeEngine` and `qa.learned`. Security routing now recognizes
+defensive security review, threat-model scaffolding, cyber lab status, local lab
+target registration, local-only fuzz planning, and security capability
+questions. Active cyber execution remains blocked behind the existing
+authorization, scoped-session, confirmation, audit, isolation, and kill-switch
+model.
+
 The consolidation includes:
 
 - Confirmation answer routing before intent classification, including affirmative replies, negative replies, unclear reply handling, and TTL expiry.
@@ -99,11 +109,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 
 ## Current Milestone
 
-**Post-Sprint 2: Conversation QA + Agent Awareness**
+**Post-Sprint 2: Runtime Language Learning + Defensive Security Routing**
 
 ## Active Branch
 
-`codex/nela-conversation-agent-qa`
+`codex/nela-language-learning-cyber`
 
 ## Recently Modified Files
 
@@ -130,6 +140,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `brain/memory_manager.py`
 - `brain/planner.py`
 - `brain/qa.py`
+- `language/learning_store.py`
+- `agents/learning/agent.py`
 - `tests/test_conversation_qa.py`
 - `permissions/__init__.py`
 - `permissions/audit.py`

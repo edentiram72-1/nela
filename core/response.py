@@ -56,6 +56,10 @@ class NelaResponseAdapter:
             "intent": turn.intent.action,
             "task_hint": turn.message,
         }
+        if turn.dispatched_results:
+            first_result = turn.dispatched_results[0]
+            variables["summary"] = first_result.message
+            variables["task_hint"] = first_result.message
         response_variables = turn.intent.parameters.get("response_variables")
         if isinstance(response_variables, dict):
             variables.update(response_variables)
@@ -83,6 +87,18 @@ class NelaResponseAdapter:
             return "media.play", variables
         if turn.intent.action == "Remember":
             return "learning.saved", variables
+        if turn.intent.action == "TeachResponse":
+            return "learning.saved", variables
+        if turn.intent.action == "SecurityReview":
+            return "security.review.done", variables
+        if turn.intent.action == "ThreatModel":
+            return "security.threat_model.done", variables
+        if turn.intent.action == "CyberLabRegisterTarget":
+            return "security.lab.done", variables
+        if turn.intent.action == "CyberLabStatus":
+            return "security.lab.status", variables
+        if turn.intent.action == "LocalFuzzPlan":
+            return "security.fuzz_plan.done", variables
         if turn.plan:
             return "success.short", variables
         return "smalltalk.daily", variables

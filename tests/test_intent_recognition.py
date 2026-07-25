@@ -73,6 +73,38 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.action, "GeneralQuestion")
         self.assertGreaterEqual(intent.confidence, 0.5)
 
+    def test_recognizes_hebrew_teach_response_intent(self) -> None:
+        intent = IntentRouter().classify("נלה תלמדי שכשאני אומר בוקר טוב תעני בוקר אור")
+
+        self.assertEqual(intent.action, "TeachResponse")
+        self.assertEqual(intent.target_agent, "learning")
+        self.assertEqual(intent.parameters["trigger"], "בוקר טוב")
+        self.assertEqual(intent.parameters["response"], "בוקר אור")
+
+    def test_recognizes_defensive_security_review_intent(self) -> None:
+        intent = IntentRouter().classify("נלה תבדקי את הקוד לאבטחה")
+
+        self.assertEqual(intent.action, "SecurityReview")
+        self.assertEqual(intent.target_agent, "secure_code_reviewer")
+
+    def test_recognizes_security_capabilities_question(self) -> None:
+        intent = IntentRouter().classify("מה את יודעת בסייבר?")
+
+        self.assertEqual(intent.action, "SecurityCapabilitiesQuestion")
+
+    def test_recognizes_local_lab_target_registration(self) -> None:
+        intent = IntentRouter().classify("תרשמי יעד מעבדה http://localhost:3000")
+
+        self.assertEqual(intent.action, "CyberLabRegisterTarget")
+        self.assertEqual(intent.target_agent, "authorized_lab")
+        self.assertEqual(intent.resource, "http://localhost:3000")
+
+    def test_recognizes_local_fuzz_plan(self) -> None:
+        intent = IntentRouter().classify("תכיני תוכנית fuzz מקומית לפרסר")
+
+        self.assertEqual(intent.action, "LocalFuzzPlan")
+        self.assertEqual(intent.target_agent, "anomaly_discovery")
+
 
 if __name__ == "__main__":
     unittest.main()

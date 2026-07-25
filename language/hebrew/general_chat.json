@@ -197,6 +197,24 @@
         }
       ]
     },
+    "qa.security_capabilities": {
+      "description": "Current defensive security capabilities answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.security.safe_scope",
+          "text": "בסייבר אני מחוברת רק לצד ההגנתי: סקירת קוד, מודל איומים, בדיקות תלויות, תכנון fuzz מקומי ומעבדת localhost/נכס שבבעלותך. אין לי מסלול לפעולות מול צד שלישי.",
+          "weight": 1.3
+        },
+        {
+          "id": "qa.security.agents",
+          "text": "סוכני האבטחה שאני רואה: {security_agents}. פעולות רגישות עוברות הרשאות, scope, אישור ויומן ביקורת.",
+          "vars": [
+            "security_agents"
+          ]
+        }
+      ]
+    },
     "qa.agent_status": {
       "description": "Agent status answer",
       "eye_state": "speaking",
@@ -220,6 +238,27 @@
         }
       ]
     },
+    "qa.learned": {
+      "description": "Answer from user-taught learned responses",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.learned.answer",
+          "text": "{answer}",
+          "vars": [
+            "answer"
+          ],
+          "weight": 1.4
+        },
+        {
+          "id": "qa.learned.source",
+          "text": "{answer}",
+          "vars": [
+            "answer"
+          ]
+        }
+      ]
+    },
     "qa.unknown": {
       "description": "Honest fallback for general questions",
       "eye_state": "waiting",
@@ -231,6 +270,60 @@
         {
           "id": "qa.unknown.next",
           "text": "אין לי עדיין מקור ידע חיצוני מחובר לשאלה הזאת. אפשר לנסח את זה כמשימה, או לבקש ממני להסביר מה אני כן יודעת לעשות."
+        }
+      ]
+    },
+    "security.review.done": {
+      "description": "Defensive security review completed",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.review.done.summary",
+          "text": "סיימתי סקירה הגנתית והעברתי את הממצאים לשכבת הסוכנים."
+        },
+        {
+          "id": "security.review.done.safe",
+          "text": "בדיקת האבטחה ההגנתית הסתיימה."
+        }
+      ]
+    },
+    "security.threat_model.done": {
+      "description": "Threat model completed",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.threat.done.summary",
+          "text": "הכנתי מודל איומים ראשוני."
+        }
+      ]
+    },
+    "security.lab.done": {
+      "description": "Cyber lab local target updated",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.lab.done.target",
+          "text": "רשמתי את יעד המעבדה המקומי."
+        }
+      ]
+    },
+    "security.lab.status": {
+      "description": "Cyber lab status read",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "security.lab.status.summary",
+          "text": "בדקתי את מצב מעבדת הסייבר."
+        }
+      ]
+    },
+    "security.fuzz_plan.done": {
+      "description": "Local fuzz plan prepared",
+      "eye_state": "success",
+      "variants": [
+        {
+          "id": "security.fuzz.done.local",
+          "text": "הכנתי תוכנית fuzz מקומית בלבד."
         }
       ]
     }

@@ -150,7 +150,7 @@ def default_tool_permissions() -> dict[str, ToolPermissionProfile]:
         "orchestrator": ToolPermissionProfile("orchestrator", ("delegate", "summarize"), filesystem="none"),
         "planner": ToolPermissionProfile("planner", ("plan", "decompose"), filesystem="none"),
         "memory": ToolPermissionProfile("memory", ("memory_read", "memory_write"), filesystem="workspace_scoped"),
-        "learning": ToolPermissionProfile("learning", ("summarize", "recommend_curriculum"), filesystem="workspace_read"),
+        "learning": ToolPermissionProfile("learning", ("summarize", "recommend_curriculum", "language_learning"), filesystem="workspace_scoped"),
         "quality_self_evaluation": ToolPermissionProfile("quality_self_evaluation", read_only, filesystem="workspace_read"),
         "code_architect": ToolPermissionProfile("code_architect", read_only, filesystem="workspace_read"),
         "backend": ToolPermissionProfile("backend", read_only, filesystem="workspace_read", may_modify_code=True),
