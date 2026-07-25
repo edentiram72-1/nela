@@ -95,6 +95,13 @@ to the user in Hebrew, including severity, recommendation, and next steps. This
 remains T0 passive/defensive posture work and does not add external targeting or
 offensive capability.
 
+On 2026-07-25, the same branch broadened natural Hebrew routing for immediate
+defensive checks. Requests such as `תעשי בדיקה של אבטחה`, `בדיקה אבטחתית`, and
+`בדיקת סייבר` now route directly to `CyberDefenseSweep` instead of falling back
+to clarification. Hebrew clarification templates were also cleaned up so
+unknown requests no longer duplicate question marks or wrap full questions in
+awkward phrasing.
+
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
 `127.0.0.1` only, injects a per-launch token, verifies the expected same origin,

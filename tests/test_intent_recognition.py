@@ -110,6 +110,12 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.action, "CyberDefenseSweep")
         self.assertEqual(intent.target_agent, "cyber_defense")
 
+    def test_recognizes_natural_hebrew_security_check_as_defense_sweep(self) -> None:
+        intent = IntentRouter().classify("תעשי בדיקה של אבטחה")
+
+        self.assertEqual(intent.action, "CyberDefenseSweep")
+        self.assertEqual(intent.target_agent, "cyber_defense")
+
     def test_recognizes_local_lab_target_registration(self) -> None:
         intent = IntentRouter().classify("תרשמי יעד מעבדה http://localhost:3000")
 

@@ -9,30 +9,30 @@
       "variants": [
         {
           "id": "core.clarify.which",
-          "text": "לא בטוחה שהבנתי — {clarify}?",
+          "text": "לא בטוחה שהבנתי עד הסוף. {question}",
           "vars": [
-            "clarify"
+            "question"
           ]
         },
         {
           "id": "core.clarify.short",
-          "text": "{clarify}?",
+          "text": "{question}",
           "vars": [
-            "clarify"
+            "question"
           ]
         },
         {
           "id": "core.clarify.mean",
-          "text": "רגע — הכוונה ל{clarify}?",
+          "text": "רגע, אני צריכה עוד ניסוח קטן. {question}",
           "vars": [
-            "clarify"
+            "question"
           ]
         },
         {
           "id": "core.clarify.help",
-          "text": "תעזרו לי רגע: {clarify}?",
+          "text": "אני איתך, רק חסר לי כיוון ברור. {question}",
           "vars": [
-            "clarify"
+            "question"
           ],
           "gender_tier": 1
         }

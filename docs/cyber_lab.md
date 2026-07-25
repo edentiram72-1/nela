@@ -109,6 +109,7 @@ Example defense findings route:
 
 ```text
 User: "נלה תעשי הגנה"
+User: "תעשי בדיקה של אבטחה"
   -> CyberDefenseSweep
   -> cyber_defense.defense_posture_check
   -> Permission tier T0

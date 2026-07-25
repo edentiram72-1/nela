@@ -158,6 +158,18 @@ class ConversationQATests(unittest.TestCase):
         self.assertIn("הרשאות", response)
         self.assertIn("הצעד הבא", response)
 
+    def test_natural_hebrew_security_check_runs_defense_agent(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("תעשי בדיקה של אבטחה")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "CyberDefenseSweep")
+        self.assertEqual(turn.plan.tasks[0].target_agent, "cyber_defense")
+        self.assertTrue(turn.dispatched_results[0].success)
+        self.assertIn("ממצאים", response)
+        self.assertNotIn("לא לגמרי הבנתי", response)
+
 
 if __name__ == "__main__":
     unittest.main()
