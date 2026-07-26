@@ -62,53 +62,53 @@ class DesktopAgentTests(unittest.TestCase):
         self.assertEqual(runner.calls, [])
 
     def test_detect_running_app(self) -> None:
-        agent = DesktopAgent(runner=FakeDesktopRunner(running_processes={"Spotify"}))
+        agent = DesktopAgent(runner=FakeDesktopRunner(running_processes={"Safari"}))
 
-        result = agent.execute(AgentCommand(action="is_application_running", payload={"application": "Spotify"}))
+        result = agent.execute(AgentCommand(action="is_application_running", payload={"application": "Safari"}))
 
         self.assertTrue(result.success)
         self.assertTrue(result.data["running"])
-        self.assertEqual(result.data["application"], "Spotify")
+        self.assertEqual(result.data["application"], "Safari")
 
     def test_bring_running_app_to_foreground(self) -> None:
-        runner = FakeDesktopRunner(running_processes={"Spotify"})
+        runner = FakeDesktopRunner(running_processes={"Safari"})
         agent = DesktopAgent(runner=runner)
 
-        result = agent.execute(AgentCommand(action="switch_application", payload={"application": "Spotify"}))
+        result = agent.execute(AgentCommand(action="switch_application", payload={"application": "Safari"}))
 
         self.assertTrue(result.success)
         self.assertEqual(result.data["action"], "bring_to_front")
-        self.assertIn(("/usr/bin/open", "-b", "com.spotify.client"), runner.calls)
+        self.assertIn(("/usr/bin/open", "-b", "com.apple.Safari"), runner.calls)
 
     def test_close_running_app(self) -> None:
-        runner = FakeDesktopRunner(running_processes={"Spotify"})
+        runner = FakeDesktopRunner(running_processes={"Safari"})
         agent = DesktopAgent(runner=runner)
 
-        result = agent.execute(AgentCommand(action="close_application", payload={"application": "Spotify"}))
+        result = agent.execute(AgentCommand(action="close_application", payload={"application": "Safari"}))
 
         self.assertTrue(result.success)
         self.assertEqual(result.data["action"], "close")
-        self.assertIn(("/usr/bin/osascript", "-e", 'tell application id "com.spotify.client" to quit'), runner.calls)
+        self.assertIn(("/usr/bin/osascript", "-e", 'tell application id "com.apple.Safari" to quit'), runner.calls)
 
     def test_close_non_running_app_is_safe_success(self) -> None:
         runner = FakeDesktopRunner()
         agent = DesktopAgent(runner=runner)
 
-        result = agent.execute(AgentCommand(action="close_application", payload={"application": "Spotify"}))
+        result = agent.execute(AgentCommand(action="close_application", payload={"application": "Safari"}))
 
         self.assertTrue(result.success)
         self.assertTrue(result.data["already_closed"])
         self.assertNotIn(
-            ("/usr/bin/osascript", "-e", 'tell application id "com.spotify.client" to quit'),
+            ("/usr/bin/osascript", "-e", 'tell application id "com.apple.Safari" to quit'),
             runner.calls,
         )
 
     def test_wait_until_ready_reports_running_app(self) -> None:
-        runner = FakeDesktopRunner(running_processes={"Spotify"})
+        runner = FakeDesktopRunner(running_processes={"Safari"})
         agent = DesktopAgent(runner=runner)
 
         result = agent.execute(
-            AgentCommand(action="wait_until_ready", payload={"application": "Spotify", "timeout_seconds": 1})
+            AgentCommand(action="wait_until_ready", payload={"application": "Safari", "timeout_seconds": 1})
         )
 
         self.assertTrue(result.success)
@@ -119,11 +119,24 @@ class DesktopAgentTests(unittest.TestCase):
         runner = TimeoutDesktopRunner()
         agent = DesktopAgent(runner=runner)
 
-        result = agent.execute(AgentCommand(action="launch_application", payload={"application": "Spotify"}))
+        result = agent.execute(AgentCommand(action="launch_application", payload={"application": "Safari"}))
 
         self.assertFalse(result.success)
         self.assertEqual(result.data["error"], "TimeoutExpired")
         self.assertEqual(result.data["action"], "launch_application")
+
+    def test_spotify_launch_is_disabled(self) -> None:
+        runner = FakeDesktopRunner()
+        agent = DesktopAgent(runner=runner)
+
+        result = agent.execute(AgentCommand(action="launch_application", payload={"application": "Spotify"}))
+
+        self.assertFalse(result.success)
+        self.assertEqual(result.data["status"], "failed")
+        self.assertTrue(result.data["disabled_application"])
+        self.assertIn("כבויה", result.message)
+        self.assertNotIn("Spotify", result.data["supported_applications"])
+        self.assertEqual(runner.calls, [])
 
     def test_lifecycle_and_health_check(self) -> None:
         agent = DesktopAgent(runner=FakeDesktopRunner())

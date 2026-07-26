@@ -51,12 +51,6 @@ SUPPORTED_APPLICATIONS: tuple[ApplicationSpec, ...] = (
         aliases=("vs code", "vscode", "visual studio code", "code"),
     ),
     ApplicationSpec(
-        canonical_name="Spotify",
-        bundle_id="com.spotify.client",
-        process_names=("Spotify",),
-        aliases=("spotify",),
-    ),
-    ApplicationSpec(
         canonical_name="Terminal",
         bundle_id="com.apple.Terminal",
         process_names=("Terminal",),
@@ -103,6 +97,18 @@ class DesktopAgent(BaseAgent):
         started_at = time.monotonic()
         application_name = _application_from_payload(command)
         try:
+            if _is_disabled_application(application_name):
+                return self._result(
+                    success=False,
+                    message="פתיחת Spotify כבויה לפי ההעדפה שלך.",
+                    action=command.action,
+                    application=application_name,
+                    started_at=started_at,
+                    extra={
+                        "disabled_application": True,
+                        "supported_applications": self.supported_application_names(),
+                    },
+                )
             spec = self._resolve_application(application_name)
             if spec is None:
                 return self._result(
@@ -356,6 +362,12 @@ class DesktopAgent(BaseAgent):
 def _application_from_payload(command: AgentCommand) -> str | None:
     value = command.payload.get("application") or command.payload.get("app")
     return str(value).strip() if value else None
+
+
+def _is_disabled_application(application_name: str | None) -> bool:
+    if not application_name:
+        return False
+    return _normalize_application_name(application_name) in {"spotify", "ספוטיפיי", "ספוטי"}
 
 
 def _normalize_application_name(value: str) -> str:
