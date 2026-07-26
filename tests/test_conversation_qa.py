@@ -3,6 +3,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from brain.llm import LLMRequest, LLMResult
+from brain.qa import KnowledgeEngine
+from agents.browser.agent import BrowserAgent, SearchResult
 from core.config import AppConfig
 from core.startup import bootstrap
 
@@ -20,6 +23,35 @@ def make_runtime():
         )
     )
     return runtime, temp_dir
+
+
+class FakeLLMProvider:
+    enabled = True
+
+    def __init__(self, text: str = "זו תשובה חופשית של מוח אמיתי.") -> None:
+        self.text = text
+        self.requests: list[LLMRequest] = []
+
+    def answer(self, request: LLMRequest) -> LLMResult:
+        self.requests.append(request)
+        return LLMResult(True, self.text, "fake", "fake-model")
+
+
+class FakeBrowserOpener:
+    def __init__(self) -> None:
+        self.opened: list[str] = []
+
+    def open(self, url: str) -> bool:
+        self.opened.append(url)
+        return True
+
+
+class FakeSearchProvider:
+    def search(self, query: str, max_results: int, timeout_seconds: float) -> tuple[SearchResult, ...]:
+        return (
+            SearchResult("NELA docs", "https://example.test/nela", "NELA architecture"),
+            SearchResult("Forum noise", "https://forum.example.test/nela", "Unfiltered thread"),
+        )
 
 
 class ConversationQATests(unittest.TestCase):
@@ -54,6 +86,33 @@ class ConversationQATests(unittest.TestCase):
         self.assertEqual(turn.intent.action, "GeneralQuestion")
         self.assertIsNone(turn.plan)
         self.assertRegex(response, r"[\u0590-\u05ff]")
+
+    def test_general_question_uses_llm_when_configured(self) -> None:
+        runtime, temp_dir = make_runtime()
+        fake_llm = FakeLLMProvider("הירח קרוב אלינו יחסית, ויש לו השפעה על הגאות והשפל.")
+        runtime.conversation.knowledge = KnowledgeEngine(llm=fake_llm)
+
+        with temp_dir:
+            turn = runtime.conversation.handle_text("מה קורה בירח?")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "GeneralQuestion")
+        self.assertEqual(turn.intent.parameters["response_category"], "qa.llm")
+        self.assertIn("הירח", response)
+        self.assertEqual(fake_llm.requests[0].intent_action, "GeneralQuestion")
+
+    def test_unsupported_request_can_get_safe_llm_guidance_without_plan(self) -> None:
+        runtime, temp_dir = make_runtime()
+        fake_llm = FakeLLMProvider("אני יכולה לפרק את זה לצעד קטן ובטוח, אבל לא אבצע פעולה בלי הרשאה.")
+        runtime.conversation.knowledge = KnowledgeEngine(llm=fake_llm)
+
+        with temp_dir:
+            turn = runtime.conversation.handle_text("תסדרי לי את כל החיים")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "UnsupportedActionRequest")
+        self.assertIsNone(turn.plan)
+        self.assertIn("בטוח", response)
 
     def test_greeting_gets_natural_hebrew_response(self) -> None:
         runtime, temp_dir = make_runtime()
@@ -141,6 +200,29 @@ class ConversationQATests(unittest.TestCase):
         self.assertTrue(turn.dispatched_results[0].success)
         self.assertIn("אבטחה", response)
 
+    def test_tryhackme_lesson_is_captured_and_reviewable(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            captured = runtime.conversation.handle_text(
+                "נלה למדתי ב-TryHackMe חדר Nmap שהפקודה nmap -sV 10.10.10.10 מזהה ports ושירותים"
+            )
+            captured_response = runtime.response_adapter.render_turn(captured)
+            reviewed = runtime.conversation.handle_text("מה למדת ב TryHackMe?")
+            review_response = runtime.response_adapter.render_turn(reviewed)
+
+            lessons_path = Path(temp_dir.name) / "data" / "learning" / "lessons.json"
+            lessons_exists = lessons_path.exists()
+
+        self.assertEqual(captured.intent.action, "TryHackMeLessonCapture")
+        self.assertEqual(captured.plan.tasks[0].target_agent, "tryhackme_learning")
+        self.assertTrue(captured.dispatched_results[0].success)
+        self.assertEqual(captured.dispatched_results[0].data["permission_tier"], "T1")
+        self.assertRegex(captured_response, r"TryHackMe|שמרתי|שיעור")
+        self.assertTrue(lessons_exists)
+        self.assertEqual(reviewed.intent.action, "TryHackMeProgressReview")
+        self.assertTrue(reviewed.dispatched_results[0].success)
+        self.assertIn("TryHackMe", review_response)
+
     def test_defensive_security_review_routes_to_security_agent(self) -> None:
         runtime, temp_dir = make_runtime()
         with temp_dir:
@@ -190,6 +272,23 @@ class ConversationQATests(unittest.TestCase):
         self.assertTrue(turn.dispatched_results[0].success)
         self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
         self.assertIn("תלות", response)
+
+    def test_web_search_routes_to_browser_agent_and_returns_results(self) -> None:
+        runtime, temp_dir = make_runtime()
+        opener = FakeBrowserOpener()
+        runtime.dispatcher.unregister_agent("browser")
+        runtime.dispatcher.register_agent(BrowserAgent(opener=opener, search_provider=FakeSearchProvider()))
+
+        with temp_dir:
+            turn = runtime.conversation.handle_text("חפשי באינטרנט NELA docs בלי forum")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "WebSearch")
+        self.assertEqual(turn.plan.tasks[0].target_agent, "browser")
+        self.assertTrue(turn.dispatched_results[0].success)
+        self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T1")
+        self.assertEqual(opener.opened, [])
+        self.assertIn("NELA", response)
 
     def test_new_defensive_specialist_routes_return_findings(self) -> None:
         cases = (

@@ -16,6 +16,7 @@ EXPECTED_AGENT_NAMES = {
     "planner",
     "memory",
     "learning",
+    "tryhackme_learning",
     "quality_self_evaluation",
     "code_architect",
     "backend",

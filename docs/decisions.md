@@ -537,3 +537,81 @@ no active probing path.
 - `core/response.py`
 - `tests/test_conversation_qa.py`
 - `tests/test_intent_recognition.py`
+
+### DEC-0020: Add LLM Conversation Brain Behind Existing Safety Boundaries
+
+**Date:** 2026-07-27
+**Status:** Accepted
+
+**Context:** NELA's first conversation layer was intentionally deterministic:
+rules, Hebrew language packs, learned trigger/response pairs, and safe Agent
+dispatch. That made the system predictable, but it also made open-ended
+conversation feel template-based. NELA now needs a real language-model-backed
+conversation brain without letting model output bypass the Brain, Planner,
+Permission Engine, or Dispatcher.
+
+**Decision:** Add a text-only LLM adapter for open-ended answers. The adapter is
+used by `KnowledgeEngine` only for `GeneralQuestion` and unsupported open-ended
+requests. It cannot call Agents, choose tools, dispatch Tasks, or grant
+permissions. Action execution remains exclusively in the existing
+IntentRouter -> DecisionEngine -> Planner -> Dispatcher -> Agent path.
+
+**Consequences:**
+
+- NELA can answer general questions in natural Hebrew when an LLM provider is
+  explicitly enabled.
+- If no LLM provider or API key is configured, NELA safely falls back to the
+  local deterministic answers.
+- The LLM receives only conversation text and a safe summary of supported
+  actions; it does not receive authority to execute actions.
+- Future tool-calling or structured planning by an LLM must be designed as a
+  separate permission-gated decision, not added inside this adapter.
+
+**Related files:**
+
+- `brain/llm.py`
+- `brain/qa.py`
+- `core/config.py`
+- `core/startup.py`
+- `language/hebrew/general_chat.json`
+- `tests/test_llm_adapter.py`
+- `tests/test_conversation_qa.py`
+
+### DEC-0021: Add Safe Browser Search Before Full Web Automation
+
+**Date:** 2026-07-27
+**Status:** Accepted
+
+**Context:** NELA needs to feel more useful by opening the internet, searching
+for information, and filtering results. Full browser automation is higher risk
+because it can click through sites, submit forms, cross account boundaries, or
+follow hostile page content.
+
+**Decision:** Replace the Browser placeholder with a bounded `browser` Agent
+that supports only safe URL opening, approved-provider web search, prepared
+search fallback links, and filtering supplied results. `OpenWeb` and
+`WebSearch` now route through the Brain, Planner, Dispatcher, Permission Engine,
+and BrowserAgent. Opening URLs and live search are T1 capabilities; result
+filtering is T0. The Agent rejects unsafe bypass/offensive queries and only
+opens `http` or `https` URLs.
+
+**Consequences:**
+
+- NELA can open the browser and perform useful web-search flows without
+  bypassing the safety spine.
+- The first implementation is not a full autonomous browsing Agent and does
+  not click pages, log in, submit forms, scrape private sites, or bypass access
+  controls.
+- Future web automation must add origin checks, confirmation for writes/forms,
+  account-boundary rules, and stronger page-content isolation.
+
+**Related files:**
+
+- `agents/browser/agent.py`
+- `permissions/registry.py`
+- `agents/policy.py`
+- `brain/intent_router.py`
+- `brain/planner.py`
+- `core/response.py`
+- `language/hebrew/general_chat.json`
+- `tests/test_browser_agent.py`

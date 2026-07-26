@@ -18,6 +18,7 @@ class MultiAgentFoundationTests(unittest.TestCase):
             "planner",
             "memory",
             "learning",
+            "tryhackme_learning",
             "code_architect",
             "backend",
             "frontend",

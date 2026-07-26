@@ -60,6 +60,9 @@ class NelaResponseAdapter:
             first_result = turn.dispatched_results[0]
             variables["summary"] = first_result.message
             variables["task_hint"] = first_result.message
+            for key in ("query", "url", "search_url", "results_count"):
+                if key in first_result.data:
+                    variables[key] = first_result.data[key]
             findings = _summarize_findings(turn.dispatched_results)
             variables.update(findings)
         response_variables = turn.intent.parameters.get("response_variables")
@@ -94,6 +97,10 @@ class NelaResponseAdapter:
         if turn.intent.action == "LearnTopic":
             variables["topic"] = str(turn.intent.parameters.get("topic", "הנושא הזה"))
             return "learning.topic.started", variables
+        if turn.intent.action == "TryHackMeLessonCapture":
+            return "learning.tryhackme.saved", variables
+        if turn.intent.action in {"TryHackMeLearningPlan", "TryHackMeProgressReview"}:
+            return "learning.tryhackme.review", variables
         if turn.intent.action == "SecurityReview":
             return _security_category("security.review.done", variables), variables
         if turn.intent.action == "WorkspaceSecurityScan":
@@ -123,6 +130,13 @@ class NelaResponseAdapter:
             return "security.lab.status", variables
         if turn.intent.action == "LocalFuzzPlan":
             return _security_category("security.fuzz_plan.done", variables), variables
+        if turn.intent.action == "OpenWeb":
+            return "browser.open.done", variables
+        if turn.intent.action == "WebSearch":
+            if int(variables.get("findings_count", 0) or 0) == 0:
+                variables["findings_count_label"] = "אין תוצאות"
+                variables["findings"] = "לא מצאתי תוצאות רלוונטיות במסנן הזה."
+            return "browser.search.done", variables
         if turn.plan:
             return "success.short", variables
         return "smalltalk.daily", variables
@@ -152,6 +166,9 @@ def _summarize_findings(results: tuple[AgentResult, ...]) -> dict[str, object]:
     for index, finding in enumerate(findings[:4], start=1):
         severity = _severity_label(str(finding.get("severity", "info")))
         title = _finding_title(str(finding.get("title", "ממצא הגנתי")))
+        location = str(finding.get("location") or "").strip()
+        if str(finding.get("category") or "") == "web_result" and location:
+            title = f"{title} — {location}"
         recommendation = str(finding.get("recommendation") or "").strip()
         if recommendation:
             finding_lines.append(f"{index}. {severity}: {title}. המלצה: {recommendation}")

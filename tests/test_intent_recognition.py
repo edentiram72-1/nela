@@ -51,6 +51,12 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.action, "OpenApplication")
         self.assertEqual(intent.application, "Spotify")
 
+    def test_resolves_internet_alias_to_chrome(self) -> None:
+        intent = IntentRouter().classify("נלה, תפתחי את כרום")
+
+        self.assertEqual(intent.action, "OpenApplication")
+        self.assertEqual(intent.application, "Google Chrome")
+
     def test_hebrew_identity_question_is_conversational(self) -> None:
         intent = IntentRouter().classify("מי את?")
 
@@ -140,6 +146,32 @@ class IntentRecognitionTests(unittest.TestCase):
 
                 self.assertEqual(intent.action, action)
                 self.assertEqual(intent.target_agent, "network_intelligence")
+
+    def test_recognizes_browser_and_web_search_intents(self) -> None:
+        open_intent = IntentRouter().classify("תפתחי אינטרנט")
+        search_intent = IntentRouter().classify("חפשי באינטרנט python docs בלי forum")
+
+        self.assertEqual(open_intent.action, "OpenWeb")
+        self.assertEqual(open_intent.target_agent, "browser")
+        self.assertEqual(open_intent.parameters["url"], "https://www.google.com")
+        self.assertEqual(search_intent.action, "WebSearch")
+        self.assertEqual(search_intent.target_agent, "browser")
+        self.assertIn("python docs", search_intent.parameters["query"])
+        self.assertEqual(search_intent.parameters["exclude_terms"], ("forum",))
+
+    def test_recognizes_tryhackme_learning_intents(self) -> None:
+        cases = (
+            ("נלה למדתי ב-TryHackMe חדר Nmap שהפקודה nmap -sV מזהה שירותים", "TryHackMeLessonCapture"),
+            ("תבני לי מסלול TryHackMe ל-SOC", "TryHackMeLearningPlan"),
+            ("מה למדת ב TryHackMe?", "TryHackMeProgressReview"),
+        )
+
+        for text, action in cases:
+            with self.subTest(text=text):
+                intent = IntentRouter().classify(text)
+
+                self.assertEqual(intent.action, action)
+                self.assertEqual(intent.target_agent, "tryhackme_learning")
 
     def test_sensitive_security_reviews_do_not_extract_secret_as_resource(self) -> None:
         intent = IntentRouter().classify("תעשי בדיקת סודות: token = 'supersecret123'")

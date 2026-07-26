@@ -14,7 +14,7 @@ class ApplicationAlias:
 
 SUPPORTED_APPLICATION_ALIASES: tuple[ApplicationAlias, ...] = (
     ApplicationAlias("Spotify", "com.spotify.client", ("spotify", "ספוטיפיי", "ספוטי")),
-    ApplicationAlias("Google Chrome", "com.google.Chrome", ("chrome", "google chrome", "כרום")),
+    ApplicationAlias("Google Chrome", "com.google.Chrome", ("chrome", "google chrome", "כרום", "אינטרנט", "דפדפן")),
     ApplicationAlias("VS Code", "com.microsoft.VSCode", ("vs code", "vscode", "visual studio code", "קוד")),
     ApplicationAlias("Terminal", "com.apple.Terminal", ("terminal", "טרמינל", "מסוף")),
     ApplicationAlias("Finder", "com.apple.finder", ("finder", "פיינדר")),

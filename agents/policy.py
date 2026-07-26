@@ -151,6 +151,7 @@ def default_tool_permissions() -> dict[str, ToolPermissionProfile]:
         "planner": ToolPermissionProfile("planner", ("plan", "decompose"), filesystem="none"),
         "memory": ToolPermissionProfile("memory", ("memory_read", "memory_write"), filesystem="workspace_scoped"),
         "learning": ToolPermissionProfile("learning", ("summarize", "recommend_curriculum", "language_learning"), filesystem="workspace_scoped"),
+        "tryhackme_learning": ToolPermissionProfile("tryhackme_learning", ("capture_lesson", "summarize", "review_progress", "flashcards"), filesystem="workspace_scoped", network="disabled"),
         "quality_self_evaluation": ToolPermissionProfile("quality_self_evaluation", read_only, filesystem="workspace_read"),
         "code_architect": ToolPermissionProfile("code_architect", read_only, filesystem="workspace_read"),
         "backend": ToolPermissionProfile("backend", read_only, filesystem="workspace_read", may_modify_code=True),
@@ -167,6 +168,7 @@ def default_tool_permissions() -> dict[str, ToolPermissionProfile]:
         "research": ToolPermissionProfile("research", ("summarize", "parse_files"), filesystem="workspace_read", network="approved_sources_only"),
         "documentation_researcher": ToolPermissionProfile("documentation_researcher", ("summarize", "parse_files"), filesystem="workspace_read", network="approved_sources_only"),
         "trend_monitor": ToolPermissionProfile("trend_monitor", ("summarize",), filesystem="none", network="approved_sources_only"),
+        "browser": ToolPermissionProfile("browser", ("open_url", "search_web", "prepare_search", "filter_results"), filesystem="none", network="approved_sources_only"),
         "security_researcher": ToolPermissionProfile("security_researcher", (*security_read_only, "threat_model"), filesystem="workspace_read"),
         "secrets_hygiene": ToolPermissionProfile("secrets_hygiene", (*security_read_only, "secret_redaction"), filesystem="workspace_read"),
         "identity_access": ToolPermissionProfile("identity_access", (*security_read_only, "least_privilege"), filesystem="workspace_read"),
@@ -198,7 +200,7 @@ def default_tool_permissions() -> dict[str, ToolPermissionProfile]:
         "recovery": ToolPermissionProfile("recovery", (*read_only, "recovery_plan"), filesystem="workspace_read"),
         "anomaly_discovery": ToolPermissionProfile("anomaly_discovery", (*security_read_only, "local_fuzz_plan"), filesystem="workspace_read"),
     }
-    for name in ("browser", "terminal", "github", "files", "automation"):
+    for name in ("terminal", "github", "files", "automation"):
         permissions[name] = ToolPermissionProfile(name, ("status", "health_check"), filesystem="workspace_read")
     return permissions
 

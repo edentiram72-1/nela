@@ -23,6 +23,7 @@ from brain.conversation import ConversationEngine
 from brain.decision import DecisionEngine
 from brain.dispatcher import AgentDispatcher
 from brain.intent_router import IntentRouter
+from brain.llm import build_llm_provider
 from brain.memory_manager import MemoryManager
 from brain.planner import Planner
 from brain.qa import KnowledgeEngine
@@ -57,6 +58,12 @@ def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
     events = EventBus()
     dispatcher = AgentDispatcher(events=events)
     learned_responses = LearnedResponseStore(runtime_config.data_dir / "language" / "learned_responses.json")
+    llm_provider = build_llm_provider(
+        provider_name=runtime_config.llm_provider,
+        enabled=runtime_config.llm_enabled,
+        model=runtime_config.llm_model,
+        timeout_seconds=runtime_config.llm_timeout_seconds,
+    )
     _register_builtin_agents(dispatcher, events, runtime_config, learned_responses)
     language = HebrewLanguageEngine(personality_name=runtime_config.language_personality)
     response_adapter = NelaResponseAdapter(language=language, dispatcher=dispatcher, config=runtime_config)
@@ -74,7 +81,7 @@ def bootstrap(config: AppConfig | None = None) -> NelaRuntime:
         context=context,
         dispatcher=dispatcher,
         events=events,
-        knowledge=KnowledgeEngine(learned_responses=learned_responses),
+        knowledge=KnowledgeEngine(learned_responses=learned_responses, llm=llm_provider),
     )
 
     return NelaRuntime(
@@ -130,7 +137,12 @@ def _register_specialist_agents(
 
     registered = set(dispatcher.discover_agents())
     learning_store_path = config.data_dir / "language" / "learned_responses.json"
-    for agent in build_default_agents(learning_store_path=learning_store_path, learning_store=learned_responses):
+    learning_memory_path = config.data_dir / "learning" / "lessons.json"
+    for agent in build_default_agents(
+        learning_store_path=learning_store_path,
+        learning_store=learned_responses,
+        learning_memory_path=learning_memory_path,
+    ):
         if agent.name in registered:
             continue
         dispatcher.register_agent(agent)

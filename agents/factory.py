@@ -59,21 +59,27 @@ from agents.security import (
 from agents.test_qa import TestQAAgent
 from agents.automation import AutomationAgent
 from agents.terminal import TerminalAgent
+from agents.tryhackme import TryHackMeLearningAgent
 from language.learning_store import LearnedResponseStore
+from memory.learning_core import LearningMemoryStore
 
 
 def build_default_agents(
     learning_store_path: Path | str | None = None,
     learning_store: LearnedResponseStore | None = None,
+    learning_memory_path: Path | str | None = None,
+    learning_memory: LearningMemoryStore | None = None,
 ):
     """Instantiate the defensive multi-agent foundation in stable registry order."""
 
     response_store = learning_store or LearnedResponseStore(learning_store_path)
+    lesson_store = learning_memory or LearningMemoryStore(learning_memory_path)
     return (
         OrchestratorAgent(),
         PlannerAgent(),
         MemoryAgent(),
         LearningAgent(store=response_store),
+        TryHackMeLearningAgent(store=lesson_store),
         QualitySelfEvaluationAgent(),
         CodeArchitectAgent(),
         BackendAgent(),
@@ -126,8 +132,15 @@ def build_default_agents(
 def build_default_registry(
     learning_store_path: Path | str | None = None,
     learning_store: LearnedResponseStore | None = None,
+    learning_memory_path: Path | str | None = None,
+    learning_memory: LearningMemoryStore | None = None,
 ) -> AgentRegistry:
     registry = AgentRegistry()
-    for agent in build_default_agents(learning_store_path=learning_store_path, learning_store=learning_store):
+    for agent in build_default_agents(
+        learning_store_path=learning_store_path,
+        learning_store=learning_store,
+        learning_memory_path=learning_memory_path,
+        learning_memory=learning_memory,
+    ):
         registry.register(agent)
     return registry

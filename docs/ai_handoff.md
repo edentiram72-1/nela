@@ -132,8 +132,8 @@ guidance. NELA can answer project status questions such as `איפה אנחנו 
 explain missing intelligence layers such as LLM-backed understanding, deeper
 memory retrieval, UI confirmations, and real Agent coverage, and treat
 unsupported imperative requests as helpful action guidance instead of generic
-`לא הבנתי` clarification. The implementation stays inside the
-conversation/Language Engine boundary and does not add a new LLM provider yet.
+`לא הבנתי` clarification. This was later extended with a real LLM conversation
+adapter for open-ended answers while preserving the Brain/Agent safety boundary.
 See `docs/nela_ai_gap_plan.md`.
 
 On 2026-07-27, Claude's chat-only review documents were downloaded and preserved
@@ -166,6 +166,28 @@ missing) as PASS after reading the lab source. Claude's final recommendation is
 APPROVE for merge into `develop`, with one non-blocking F2 hardening task:
 isolate potentially blocking T0/T1 filesystem-walking security scans. The
 verdict is recorded in `docs/claude_current_cyber_review_verdict.md`.
+
+On 2026-07-27, `tryhackme_learning` was added as NELA's first required
+cyber-learning Agent. It captures user-supplied TryHackMe room notes into
+`data/learning/lessons.json`, extracts concepts, commands-as-study-notes,
+safety boundaries, review questions, and skill graph signals. This does not
+connect to TryHackMe directly, scrape rooms, or execute commands. See
+`docs/tryhackme_learning.md`.
+
+On 2026-07-27, an LLM-backed conversation adapter was added as the first real
+open-ended Brain layer. `brain/llm.py` supports a text-only OpenAI Responses API
+provider behind explicit env configuration. `KnowledgeEngine` uses it only for
+`GeneralQuestion` and unsupported open-ended guidance, and the LLM cannot call
+Agents, dispatch Tasks, or bypass permissions. If no provider/API key is
+configured, NELA falls back to the deterministic local QA behavior.
+
+On 2026-07-27, the Browser placeholder was replaced with a bounded safe
+BrowserAgent. Hebrew requests such as `תפתחי אינטרנט` and `חפשי באינטרנט ...`
+now route through `OpenWeb` and `WebSearch` to `browser.open_url` or
+`browser.search_web`. The Agent supports http/https URL opening, approved
+web-search provider access, fallback search links when live results cannot be
+parsed, and result filtering. It does not click pages, submit forms, scrape
+private/account pages, or bypass access controls.
 
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
@@ -234,8 +256,11 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `brain/planner.py`
 - `brain/qa.py`
 - `language/learning_store.py`
+- `memory/learning_core.py`
 - `agents/learning/agent.py`
+- `agents/tryhackme/agent.py`
 - `tests/test_conversation_qa.py`
+- `tests/test_tryhackme_learning.py`
 - `tests/test_ui_web.py`
 - `permissions/__init__.py`
 - `permissions/audit.py`
@@ -251,6 +276,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/process_isolation.md`
 - `docs/secure_ui_bridge.md`
 - `docs/nela_ai_gap_plan.md`
+- `docs/tryhackme_learning.md`
 - `docs/sprint2_claude_findings_status.md`
 - `docs/sprint2_pr_summary.md`
 - `docs/sprint2_pr_body.md`
@@ -388,6 +414,10 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Continue `NELA-0007-event-bus-hardening` with subscriber isolation, bounded history, and trace/correlation conventions.
 - Continue `NELA-0008-capability-registry` so Planner/Dispatcher can reason about Agent capabilities and availability.
 - Continue `NELA-0009-plan-executor` before relying on parallel, conditional, cancellable, or async orchestration semantics.
+- Configure `NELA_LLM_ENABLED=true` and `NELA_OPENAI_API_KEY` locally before
+  expecting open-ended LLM answers at runtime.
+- Keep future model tool-calling or structured planning behind a separate
+  Permission Engine design; do not let the LLM dispatch Agents directly.
 - Add `NELA-0016-audit-log-and-kill-switch` and `NELA-0017-agent-runtime-lifecycle` from `docs/ai_inbox.md`.
 - Convert accepted Claude review findings from `docs/claude_review_findings.md` into tracked GitHub issues or roadmap entries.
 - Continue interactive NELA sessions through `python3 -m core.app`.

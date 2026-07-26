@@ -14,6 +14,8 @@ NELA currently has:
 - A defensive security layer with posture findings, local security review,
   dependency review, and authorized lab boundaries.
 - A learning flow for user-taught trigger/response pairs.
+- A first LLM-backed conversation adapter for open-ended answers when explicitly
+  enabled with a provider/API key.
 - A Permission Engine, capability routing, audit foundations, lock mode, and kill
   switch foundations.
 
@@ -21,8 +23,8 @@ NELA currently has:
 
 NELA still needs these layers before it feels like a capable AI assistant:
 
-- Open-ended understanding: a controlled LLM provider behind the Brain, not inside
-  individual Agents.
+- Open-ended understanding v2: better retrieval, evaluation, and model-response
+  grounding on top of the first controlled LLM provider.
 - Better action guidance: unknown requests should become suggestions, supported
   actions, or safe next steps instead of generic clarification.
 - Tool confidence: every supported action should clearly say whether it executed,
@@ -43,7 +45,9 @@ NELA still needs these layers before it feels like a capable AI assistant:
 3. Expand safe Hebrew intent coverage for already-connected Agents.
 4. Add real UI confirmation controls.
 5. Add an LLM adapter as a replaceable provider behind permission and prompt
-   boundaries.
+   boundaries. Done in first form for open-ended text answers.
+6. Add retrieval-aware context and evaluation before using LLM output for
+   higher-stakes workflows.
 
 ## Guardrails
 

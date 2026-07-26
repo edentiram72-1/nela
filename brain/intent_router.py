@@ -305,6 +305,40 @@ DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
         domain="cyber_defense",
     ),
     IntentPattern(
+        "OpenWeb",
+        (
+            "תפתחי אינטרנט",
+            "פתחי אינטרנט",
+            "תפתחי דפדפן",
+            "פתחי דפדפן",
+            "תפתחי אתר",
+            "פתחי אתר",
+            "open browser",
+            "open website",
+            "open web",
+        ),
+        domain="browser",
+    ),
+    IntentPattern(
+        "WebSearch",
+        (
+            "חפשי באינטרנט",
+            "תחפשי באינטרנט",
+            "חפשי ברשת",
+            "תחפשי ברשת",
+            "חפשי בגוגל",
+            "תחפשי בגוגל",
+            "חפשי מידע",
+            "תחפשי מידע",
+            "search web",
+            "search online",
+            "search for",
+            "look up",
+            "google",
+        ),
+        domain="browser",
+    ),
+    IntentPattern(
         "CapabilitiesQuestion",
         (
             "מה את יודעת לעשות",
@@ -360,6 +394,42 @@ DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
         ("מה מצב", "מה המצב", "מה קורה", "איך הולך", "איך את", "מה איתך", "how are you"),
     ),
     IntentPattern("IdentityQuestion", ("מי את", "מה את", "מי את נלה", "ספרי על עצמך", "who are you")),
+    IntentPattern(
+        "TryHackMeProgressReview",
+        (
+            "מה למדת ב tryhackme",
+            "מה למדנו ב tryhackme",
+            "התקדמות tryhackme",
+            "מה שמרת מ tryhackme",
+            "tryhackme progress",
+            "tryhackme review",
+        ),
+        domain="tryhackme_learning",
+    ),
+    IntentPattern(
+        "TryHackMeLearningPlan",
+        (
+            "מסלול tryhackme",
+            "תבני מסלול tryhackme",
+            "תכיני מסלול tryhackme",
+            "ללמוד ב tryhackme",
+            "tryhackme path",
+            "tryhackme learning plan",
+        ),
+        domain="tryhackme_learning",
+    ),
+    IntentPattern(
+        "TryHackMeLessonCapture",
+        (
+            "tryhackme",
+            "try hack me",
+            "חדר tryhackme",
+            "למדתי בחדר",
+            "שיעור tryhackme",
+            "חדר סייבר",
+        ),
+        domain="tryhackme_learning",
+    ),
     IntentPattern("LearnTopic", ("תלמדי", "למדי", "תלמדני", "learn about", "study"), domain="learning"),
     IntentPattern("Remember", ("remember", "save this", "learn this", "תזכרי", "תזכור", "תשמרי")),
     IntentPattern("CloseApplication", ("close", "quit", "תסגרי", "סגרי", "לסגור"), requires_confirmation=True),
@@ -399,16 +469,26 @@ class IntentRouter:
             parameters["domain"] = pattern.domain
         if pattern and pattern.action == "LearnTopic":
             parameters["topic"] = _extract_learning_topic(text)
+        if pattern and pattern.action in {"TryHackMeLessonCapture", "TryHackMeLearningPlan"}:
+            parameters["topic"] = _extract_tryhackme_topic(text)
+            room = _extract_tryhackme_room(text)
+            if room:
+                parameters["room"] = room
+        if pattern and pattern.action == "WebSearch":
+            parameters.update(_extract_search_parameters(text))
+        if pattern and pattern.action == "OpenWeb":
+            parameters["url"] = _extract_web_target(text) or "https://www.google.com"
         if _looks_like_follow_up(normalized) and context:
             parameters["follow_up_to"] = context.get("last_intent")
 
         if pattern:
             intent_resource = resource if _is_sensitive_inline_review(pattern.action) else resource or _extract_url(text)
+            intent_application = None if pattern.action in {"OpenWeb", "WebSearch"} else resolve_application_alias(application)
             return Intent(
                 action=pattern.action,
                 raw_text=text,
                 confidence=0.82,
-                application=resolve_application_alias(application),
+                application=intent_application,
                 resource=intent_resource,
                 priority=priority,
                 parameters=parameters,
@@ -533,6 +613,67 @@ def _extract_url(text: str) -> str | None:
     return match.group(0).rstrip(".,;!?")
 
 
+def _extract_web_target(text: str) -> str | None:
+    url = _extract_url(text)
+    if url:
+        return url
+    match = re.search(r"(?:אתר|website|site)\s+([A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:/\S*)?)", text, flags=re.IGNORECASE)
+    if match:
+        return match.group(1).rstrip(".,;!?")
+    return None
+
+
+def _extract_search_parameters(text: str) -> dict[str, Any]:
+    query = text.strip()
+    prefixes = (
+        "נלה",
+        "חפשי באינטרנט",
+        "תחפשי באינטרנט",
+        "חפשי ברשת",
+        "תחפשי ברשת",
+        "חפשי בגוגל",
+        "תחפשי בגוגל",
+        "חפשי מידע",
+        "תחפשי מידע",
+        "search web for",
+        "search online for",
+        "search for",
+        "look up",
+        "google",
+    )
+    lowered = query.lower()
+    for prefix in prefixes:
+        if lowered.startswith(prefix.lower()):
+            query = query[len(prefix):].strip(" :,-")
+            break
+    include_terms = _extract_terms(query, ("רק", "include"))
+    exclude_terms = _extract_terms(query, ("בלי", "ללא", "exclude"))
+    clean_query = _remove_filter_clauses(query)
+    return {
+        "query": clean_query or query or text.strip(),
+        "include_terms": include_terms,
+        "exclude_terms": exclude_terms,
+    }
+
+
+def _extract_terms(text: str, markers: tuple[str, ...]) -> tuple[str, ...]:
+    terms: list[str] = []
+    for marker in markers:
+        pattern = rf"(?:^|\s){re.escape(marker)}\s+([^,.;]+)"
+        for match in re.finditer(pattern, text, flags=re.IGNORECASE):
+            value = match.group(1).strip(" :,-")
+            if value:
+                terms.append(value)
+    return tuple(terms)
+
+
+def _remove_filter_clauses(text: str) -> str:
+    cleaned = text
+    for marker in ("בלי", "ללא", "exclude", "רק", "include"):
+        cleaned = re.sub(rf"(?:^|\s){re.escape(marker)}\s+[^,.;]+", " ", cleaned, flags=re.IGNORECASE)
+    return " ".join(cleaned.split())
+
+
 def _extract_teach_response(text: str) -> dict[str, str] | None:
     patterns = (
         r"(?:תלמדי|למדי|תלמדני).*?כשאני אומר(?:ת)?\s+(.+?)\s+(?:תעני|תגידי|תאמרי)\s+(.+)",
@@ -567,6 +708,35 @@ def _extract_learning_topic(text: str) -> str:
             if topic:
                 return topic
     return "הנושא שביקשת"
+
+
+def _extract_tryhackme_topic(text: str) -> str:
+    patterns = (
+        r"(?:בנושא|על|חדר|room)\s+([A-Za-zא-ת0-9 _.-]{2,80})",
+        r"try\s*hack\s*me\s+([A-Za-zא-ת0-9 _.-]{2,80})",
+        r"tryhackme\s+([A-Za-zא-ת0-9 _.-]{2,80})",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            topic = _strip_teach_delimiters(match.group(1))
+            topic = re.sub(r"\b(?:למדתי|תלמדי|ללמוד|מסלול)\b", "", topic, flags=re.IGNORECASE).strip()
+            if topic:
+                return topic
+    if re.search(r"nmap|ports?|services?", text, flags=re.IGNORECASE):
+        return "network scanning basics"
+    if re.search(r"linux|permissions?", text, flags=re.IGNORECASE):
+        return "linux fundamentals"
+    if re.search(r"http|web|burp|xss|sql", text, flags=re.IGNORECASE):
+        return "web security basics"
+    return "tryhackme study"
+
+
+def _extract_tryhackme_room(text: str) -> str | None:
+    match = re.search(r"(?:חדר|room)\s*[:=]?\s*([A-Za-zא-ת0-9 _.-]{2,80})", text, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return _strip_teach_delimiters(match.group(1))
 
 
 def _looks_like_follow_up(normalized: str) -> bool:

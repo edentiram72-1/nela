@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from brain.context import ContextSnapshot
 from brain.dispatcher import AgentDispatcher
 from brain.intent_router import Intent
+from brain.llm import DisabledLLMProvider, LLMProvider, LLMRequest
 from brain.memory_manager import MemoryManager
 from language.learning_store import LearnedResponseStore
 
@@ -26,6 +27,7 @@ CONVERSATIONAL_ACTIONS = frozenset(
         "HumanStatusQuestion",
         "AgentStatusQuestion",
         "GeneralQuestion",
+        "GeneralRequest",
     }
 )
 
@@ -42,8 +44,13 @@ class KnowledgeAnswer:
 class KnowledgeEngine:
     """Answers safe conversation questions without delegating to external Agents."""
 
-    def __init__(self, learned_responses: LearnedResponseStore | None = None) -> None:
+    def __init__(
+        self,
+        learned_responses: LearnedResponseStore | None = None,
+        llm: LLMProvider | None = None,
+    ) -> None:
         self.learned_responses = learned_responses or LearnedResponseStore()
+        self.llm = llm or DisabledLLMProvider()
 
     def answer(
         self,
@@ -108,6 +115,9 @@ class KnowledgeEngine:
         if intent.action == "ProjectGapQuestion":
             return KnowledgeAnswer("qa.project_gaps", "project_gaps", variables)
         if intent.action == "UnsupportedActionRequest":
+            llm_answer = self._llm_answer(intent, memory, variables)
+            if llm_answer is not None:
+                return llm_answer
             return KnowledgeAnswer("qa.action_guidance", "action_guidance", variables)
         if intent.action in {"CreateItem", "Search"}:
             return KnowledgeAnswer("qa.action_guidance", "action_guidance", variables)
@@ -115,7 +125,48 @@ class KnowledgeEngine:
             return KnowledgeAnswer("qa.human_status", "human_status", variables)
         if intent.action == "AgentStatusQuestion":
             return KnowledgeAnswer("qa.agent_status", "agent_status", variables)
+        if intent.action in {"GeneralQuestion", "GeneralRequest"}:
+            llm_answer = self._llm_answer(intent, memory, variables)
+            if llm_answer is not None:
+                return llm_answer
         return KnowledgeAnswer("qa.unknown", "unknown", variables)
+
+    def _llm_answer(
+        self,
+        intent: Intent,
+        memory: MemoryManager,
+        variables: dict[str, object],
+    ) -> KnowledgeAnswer | None:
+        if not self.llm.enabled:
+            return None
+
+        recent = tuple(
+            str(getattr(item, "user_text", ""))
+            for item in memory.recent_context(limit=5)
+            if getattr(item, "user_text", "")
+        )
+        result = self.llm.answer(
+            LLMRequest(
+                user_text=intent.raw_text,
+                intent_action=intent.action,
+                supported_actions=str(variables.get("supported_actions", "")),
+                recent_context=recent,
+            )
+        )
+        if not result.ok or not result.text:
+            variables["llm_error"] = result.error or "LLM unavailable"
+            return None
+
+        return KnowledgeAnswer(
+            "qa.llm",
+            result.text,
+            {
+                **variables,
+                "answer": result.text,
+                "llm_provider": result.provider,
+                "llm_model": result.model or "unknown",
+            },
+        )
 
 
 def _agent_list(agents: tuple[str, ...], limit: int = 12) -> str:

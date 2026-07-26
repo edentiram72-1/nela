@@ -33,6 +33,9 @@ MINIMUM_CAPABILITY_TIERS = {
     "coding.files.write": PermissionTier.T2,
     "coding.git.commit": PermissionTier.T2,
     "cyber.passive.analysis": PermissionTier.T0,
+    "browser.results.filter": PermissionTier.T0,
+    "browser.url.open": PermissionTier.T1,
+    "browser.search.web": PermissionTier.T1,
 }
 
 
@@ -168,6 +171,14 @@ def default_capability_registry() -> CapabilityRegistry:
                 ),
             ),
             AgentManifest(
+                agent="browser",
+                capabilities=(
+                    Capability("browser.url.open", PermissionTier.T1, "Open an http/https URL in the local browser.", actions=("open_url",), platforms=("macos",)),
+                    Capability("browser.search.web", PermissionTier.T1, "Search the web through an approved provider.", actions=("search_web", "prepare_search")),
+                    Capability("browser.results.filter", PermissionTier.T0, "Filter supplied search results.", actions=("filter_results",)),
+                ),
+            ),
+            AgentManifest(
                 agent="terminal",
                 capabilities=(
                     Capability("terminal.command.preview", PermissionTier.T0, "Preview an allowlisted terminal command.", actions=("preview",)),
@@ -193,7 +204,6 @@ def default_capability_registry() -> CapabilityRegistry:
                     Capability("coding.git.commit", PermissionTier.T2, "Disabled foundation for future commits.", requires_confirmation=True, enabled=False),
                 ),
             ),
-            _placeholder_manifest("browser"),
             _placeholder_manifest("files"),
             _placeholder_manifest("calendar"),
             _placeholder_manifest("gmail"),

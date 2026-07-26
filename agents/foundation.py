@@ -154,6 +154,6 @@ def _permission_tier_for_action(action: str) -> PermissionTier:
         "run_local_fuzzing",
     }:
         return PermissionTier.T3
-    if action in {"remember", "record_lesson", "teach_response", "register_lab_target"}:
+    if action in {"remember", "record_lesson", "teach_response", "capture_tryhackme_lesson", "register_lab_target"}:
         return PermissionTier.T1
     return PermissionTier.T0

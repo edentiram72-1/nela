@@ -22,6 +22,10 @@ class AppConfig:
     voice_silent_mode: bool = True
     voice_provider: str = "macos_say"
     voice_profile: str = "nela_default"
+    llm_enabled: bool = False
+    llm_provider: str = "openai"
+    llm_model: str = "gpt-5-mini"
+    llm_timeout_seconds: float = 20.0
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -37,6 +41,10 @@ class AppConfig:
             voice_silent_mode=_env_bool("NELA_VOICE_SILENT_MODE", default=True),
             voice_provider=os.getenv("NELA_VOICE_PROVIDER", "macos_say"),
             voice_profile=os.getenv("NELA_VOICE_PROFILE", "nela_default"),
+            llm_enabled=_env_bool("NELA_LLM_ENABLED", default=False),
+            llm_provider=os.getenv("NELA_LLM_PROVIDER", "openai"),
+            llm_model=os.getenv("NELA_LLM_MODEL", "gpt-5-mini"),
+            llm_timeout_seconds=float(os.getenv("NELA_LLM_TIMEOUT_SECONDS", "20")),
         )
 
 

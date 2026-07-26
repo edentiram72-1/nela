@@ -143,6 +143,46 @@ class Planner:
                     timeout_seconds=5.0,
                 )
             )
+        elif intent.action == "TryHackMeLessonCapture":
+            tasks.append(
+                Task(
+                    description="Capture a TryHackMe lesson into NELA learning memory",
+                    action="capture_tryhackme_lesson",
+                    capability="capture_tryhackme_lesson",
+                    target_agent="tryhackme_learning",
+                    payload={
+                        "text": intent.raw_text,
+                        "topic": intent.parameters.get("topic", "tryhackme study"),
+                        "room": intent.parameters.get("room"),
+                    },
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "TryHackMeLearningPlan":
+            tasks.append(
+                Task(
+                    description="Prepare a TryHackMe learning path",
+                    action="plan_tryhackme_learning",
+                    capability="plan_tryhackme_learning",
+                    target_agent="tryhackme_learning",
+                    payload={
+                        "text": intent.raw_text,
+                        "topic": intent.parameters.get("topic", "tryhackme study"),
+                    },
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "TryHackMeProgressReview":
+            tasks.append(
+                Task(
+                    description="Review TryHackMe learning progress",
+                    action="review_tryhackme_progress",
+                    capability="review_tryhackme_progress",
+                    target_agent="tryhackme_learning",
+                    payload={"text": intent.raw_text},
+                    timeout_seconds=5.0,
+                )
+            )
         elif intent.action == "WorkspaceSecurityScan":
             tasks.append(
                 Task(
@@ -326,6 +366,33 @@ class Planner:
                     target_agent="anomaly_discovery",
                     payload={"target": intent.resource or intent.raw_text},
                     timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "OpenWeb":
+            tasks.append(
+                Task(
+                    description="Open a safe web URL in the browser",
+                    action="open_url",
+                    capability="browser.url.open",
+                    target_agent="browser",
+                    payload={"url": intent.parameters.get("url") or intent.resource or "https://www.google.com"},
+                    timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "WebSearch":
+            tasks.append(
+                Task(
+                    description="Search the web and filter results",
+                    action="search_web",
+                    capability="browser.search.web",
+                    target_agent="browser",
+                    payload={
+                        "query": intent.parameters.get("query") or intent.resource or intent.raw_text,
+                        "include_terms": intent.parameters.get("include_terms", ()),
+                        "exclude_terms": intent.parameters.get("exclude_terms", ()),
+                        "max_results": 5,
+                    },
+                    timeout_seconds=12.0,
                 )
             )
         else:
