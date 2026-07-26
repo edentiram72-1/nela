@@ -95,6 +95,9 @@ class UIWebTests(unittest.TestCase):
                 server.server_close()
 
         self.assertEqual(error.exception.code, 403)
+        payload = json.loads(error.exception.read().decode("utf-8"))
+        self.assertIn("החיבור המקומי", payload["response"])
+        self.assertIn("רענן", payload["response"])
 
     def test_chat_endpoint_accepts_localhost_origin_alias(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -63,7 +63,7 @@ class NelaWebHandler(BaseHTTPRequestHandler):
             self._send_json(
                 {
                     "ok": False,
-                    "response": "בקשת ה-UI נדחתה כי אימות ההרצה המקומית נכשל.",
+                    "response": "החיבור המקומי לעין של נלה פג תוקף. רענן את העמוד ונסה שוב.",
                     "eye_state": "error",
                 },
                 status=403,
