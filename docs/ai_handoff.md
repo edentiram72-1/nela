@@ -145,12 +145,25 @@ documentation files plus `docs/claude_current_code_review_prompt.md`. This
 package supersedes `nela-current-agent-code-review-6196dd4.zip` because it also
 includes the imported support packages Claude needed for evidence-based review.
 
+On 2026-07-27, the missing Claude review/specification documents were copied
+from `docs/NELA-claude-review-docs/` into top-level `docs/` for easier GitHub
+review. Existing top-level docs with newer implementation-aware content were not
+overwritten; specifically, `permission_model.md`,
+`safety_spine_verification_criteria.md`, and `claude_review_findings.md` still
+need a future manual merge if Claude's archived versions contain unique detail.
+
 On 2026-07-27, `network_intelligence` was added as a passive T0 cyber-support
 Agent. It classifies user-supplied IPs, URLs, and hostnames, checks local
 interface names for VPN-like signals, prepares local network reports, and gives
 safe access-troubleshooting guidance without scanning, bypassing controls, or
 touching external targets. Hebrew routing now covers IP classification, VPN
 status, local network reports, and blocked-access troubleshooting.
+
+Claude reviewed the replacement package and marked F1 (`cyber_lab/` source
+missing) as PASS after reading the lab source. Claude's final recommendation is
+APPROVE for merge into `develop`, with one non-blocking F2 hardening task:
+isolate potentially blocking T0/T1 filesystem-walking security scans. The
+verdict is recorded in `docs/claude_current_cyber_review_verdict.md`.
 
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
@@ -243,6 +256,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/claude_sprint2_review_bundle.md`
 - `docs/claude_sprint2_review_prompt.md`
 - `docs/claude_current_code_review_prompt.md`
+- `docs/claude_current_cyber_review_verdict.md`
 - `docs/NELA-claude-review-docs/*`
 - `nela-current-agent-code-review-6196dd4.zip`
 - `nela-current-agent-code-review-c9b1cfa.zip`
