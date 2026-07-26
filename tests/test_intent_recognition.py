@@ -115,6 +115,22 @@ class IntentRecognitionTests(unittest.TestCase):
 
         self.assertEqual(intent.action, "SecurityCapabilitiesQuestion")
 
+    def test_recognizes_project_status_question(self) -> None:
+        intent = IntentRouter().classify("איפה אנחנו עומדים עם נלה?")
+
+        self.assertEqual(intent.action, "ProjectStatusQuestion")
+
+    def test_recognizes_project_gap_question(self) -> None:
+        intent = IntentRouter().classify("מה חסר כדי שתהיי יותר חכמה?")
+
+        self.assertEqual(intent.action, "ProjectGapQuestion")
+
+    def test_recognizes_unsupported_action_request(self) -> None:
+        intent = IntentRouter().classify("תסדרי לי את כל החיים")
+
+        self.assertEqual(intent.action, "UnsupportedActionRequest")
+        self.assertGreaterEqual(intent.confidence, 0.5)
+
     def test_recognizes_learning_topic_request(self) -> None:
         intent = IntentRouter().classify("תלמדי אבטחה")
 

@@ -98,6 +98,37 @@ class ConversationQATests(unittest.TestCase):
         self.assertIsNone(turn.plan)
         self.assertRegex(response, r"סייבר|אבטחה|הגנתי|הגנתי")
 
+    def test_project_status_question_gets_current_system_answer(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("איפה אנחנו עומדים עם נלה?")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "ProjectStatusQuestion")
+        self.assertIsNone(turn.plan)
+        self.assertRegex(response, r"Brain|סוכנים|נלה")
+
+    def test_project_gap_question_explains_missing_ai_layers(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("מה חסר כדי שתהיי יותר חכמה?")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "ProjectGapQuestion")
+        self.assertIsNone(turn.plan)
+        self.assertRegex(response, r"חסר|LLM|זיכרון|סוכנים")
+
+    def test_unknown_action_request_gets_action_guidance(self) -> None:
+        runtime, temp_dir = make_runtime()
+        with temp_dir:
+            turn = runtime.conversation.handle_text("תסדרי לי את כל החיים")
+            response = runtime.response_adapter.render_turn(turn)
+
+        self.assertEqual(turn.intent.action, "UnsupportedActionRequest")
+        self.assertIsNone(turn.plan)
+        self.assertIn("פעול", response)
+        self.assertNotIn("לא לגמרי הבנתי", response)
+
     def test_learning_topic_request_routes_to_learning_agent(self) -> None:
         runtime, temp_dir = make_runtime()
         with temp_dir:

@@ -18,6 +18,11 @@ CONVERSATIONAL_ACTIONS = frozenset(
         "IdentityQuestion",
         "CapabilitiesQuestion",
         "SecurityCapabilitiesQuestion",
+        "ProjectStatusQuestion",
+        "ProjectGapQuestion",
+        "UnsupportedActionRequest",
+        "CreateItem",
+        "Search",
         "HumanStatusQuestion",
         "AgentStatusQuestion",
         "GeneralQuestion",
@@ -72,6 +77,19 @@ class KnowledgeEngine:
             "last_intent": context.last_intent or "אין עדיין פקודה קודמת",
             "running_tasks": len(context.running_tasks),
             "recent_turns": len(memory.recent_context(limit=5)),
+            "requested_text": str(intent.parameters.get("requested_text", intent.raw_text)),
+            "supported_actions": (
+                "לפתוח אפליקציות מאושרות, לעשות בדיקת הגנה, לסקור קוד לאבטחה, "
+                "לבדוק תלויות, להכין מודל איומים, ללמוד תגובות, ולספר על מצב הסוכנים"
+            ),
+            "missing_layers": (
+                "מנוע הבנה פתוח/LLM, פירוק משימות חופשי, זיכרון עמוק עם שליפה, "
+                "חיבור כלי עבודה אמיתיים, ומסך אישורים ברור לפעולות רגישות"
+            ),
+            "next_build": (
+                "שכבת Action Guidance חכמה, אחר כך חיבור LLM מאובטח מאחורי הרשאות, "
+                "ואז הרחבת סוכנים אחד-אחד עם בדיקות"
+            ),
         }
 
         if intent.action == "Greeting":
@@ -84,6 +102,14 @@ class KnowledgeEngine:
             return KnowledgeAnswer("qa.capabilities", "capabilities", variables)
         if intent.action == "SecurityCapabilitiesQuestion":
             return KnowledgeAnswer("qa.security_capabilities", "security_capabilities", variables)
+        if intent.action == "ProjectStatusQuestion":
+            return KnowledgeAnswer("qa.project_status", "project_status", variables)
+        if intent.action == "ProjectGapQuestion":
+            return KnowledgeAnswer("qa.project_gaps", "project_gaps", variables)
+        if intent.action == "UnsupportedActionRequest":
+            return KnowledgeAnswer("qa.action_guidance", "action_guidance", variables)
+        if intent.action in {"CreateItem", "Search"}:
+            return KnowledgeAnswer("qa.action_guidance", "action_guidance", variables)
         if intent.action == "HumanStatusQuestion":
             return KnowledgeAnswer("qa.human_status", "human_status", variables)
         if intent.action == "AgentStatusQuestion":

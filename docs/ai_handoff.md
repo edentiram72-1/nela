@@ -111,6 +111,15 @@ read-only, and defensive: they parse workspace files/manifests, emit normalized
 findings and next steps, avoid external targeting, and redact likely hardcoded
 secret evidence.
 
+On 2026-07-26, the same branch added first-pass AI gap awareness and action
+guidance. NELA can answer project status questions such as `איפה אנחנו עומדים`,
+explain missing intelligence layers such as LLM-backed understanding, deeper
+memory retrieval, UI confirmations, and real Agent coverage, and treat
+unsupported imperative requests as helpful action guidance instead of generic
+`לא הבנתי` clarification. The implementation stays inside the
+conversation/Language Engine boundary and does not add a new LLM provider yet.
+See `docs/nela_ai_gap_plan.md`.
+
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
 `127.0.0.1` only, injects a per-launch token, verifies the expected same origin,
@@ -194,6 +203,7 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/capability_routing.md`
 - `docs/process_isolation.md`
 - `docs/secure_ui_bridge.md`
+- `docs/nela_ai_gap_plan.md`
 - `docs/sprint2_claude_findings_status.md`
 - `docs/sprint2_pr_summary.md`
 - `docs/sprint2_pr_body.md`

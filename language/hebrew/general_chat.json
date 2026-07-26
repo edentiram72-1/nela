@@ -219,6 +219,63 @@
         }
       ]
     },
+    "qa.project_status": {
+      "description": "Current NELA project status answer",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.project_status.foundation",
+          "text": "אנחנו בשלב שבו לנלה כבר יש Brain, זיכרון בסיסי, שפה עברית, עין חיה, הרשאות, וסוכנים ראשונים. היא יודעת לעשות פעולות בטוחות דרך סוכנים, אבל עוד אין לה הבנה פתוחה מלאה כמו מודל שיחה כללי."
+        },
+        {
+          "id": "qa.project_status.agents",
+          "text": "מצב נלה עכשיו: {agent_count} סוכנים מחוברים, {healthy_count} תקינים, ו-Brain שמנתב כוונות למשימות. השלב הבא הוא להפוך בקשות חופשיות למסלולי פעולה ברורים יותר.",
+          "vars": [
+            "agent_count",
+            "healthy_count"
+          ]
+        }
+      ]
+    },
+    "qa.project_gaps": {
+      "description": "Explains what NELA is missing to become smarter",
+      "eye_state": "speaking",
+      "variants": [
+        {
+          "id": "qa.project_gaps.clear",
+          "text": "מה שחסר לי כדי להרגיש באמת חכמה: {missing_layers}. הצעד הנכון הבא: {next_build}.",
+          "vars": [
+            "missing_layers",
+            "next_build"
+          ]
+        },
+        {
+          "id": "qa.project_gaps.practical",
+          "text": "אני עדיין חזקה יותר כשמבקשים ממני פעולה מוכרת. כדי להשתפר צריך לחבר הבנה פתוחה, זיכרון נשלף, ועוד סוכנים אמיתיים מאחורי הרשאות. נבנה את זה שכבה אחרי שכבה."
+        }
+      ]
+    },
+    "qa.action_guidance": {
+      "description": "Helpful answer when the user asks for an unsupported action",
+      "eye_state": "waiting",
+      "variants": [
+        {
+          "id": "qa.action_guidance.supported",
+          "text": "אני מבינה שביקשת פעולה: {requested_text}. את זה אני עוד לא מבצעת ישירות. כרגע אני כן יכולה: {supported_actions}. אפשר לנסח את זה כאחת מהפעולות האלה ואני ארוץ על זה.",
+          "vars": [
+            "requested_text",
+            "supported_actions"
+          ]
+        },
+        {
+          "id": "qa.action_guidance.next",
+          "text": "קלטתי שזו בקשת פעולה, אבל עדיין אין לי סוכן בטוח שמבצע אותה. הפעולות שכבר מחוברות הן: {supported_actions}.",
+          "vars": [
+            "supported_actions"
+          ]
+        }
+      ]
+    },
     "qa.human_status": {
       "description": "Natural status answer for casual how-are-you prompts",
       "eye_state": "speaking",

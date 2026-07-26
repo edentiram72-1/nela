@@ -194,6 +194,34 @@ DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
         ),
     ),
     IntentPattern(
+        "ProjectStatusQuestion",
+        (
+            "איפה אנחנו עומדים",
+            "מה הסטטוס של נלה",
+            "מה המצב של נלה",
+            "מה בנינו עד עכשיו",
+            "איפה נלה עומדת",
+            "nela status",
+        ),
+    ),
+    IntentPattern(
+        "ProjectGapQuestion",
+        (
+            "מה חסר",
+            "מה עוד חסר",
+            "מה חסר לנלה",
+            "למה את לא מספיק חכמה",
+            "למה נלה לא מספיק חכמה",
+            "איך נהיה יותר חכמה",
+            "איך תהיי יותר חכמה",
+            "מה צריך לשפר",
+            "מה צריך לבנות",
+            "מה חסר כדי שתעבדי",
+            "nela gaps",
+            "what is missing",
+        ),
+    ),
+    IntentPattern(
         "AgentStatusQuestion",
         (
             "איזה סוכנים מחוברים",
@@ -272,6 +300,17 @@ class IntentRouter:
                 resource=resource or _extract_url(text),
                 priority=priority,
                 parameters=parameters,
+            )
+
+        if _looks_like_action_request(normalized):
+            return Intent(
+                action="UnsupportedActionRequest",
+                raw_text=text,
+                confidence=0.64,
+                application=resolve_application_alias(application),
+                resource=resource or _extract_url(text),
+                priority=priority,
+                parameters={**parameters, "requested_text": text.strip()},
             )
 
         return Intent(
@@ -422,6 +461,47 @@ def _looks_like_question(normalized: str) -> bool:
         "אפשר",
     )
     return normalized.endswith("?") or normalized.startswith(question_words)
+
+
+def _looks_like_action_request(normalized: str) -> bool:
+    action_starts = (
+        "תעשי",
+        "תעשה",
+        "תבני",
+        "תבנה",
+        "תפעילי",
+        "תפעיל",
+        "תריצי",
+        "תריץ",
+        "תבדקי",
+        "תבדוק",
+        "תסדרי",
+        "תסדר",
+        "תתקני",
+        "תתקן",
+        "תכיני",
+        "תכין",
+        "תכתבי",
+        "תכתוב",
+        "תחברי",
+        "תחבר",
+        "תעזרי",
+        "תעזור",
+        "תנהלי",
+        "תנהל",
+        "תייצרי",
+        "תייצר",
+        "run ",
+        "do ",
+        "build ",
+        "make ",
+        "create ",
+        "fix ",
+        "check ",
+        "scan ",
+        "connect ",
+    )
+    return normalized.startswith(action_starts)
 
 
 def _contains_keyword(normalized: str, keyword: str) -> bool:
