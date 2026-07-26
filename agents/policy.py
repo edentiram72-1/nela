@@ -171,6 +171,7 @@ def default_tool_permissions() -> dict[str, ToolPermissionProfile]:
         "secrets_hygiene": ToolPermissionProfile("secrets_hygiene", (*security_read_only, "secret_redaction"), filesystem="workspace_read"),
         "identity_access": ToolPermissionProfile("identity_access", (*security_read_only, "least_privilege"), filesystem="workspace_read"),
         "network_defense": ToolPermissionProfile("network_defense", (*security_read_only, "network_exposure_review"), filesystem="workspace_read", network="disabled"),
+        "network_intelligence": ToolPermissionProfile("network_intelligence", (*security_read_only, "ip_classification", "vpn_status", "access_troubleshooting"), filesystem="none", network="disabled"),
         "supply_chain_security": ToolPermissionProfile("supply_chain_security", (*security_read_only, "build_integrity"), filesystem="workspace_read", network="disabled"),
         "secure_code_reviewer": ToolPermissionProfile("secure_code_reviewer", security_read_only, filesystem="workspace_read"),
         "vulnerability_research": ToolPermissionProfile("vulnerability_research", (*security_read_only, "cve_correlation"), filesystem="workspace_read"),

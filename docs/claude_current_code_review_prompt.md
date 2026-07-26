@@ -9,14 +9,14 @@ It does not create any direct AI-to-AI connection.
 
 ## Current Commit
 
-`6196dd4fd5b678115ce8d75b5da938ba96d5f000`
+`c9b1cfad64010c4bde82513474b10c4cadfc88f0`
 
 ## Review Goal
 
 Review the actual current implementation, not earlier chat summaries or stale
-fragments. The bundle includes the full Agent code and the supporting Brain,
-Permission, Language, UI, and test files needed to evaluate the defensive cyber
-and learning work.
+fragments. The replacement bundle includes the full Agent code and the
+supporting Brain, Permission, Language, UI, `cyber_lab`, `memory`, `voice`, and
+test files needed to evaluate the defensive cyber and learning work.
 
 ## Please Review
 

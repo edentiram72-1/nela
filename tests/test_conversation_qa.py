@@ -212,6 +212,27 @@ class ConversationQATests(unittest.TestCase):
                 self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
                 self.assertIn("ממצא", response)
 
+    def test_network_intelligence_routes_are_practical_t0_actions(self) -> None:
+        cases = (
+            ("תבדקי את ה-IP 192.168.1.1", "NetworkTargetClassification", "IP פנימי"),
+            ("אני מחובר ל-VPN?", "VPNStatusCheck", "VPN"),
+            ("תעשי דוח רשת מקומי", "LocalNetworkReport", "דוח רשת"),
+            ("יש חסימה לכתובת 8.8.8.8", "SafeAccessTroubleshoot", "לא עוקפת"),
+        )
+
+        for text, action, expected_text in cases:
+            with self.subTest(action=action):
+                runtime, temp_dir = make_runtime()
+                with temp_dir:
+                    turn = runtime.conversation.handle_text(text)
+                    response = runtime.response_adapter.render_turn(turn)
+
+                self.assertEqual(turn.intent.action, action)
+                self.assertEqual(turn.plan.tasks[0].target_agent, "network_intelligence")
+                self.assertTrue(turn.dispatched_results[0].success)
+                self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
+                self.assertIn(expected_text, response)
+
     def test_register_local_cyber_lab_target_routes_through_authorized_lab(self) -> None:
         runtime, temp_dir = make_runtime()
         with temp_dir:

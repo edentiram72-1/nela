@@ -81,7 +81,7 @@ class KnowledgeEngine:
             "supported_actions": (
                 "לפתוח אפליקציות מאושרות, לעשות בדיקת הגנה, לסקור קוד לאבטחה, "
                 "לבדוק תלויות, סודות, הרשאות, רשת ושרשרת אספקה, להכין מודל איומים, "
-                "ללמוד תגובות, ולספר על מצב הסוכנים"
+                "לזהות IP, לבדוק סימני VPN מקומיים, ללמוד תגובות, ולספר על מצב הסוכנים"
             ),
             "missing_layers": (
                 "מנוע הבנה פתוח/LLM, פירוק משימות חופשי, זיכרון עמוק עם שליפה, "
@@ -130,6 +130,7 @@ def _is_security_agent(agent: str) -> bool:
         "secrets_hygiene",
         "identity_access",
         "network_defense",
+        "network_intelligence",
         "supply_chain_security",
         "secure_code_reviewer",
         "vulnerability_research",

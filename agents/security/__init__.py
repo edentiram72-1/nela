@@ -3,7 +3,13 @@
 from agents.security.anomaly_discovery import AnomalyDiscoveryAgent
 from agents.security.authorized_lab import AuthorizedLabAgent
 from agents.security.cyber_defense import CyberDefenseAgent
-from agents.security.defensive_specialists import IdentityAccessAgent, NetworkDefenseAgent, SecretsHygieneAgent, SupplyChainSecurityAgent
+from agents.security.defensive_specialists import (
+    IdentityAccessAgent,
+    NetworkDefenseAgent,
+    NetworkIntelligenceAgent,
+    SecretsHygieneAgent,
+    SupplyChainSecurityAgent,
+)
 from agents.security.secure_code_reviewer import SecureCodeReviewerAgent
 from agents.security.vulnerability_research import VulnerabilityResearchAgent
 
@@ -13,6 +19,7 @@ __all__ = [
     "CyberDefenseAgent",
     "IdentityAccessAgent",
     "NetworkDefenseAgent",
+    "NetworkIntelligenceAgent",
     "SecureCodeReviewerAgent",
     "SecretsHygieneAgent",
     "SupplyChainSecurityAgent",

@@ -104,6 +104,10 @@ class NelaResponseAdapter:
             "SecretsHygieneReview",
             "IdentityAccessReview",
             "NetworkDefenseReview",
+            "NetworkTargetClassification",
+            "VPNStatusCheck",
+            "LocalNetworkReport",
+            "SafeAccessTroubleshoot",
             "SupplyChainReview",
         }:
             return _security_category("security.review.done", variables), variables

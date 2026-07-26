@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import ipaddress
 import re
+import socket
+from urllib.parse import urlparse
 
 from agents.base import AgentCommand
 from agents.foundation import SpecialistAgent, artifact
@@ -204,6 +207,125 @@ class NetworkDefenseAgent(SpecialistAgent):
         )
 
 
+class NetworkIntelligenceAgent(SpecialistAgent):
+    name = "network_intelligence"
+    domain = AgentDomain.SECURITY
+    purpose = "Classify IPs and explain local network/VPN posture without external scanning."
+    capabilities = ("ip.classification", "vpn.status", "network.status", "access.troubleshoot")
+
+    def _handlers(self):
+        return {
+            **super()._handlers(),
+            "classify_network_target": self._classify_network_target,
+            "detect_vpn_status": self._detect_vpn_status,
+            "local_network_report": self._local_network_report,
+            "safe_access_troubleshoot": self._safe_access_troubleshoot,
+        }
+
+    def _classify_network_target(self, command: AgentCommand) -> AgentWorkProduct:
+        text = _text(command)
+        targets = _network_targets(text)
+        findings = tuple(_target_finding(target) for target in targets) or (
+            TaskFinding(
+                title="לא זוהה יעד רשת ברור",
+                severity=RiskLevel.INFO,
+                category="network_intelligence",
+                location="conversation",
+                recommendation="שלח IP, דומיין או URL, למשל 192.168.1.1 או https://example.com.",
+            ),
+        )
+        return AgentWorkProduct(
+            summary=f"Network target classification completed for {len(targets)} target(s).",
+            findings=findings,
+            artifacts=(artifact("network_targets", "classified_targets", tuple(targets) or ("No target found.",)),),
+            next_steps=("יעד חיצוני מקבל הסבר בלבד. בדיקות אקטיביות דורשות בעלות או אישור מפורש.",),
+        )
+
+    def _detect_vpn_status(self, command: AgentCommand) -> AgentWorkProduct:
+        interface_names = _interface_names(command)
+        vpn_interfaces = tuple(name for name in interface_names if _looks_like_vpn_interface(name))
+        if vpn_interfaces:
+            finding = TaskFinding(
+                title="נראה שיש ממשק VPN פעיל",
+                severity=RiskLevel.INFO,
+                category="vpn_status",
+                location="local_machine",
+                evidence=f"interfaces: {', '.join(vpn_interfaces)}",
+                recommendation="לאמת מול אפליקציית ה־VPN ולבדוק שאין DNS leak אם עובדים על מידע רגיש.",
+            )
+            summary = "VPN-like interface detected."
+        else:
+            finding = TaskFinding(
+                title="לא זוהה ממשק VPN ברור",
+                severity=RiskLevel.INFO,
+                category="vpn_status",
+                location="local_machine",
+                evidence=f"interfaces checked: {', '.join(interface_names[:12]) if interface_names else 'none'}",
+                recommendation="אם VPN אמור להיות מחובר, לפתוח את אפליקציית ה־VPN ולבדוק route/DNS לפני עבודה רגישה.",
+            )
+            summary = "No VPN-like interface detected."
+        return AgentWorkProduct(
+            summary=summary,
+            findings=(finding,),
+            artifacts=(artifact("interfaces", "local_interfaces", interface_names or ("No interfaces found.",)),),
+            next_steps=("הבדיקה פסיבית ומקומית; היא לא מאשרת אנונימיות ולא עוקפת חסימות.",),
+        )
+
+    def _local_network_report(self, command: AgentCommand) -> AgentWorkProduct:
+        interface_names = _interface_names(command)
+        local_ips = _local_ip_candidates()
+        findings = [
+            TaskFinding(
+                title="דוח רשת מקומי נבנה",
+                severity=RiskLevel.INFO,
+                category="network_status",
+                location="local_machine",
+                evidence=f"interfaces={', '.join(interface_names[:12]) if interface_names else 'none'}; local_ips={', '.join(local_ips) if local_ips else 'none'}",
+                recommendation="להשתמש בדוח הזה לאבחון מקומי בלבד; בדיקת יעד חיצוני דורשת scope מאושר.",
+            )
+        ]
+        if any(_looks_like_vpn_interface(name) for name in interface_names):
+            findings.append(
+                TaskFinding(
+                    title="סימן אפשרי ל־VPN בדוח המקומי",
+                    severity=RiskLevel.INFO,
+                    category="vpn_status",
+                    location="local_machine",
+                    recommendation="לוודא שה־VPN הוא זה שהתכוונת להשתמש בו ולבדוק DNS במידת הצורך.",
+                )
+            )
+        return AgentWorkProduct(
+            summary="Local network report prepared.",
+            findings=tuple(findings),
+            artifacts=(
+                artifact("interfaces", "local_interfaces", interface_names or ("No interfaces found.",)),
+                artifact("local_ips", "local_ip_candidates", local_ips or ("No local IP candidates found.",)),
+            ),
+            next_steps=("אפשר לבקש ממני לסווג IP מסוים או לבדוק אם נראה VPN פעיל.",),
+        )
+
+    def _safe_access_troubleshoot(self, command: AgentCommand) -> AgentWorkProduct:
+        text = _text(command)
+        findings = [
+            TaskFinding(
+                title="זוהתה בקשת גישה או חסימה",
+                severity=RiskLevel.INFO,
+                category="access_troubleshooting",
+                location="conversation",
+                evidence=_redact(text),
+                recommendation="אני לא עוקפת חסימות. הדרך התקינה היא לבדוק DNS/VPN/firewall, להתחבר עם הרשאה, לבקש allowlist, או לתקן config.",
+            )
+        ]
+        targets = _network_targets(text)
+        findings.extend(_target_finding(target) for target in targets[:3])
+        return AgentWorkProduct(
+            summary="Safe access troubleshooting guidance prepared.",
+            findings=tuple(findings),
+            artifacts=(artifact("playbook", "safe_access_troubleshooting", _safe_access_playbook()),),
+            next_steps=("להתחיל באבחון מקומי: VPN, DNS, route, הרשאות, ואז לפנות לבעל המערכת אם צריך.",),
+        )
+
+
 class SupplyChainSecurityAgent(SpecialistAgent):
     name = "supply_chain_security"
     domain = AgentDomain.SECURITY
@@ -272,6 +394,117 @@ def _text(command: AgentCommand) -> str:
     return str(command.payload.get("text") or command.payload.get("source") or command.payload.get("config") or "")
 
 
+def _network_targets(text: str) -> tuple[str, ...]:
+    targets: list[str] = []
+    seen: set[str] = set()
+    for raw in re.findall(r"\bhttps?://[^\s,;]+", text, flags=re.IGNORECASE):
+        value = raw.rstrip(".,;!?)'\"")
+        if value not in seen:
+            targets.append(value)
+            seen.add(value)
+    ip_pattern = r"(?<![\w:])(?:\d{1,3}\.){3}\d{1,3}(?![\w:])|(?<!\w)(?:[0-9a-f]{0,4}:){2,}[0-9a-f]{0,4}(?!\w)"
+    for raw in re.findall(ip_pattern, text, flags=re.IGNORECASE):
+        value = raw.strip("[]").rstrip(".,;!?)'\"")
+        if _is_ip(value) and value not in seen:
+            targets.append(value)
+            seen.add(value)
+    host_pattern = r"\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b"
+    for raw in re.findall(host_pattern, text, flags=re.IGNORECASE):
+        value = raw.lower().rstrip(".,;!?)'\"")
+        if value not in seen:
+            targets.append(value)
+            seen.add(value)
+    return tuple(targets)
+
+
+def _target_finding(target: str) -> TaskFinding:
+    parsed = urlparse(target if "://" in target else f"//{target}")
+    host = parsed.hostname or target.strip("[]")
+    if _is_ip(host):
+        address = ipaddress.ip_address(host)
+        label, recommendation = _ip_classification(address)
+        return TaskFinding(
+            title=f"{host} הוא {label}",
+            severity=RiskLevel.INFO if not address.is_global else RiskLevel.MEDIUM,
+            category="ip_classification",
+            location=target,
+            evidence=f"version=IPv{address.version}; private={address.is_private}; global={address.is_global}; loopback={address.is_loopback}",
+            recommendation=recommendation,
+        )
+    if host in {"localhost"} or host.endswith(".local"):
+        return TaskFinding(
+            title=f"{host} הוא יעד מקומי",
+            severity=RiskLevel.INFO,
+            category="target_classification",
+            location=target,
+            recommendation="מתאים לאבחון מקומי. פעולה אקטיבית עדיין צריכה להיות מוגדרת וברורה.",
+        )
+    return TaskFinding(
+        title=f"{host} נראה יעד חיצוני",
+        severity=RiskLevel.MEDIUM,
+        category="target_classification",
+        location=target,
+        recommendation="אני יכולה להסביר ולסווג את היעד, אבל לא לסרוק או לעקוף אותו בלי בעלות או הרשאה כתובה.",
+    )
+
+
+def _ip_classification(address: ipaddress._BaseAddress) -> tuple[str, str]:
+    if address.is_loopback:
+        return "localhost", "זה יעד מקומי על המחשב עצמו. טוב לבדיקות פיתוח מקומיות."
+    if address.is_private:
+        return "IP פנימי/private", "זה יעד ברשת פנימית. בדוק בעלות והרשאה לפני פעולה אקטיבית."
+    if address.is_link_local:
+        return "IP link-local", "זה יעד מקומי לרשת/ממשק. מתאים לאבחון מקומי בלבד."
+    if address.is_multicast:
+        return "כתובת multicast", "לא מטפלים בזה כיעד רגיל; צריך להבין את פרוטוקול הרשת לפני פעולה."
+    if address.is_reserved:
+        return "כתובת reserved", "לא להשתמש בזה כיעד בדיקה רגיל."
+    if address.is_global:
+        return "IP ציבורי", "הסבר וסיווג בלבד. אין סריקה או עקיפה בלי הרשאה מפורשת."
+    return "IP לא מסווג בבירור", "להמשיך בזהירות ולבדוק scope לפני פעולה."
+
+
+def _is_ip(value: str) -> bool:
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return True
+
+
+def _interface_names(command: AgentCommand) -> tuple[str, ...]:
+    supplied = command.payload.get("interfaces")
+    if isinstance(supplied, (list, tuple)):
+        return tuple(str(item) for item in supplied)
+    try:
+        return tuple(name for _, name in socket.if_nameindex())
+    except OSError:
+        return ()
+
+
+def _looks_like_vpn_interface(name: str) -> bool:
+    normalized = name.lower()
+    return normalized.startswith(("utun", "tun", "tap", "ppp", "wg")) or any(
+        marker in normalized for marker in ("vpn", "wireguard", "tailscale", "zerotier", "ipsec")
+    )
+
+
+def _local_ip_candidates() -> tuple[str, ...]:
+    candidates: list[str] = []
+    seen: set[str] = set()
+    try:
+        hostname = socket.gethostname()
+        infos = socket.getaddrinfo(hostname, None)
+    except OSError:
+        return ()
+    for info in infos:
+        address = str(info[4][0])
+        if address not in seen and _is_ip(address):
+            candidates.append(address)
+            seen.add(address)
+    return tuple(candidates)
+
+
 def _findings_from_checks(command: AgentCommand, checks: tuple[DefenseCheck, ...], category: str) -> list[TaskFinding]:
     text = _text(command)
     location = str(command.payload.get("target", "conversation"))
@@ -335,4 +568,13 @@ def _supply_chain_checklist() -> tuple[str, ...]:
         "Avoid curl-to-shell install paths; verify source and integrity first.",
         "Use approved registries and watch for dependency-confusion paths.",
         "Review install scripts and keep lockfiles under source control.",
+    )
+
+
+def _safe_access_playbook() -> tuple[str, ...]:
+    return (
+        "Do not bypass controls or hide traffic.",
+        "Check local connectivity, VPN state, DNS, route, and firewall rules.",
+        "Use normal sign-in, approved allowlists, or written authorization.",
+        "For owned systems, document scope before any active diagnostic action.",
     )

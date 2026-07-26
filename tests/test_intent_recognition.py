@@ -125,6 +125,21 @@ class IntentRecognitionTests(unittest.TestCase):
                 self.assertEqual(intent.action, action)
                 self.assertEqual(intent.target_agent, target_agent)
 
+    def test_recognizes_network_intelligence_intents(self) -> None:
+        cases = (
+            ("תבדקי את ה-IP 192.168.1.1", "NetworkTargetClassification"),
+            ("אני מחובר ל-VPN?", "VPNStatusCheck"),
+            ("תעשי דוח רשת מקומי", "LocalNetworkReport"),
+            ("יש חסימה לכתובת 8.8.8.8", "SafeAccessTroubleshoot"),
+        )
+
+        for text, action in cases:
+            with self.subTest(text=text):
+                intent = IntentRouter().classify(text)
+
+                self.assertEqual(intent.action, action)
+                self.assertEqual(intent.target_agent, "network_intelligence")
+
     def test_sensitive_security_reviews_do_not_extract_secret_as_resource(self) -> None:
         intent = IntentRouter().classify("תעשי בדיקת סודות: token = 'supersecret123'")
 

@@ -202,6 +202,50 @@ class Planner:
                     timeout_seconds=10.0,
                 )
             )
+        elif intent.action == "NetworkTargetClassification":
+            tasks.append(
+                Task(
+                    description="Classify an IP, URL, or network target",
+                    action="classify_network_target",
+                    capability="classify_network_target",
+                    target_agent="network_intelligence",
+                    payload={"text": intent.raw_text, "target": intent.resource or "conversation"},
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "VPNStatusCheck":
+            tasks.append(
+                Task(
+                    description="Detect local VPN status passively",
+                    action="detect_vpn_status",
+                    capability="detect_vpn_status",
+                    target_agent="network_intelligence",
+                    payload={"text": intent.raw_text},
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "LocalNetworkReport":
+            tasks.append(
+                Task(
+                    description="Prepare a passive local network report",
+                    action="local_network_report",
+                    capability="local_network_report",
+                    target_agent="network_intelligence",
+                    payload={"text": intent.raw_text},
+                    timeout_seconds=5.0,
+                )
+            )
+        elif intent.action == "SafeAccessTroubleshoot":
+            tasks.append(
+                Task(
+                    description="Explain a blocked access path safely",
+                    action="safe_access_troubleshoot",
+                    capability="safe_access_troubleshoot",
+                    target_agent="network_intelligence",
+                    payload={"text": intent.raw_text, "target": intent.resource or "conversation"},
+                    timeout_seconds=5.0,
+                )
+            )
         elif intent.action == "SupplyChainReview":
             tasks.append(
                 Task(
