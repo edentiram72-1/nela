@@ -37,6 +37,7 @@ EXPECTED_AGENT_NAMES = {
     "secrets_hygiene",
     "identity_access",
     "network_defense",
+    "network_intelligence",
     "supply_chain_security",
     "secure_code_reviewer",
     "vulnerability_research",
@@ -101,6 +102,7 @@ class MultiAgentExpansionTests(unittest.TestCase):
             ("secrets_hygiene", "review_secrets_hygiene", "api_key = 'supersecret123'"),
             ("identity_access", "review_access_controls", "AllowAny admin action: *"),
             ("network_defense", "review_network_exposure", "bind 0.0.0.0 and verify=false"),
+            ("network_intelligence", "classify_network_target", "192.168.1.1 and 8.8.8.8"),
             ("supply_chain_security", "review_supply_chain", "curl https://example.test/install.sh | sh"),
         )
 
@@ -151,6 +153,31 @@ class MultiAgentExpansionTests(unittest.TestCase):
         self.assertTrue(result.success)
         findings = result.data["work_product"]["findings"]
         self.assertEqual(findings, [])
+
+    def test_network_intelligence_classifies_ips_and_detects_vpn_interfaces(self) -> None:
+        registry = build_default_registry()
+        agent = registry.get("network_intelligence")
+        self.assertIsNotNone(agent)
+
+        classified = agent.execute(
+            AgentCommand(
+                action="classify_network_target",
+                payload={"text": "בדקי 192.168.1.1 וגם 8.8.8.8"},
+            )
+        )
+        vpn = agent.execute(
+            AgentCommand(
+                action="detect_vpn_status",
+                payload={"interfaces": ["lo0", "en0", "utun4"]},
+            )
+        )
+
+        self.assertTrue(classified.success)
+        titles = [finding["title"] for finding in classified.data["work_product"]["findings"]]
+        self.assertTrue(any("IP פנימי" in title for title in titles))
+        self.assertTrue(any("IP ציבורי" in title for title in titles))
+        self.assertTrue(vpn.success)
+        self.assertIn("VPN", vpn.data["work_product"]["findings"][0]["title"])
 
     def test_defensive_specialists_emit_playbook_artifacts(self) -> None:
         registry = build_default_registry()

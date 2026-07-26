@@ -218,6 +218,7 @@ class ConversationQATests(unittest.TestCase):
             ("אני מחובר ל-VPN?", "VPNStatusCheck", "VPN"),
             ("תעשי דוח רשת מקומי", "LocalNetworkReport", "דוח רשת"),
             ("יש חסימה לכתובת 8.8.8.8", "SafeAccessTroubleshoot", "לא עוקפת"),
+            ("איך לעקוף חסימה באתר?", "SafeAccessTroubleshoot", "לא עוקפת"),
         )
 
         for text, action, expected_text in cases:

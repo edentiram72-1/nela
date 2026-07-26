@@ -131,6 +131,7 @@ class IntentRecognitionTests(unittest.TestCase):
             ("אני מחובר ל-VPN?", "VPNStatusCheck"),
             ("תעשי דוח רשת מקומי", "LocalNetworkReport"),
             ("יש חסימה לכתובת 8.8.8.8", "SafeAccessTroubleshoot"),
+            ("איך לעקוף חסימה באתר?", "SafeAccessTroubleshoot"),
         )
 
         for text, action in cases:
