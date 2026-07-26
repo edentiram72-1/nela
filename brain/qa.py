@@ -80,7 +80,8 @@ class KnowledgeEngine:
             "requested_text": str(intent.parameters.get("requested_text", intent.raw_text)),
             "supported_actions": (
                 "לפתוח אפליקציות מאושרות, לעשות בדיקת הגנה, לסקור קוד לאבטחה, "
-                "לבדוק תלויות, להכין מודל איומים, ללמוד תגובות, ולספר על מצב הסוכנים"
+                "לבדוק תלויות, סודות, הרשאות, רשת ושרשרת אספקה, להכין מודל איומים, "
+                "ללמוד תגובות, ולספר על מצב הסוכנים"
             ),
             "missing_layers": (
                 "מנוע הבנה פתוח/LLM, פירוק משימות חופשי, זיכרון עמוק עם שליפה, "
@@ -126,6 +127,10 @@ def _agent_list(agents: tuple[str, ...], limit: int = 12) -> str:
 def _is_security_agent(agent: str) -> bool:
     return agent in {
         "cyber_defense",
+        "secrets_hygiene",
+        "identity_access",
+        "network_defense",
+        "supply_chain_security",
         "secure_code_reviewer",
         "vulnerability_research",
         "security_researcher",

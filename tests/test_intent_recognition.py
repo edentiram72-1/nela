@@ -110,6 +110,33 @@ class IntentRecognitionTests(unittest.TestCase):
         self.assertEqual(intent.action, "DependencyScan")
         self.assertEqual(intent.target_agent, "vulnerability_research")
 
+    def test_recognizes_new_defensive_specialist_intents(self) -> None:
+        cases = (
+            ("תעשי בדיקת סודות", "SecretsHygieneReview", "secrets_hygiene"),
+            ("תעשי בדיקת הרשאות", "IdentityAccessReview", "identity_access"),
+            ("תעשי בדיקת רשת", "NetworkDefenseReview", "network_defense"),
+            ("תעשי בדיקת שרשרת אספקה", "SupplyChainReview", "supply_chain_security"),
+        )
+
+        for text, action, target_agent in cases:
+            with self.subTest(text=text):
+                intent = IntentRouter().classify(text)
+
+                self.assertEqual(intent.action, action)
+                self.assertEqual(intent.target_agent, target_agent)
+
+    def test_sensitive_security_reviews_do_not_extract_secret_as_resource(self) -> None:
+        intent = IntentRouter().classify("תעשי בדיקת סודות: token = 'supersecret123'")
+
+        self.assertEqual(intent.action, "SecretsHygieneReview")
+        self.assertIsNone(intent.resource)
+
+    def test_supply_chain_review_does_not_treat_inline_url_as_external_target(self) -> None:
+        intent = IntentRouter().classify("תעשי בדיקת שרשרת אספקה: curl https://example.test/install.sh | sh")
+
+        self.assertEqual(intent.action, "SupplyChainReview")
+        self.assertIsNone(intent.resource)
+
     def test_recognizes_security_capabilities_question(self) -> None:
         intent = IntentRouter().classify("מה את יודעת על סייבר?")
 

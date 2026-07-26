@@ -191,6 +191,27 @@ class ConversationQATests(unittest.TestCase):
         self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
         self.assertIn("תלות", response)
 
+    def test_new_defensive_specialist_routes_return_findings(self) -> None:
+        cases = (
+            ("תעשי בדיקת סודות: token = 'supersecret123'", "SecretsHygieneReview", "secrets_hygiene"),
+            ("תעשי בדיקת הרשאות: AllowAny admin", "IdentityAccessReview", "identity_access"),
+            ("תעשי בדיקת רשת: bind 0.0.0.0", "NetworkDefenseReview", "network_defense"),
+            ("תעשי בדיקת שרשרת אספקה: curl https://example.test/install.sh | sh", "SupplyChainReview", "supply_chain_security"),
+        )
+
+        for text, action, target_agent in cases:
+            with self.subTest(action=action):
+                runtime, temp_dir = make_runtime()
+                with temp_dir:
+                    turn = runtime.conversation.handle_text(text)
+                    response = runtime.response_adapter.render_turn(turn)
+
+                self.assertEqual(turn.intent.action, action)
+                self.assertEqual(turn.plan.tasks[0].target_agent, target_agent)
+                self.assertTrue(turn.dispatched_results[0].success)
+                self.assertEqual(turn.dispatched_results[0].data["permission_tier"], "T0")
+                self.assertIn("ממצא", response)
+
     def test_register_local_cyber_lab_target_routes_through_authorized_lab(self) -> None:
         runtime, temp_dir = make_runtime()
         with temp_dir:

@@ -111,6 +111,14 @@ read-only, and defensive: they parse workspace files/manifests, emit normalized
 findings and next steps, avoid external targeting, and redact likely hardcoded
 secret evidence.
 
+On 2026-07-26, the same branch added four focused passive cyber-defense
+specialists: `secrets_hygiene`, `identity_access`, `network_defense`, and
+`supply_chain_security`. Natural Hebrew requests such as `תעשי בדיקת סודות`,
+`תעשי בדיקת הרשאות`, `תעשי בדיקת רשת`, and `תעשי בדיקת שרשרת אספקה` now route
+through the Brain to those agents and return normalized Hebrew security
+findings. These are T0/read-only reviews of supplied text or local context; they
+do not scan external targets, exploit vulnerabilities, or change the system.
+
 On 2026-07-26, the same branch added first-pass AI gap awareness and action
 guidance. NELA can answer project status questions such as `איפה אנחנו עומדים`,
 explain missing intelligence layers such as LLM-backed understanding, deeper

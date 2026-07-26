@@ -34,6 +34,10 @@ EXPECTED_AGENT_NAMES = {
     "trend_monitor",
     "security_researcher",
     "cyber_defense",
+    "secrets_hygiene",
+    "identity_access",
+    "network_defense",
+    "supply_chain_security",
     "secure_code_reviewer",
     "vulnerability_research",
     "infrastructure_security",
@@ -90,6 +94,25 @@ class MultiAgentExpansionTests(unittest.TestCase):
         self.assertTrue(result.success)
         findings = result.data["work_product"]["findings"]
         self.assertEqual(findings[0]["title"], "Shell execution enabled")
+
+    def test_new_defensive_security_specialists_return_findings(self) -> None:
+        registry = build_default_registry()
+        cases = (
+            ("secrets_hygiene", "review_secrets_hygiene", "api_key = 'supersecret123'"),
+            ("identity_access", "review_access_controls", "AllowAny admin action: *"),
+            ("network_defense", "review_network_exposure", "bind 0.0.0.0 and verify=false"),
+            ("supply_chain_security", "review_supply_chain", "curl https://example.test/install.sh | sh"),
+        )
+
+        for agent_name, action, text in cases:
+            with self.subTest(agent=agent_name):
+                agent = registry.get(agent_name)
+                self.assertIsNotNone(agent)
+
+                result = agent.execute(AgentCommand(action=action, payload={"text": text}))
+
+                self.assertTrue(result.success)
+                self.assertGreaterEqual(len(result.data["work_product"]["findings"]), 1)
 
     def test_active_red_team_simulation_requires_authorization_object(self) -> None:
         registry = build_default_registry()

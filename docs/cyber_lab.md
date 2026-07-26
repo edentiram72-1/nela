@@ -77,6 +77,14 @@ existing defensive Agents:
 - `DependencyScan`: parses local dependency manifests through
   `vulnerability_research` and reports version hygiene / supplied advisory
   correlations.
+- `SecretsHygieneReview`: reviews supplied text/config for likely exposed
+  secrets, tokens, and credential-hygiene issues through `secrets_hygiene`.
+- `IdentityAccessReview`: reviews access-control and least-privilege risks
+  through `identity_access`.
+- `NetworkDefenseReview`: reviews supplied network exposure and TLS posture
+  through `network_defense`.
+- `SupplyChainReview`: reviews build, release, and supply-chain hygiene through
+  `supply_chain_security`.
 - `SecurityCapabilitiesQuestion`: explains NELA's defensive cyber boundaries.
 - `CyberDefenseSweep`: creates a first defensive posture report through
   `cyber_defense`, including findings, severity, recommendations, and next
@@ -136,6 +144,26 @@ User: "נלה תבדקי את הפרויקט לאבטחה"
 User: "תעשי בדיקת תלותים"
   -> DependencyScan
   -> vulnerability_research.scan_workspace_dependencies
+  -> Permission tier T0
+
+User: "תעשי בדיקת סודות"
+  -> SecretsHygieneReview
+  -> secrets_hygiene.review_secrets_hygiene
+  -> Permission tier T0
+
+User: "תעשי בדיקת הרשאות"
+  -> IdentityAccessReview
+  -> identity_access.review_access_controls
+  -> Permission tier T0
+
+User: "תעשי בדיקת רשת"
+  -> NetworkDefenseReview
+  -> network_defense.review_network_exposure
+  -> Permission tier T0
+
+User: "תעשי בדיקת שרשרת אספקה"
+  -> SupplyChainReview
+  -> supply_chain_security.review_supply_chain
   -> Permission tier T0
 ```
 

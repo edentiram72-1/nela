@@ -168,6 +168,10 @@ def default_tool_permissions() -> dict[str, ToolPermissionProfile]:
         "documentation_researcher": ToolPermissionProfile("documentation_researcher", ("summarize", "parse_files"), filesystem="workspace_read", network="approved_sources_only"),
         "trend_monitor": ToolPermissionProfile("trend_monitor", ("summarize",), filesystem="none", network="approved_sources_only"),
         "security_researcher": ToolPermissionProfile("security_researcher", (*security_read_only, "threat_model"), filesystem="workspace_read"),
+        "secrets_hygiene": ToolPermissionProfile("secrets_hygiene", (*security_read_only, "secret_redaction"), filesystem="workspace_read"),
+        "identity_access": ToolPermissionProfile("identity_access", (*security_read_only, "least_privilege"), filesystem="workspace_read"),
+        "network_defense": ToolPermissionProfile("network_defense", (*security_read_only, "network_exposure_review"), filesystem="workspace_read", network="disabled"),
+        "supply_chain_security": ToolPermissionProfile("supply_chain_security", (*security_read_only, "build_integrity"), filesystem="workspace_read", network="disabled"),
         "secure_code_reviewer": ToolPermissionProfile("secure_code_reviewer", security_read_only, filesystem="workspace_read"),
         "vulnerability_research": ToolPermissionProfile("vulnerability_research", (*security_read_only, "cve_correlation"), filesystem="workspace_read"),
         "authorized_lab": ToolPermissionProfile(

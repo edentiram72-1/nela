@@ -169,6 +169,50 @@ class Planner:
                     timeout_seconds=20.0,
                 )
             )
+        elif intent.action == "SecretsHygieneReview":
+            tasks.append(
+                Task(
+                    description="Review supplied text for secret hygiene risks",
+                    action="review_secrets_hygiene",
+                    capability="review_secrets_hygiene",
+                    target_agent="secrets_hygiene",
+                    payload={"text": intent.raw_text, "target": intent.resource or "conversation"},
+                    timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "IdentityAccessReview":
+            tasks.append(
+                Task(
+                    description="Review access-control posture",
+                    action="review_access_controls",
+                    capability="review_access_controls",
+                    target_agent="identity_access",
+                    payload={"text": intent.raw_text, "target": intent.resource or "conversation"},
+                    timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "NetworkDefenseReview":
+            tasks.append(
+                Task(
+                    description="Review network exposure and transport security",
+                    action="review_network_exposure",
+                    capability="review_network_exposure",
+                    target_agent="network_defense",
+                    payload={"text": intent.raw_text, "target": intent.resource or "conversation"},
+                    timeout_seconds=10.0,
+                )
+            )
+        elif intent.action == "SupplyChainReview":
+            tasks.append(
+                Task(
+                    description="Review supply-chain and release hygiene",
+                    action="review_supply_chain",
+                    capability="review_supply_chain",
+                    target_agent="supply_chain_security",
+                    payload={"text": intent.raw_text, "target": intent.resource or "conversation"},
+                    timeout_seconds=10.0,
+                )
+            )
         elif intent.action == "SecurityReview":
             tasks.append(
                 Task(

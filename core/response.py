@@ -100,6 +100,13 @@ class NelaResponseAdapter:
             return _security_category("security.review.done", variables), variables
         if turn.intent.action == "DependencyScan":
             return _security_category("security.review.done", variables), variables
+        if turn.intent.action in {
+            "SecretsHygieneReview",
+            "IdentityAccessReview",
+            "NetworkDefenseReview",
+            "SupplyChainReview",
+        }:
+            return _security_category("security.review.done", variables), variables
         if turn.intent.action == "CyberDefenseSweep":
             if int(variables.get("findings_count", 0) or 0) > 0:
                 return "security.defense.findings", variables

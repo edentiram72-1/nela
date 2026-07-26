@@ -22,6 +22,10 @@ class MultiAgentFoundationTests(unittest.TestCase):
             "backend",
             "frontend",
             "test_qa",
+            "secrets_hygiene",
+            "identity_access",
+            "network_defense",
+            "supply_chain_security",
             "secure_code_reviewer",
             "vulnerability_research",
             "anomaly_discovery",
@@ -129,7 +133,15 @@ class MultiAgentFoundationTests(unittest.TestCase):
     def test_sandbox_profiles_are_conservative_for_security_agents(self) -> None:
         profiles = default_tool_permissions()
 
-        for name in ("secure_code_reviewer", "vulnerability_research", "anomaly_discovery"):
+        for name in (
+            "secrets_hygiene",
+            "identity_access",
+            "network_defense",
+            "supply_chain_security",
+            "secure_code_reviewer",
+            "vulnerability_research",
+            "anomaly_discovery",
+        ):
             self.assertEqual(profiles[name].network, "disabled")
             self.assertFalse(profiles[name].may_contact_external_targets)
 

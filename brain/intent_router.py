@@ -94,6 +94,62 @@ DEFAULT_PATTERNS: tuple[IntentPattern, ...] = (
         domain="vulnerability_research",
     ),
     IntentPattern(
+        "SecretsHygieneReview",
+        (
+            "בדיקת סודות",
+            "סריקת סודות",
+            "תבדקי סודות",
+            "תבדקי אם יש סודות",
+            "בדיקת credentials",
+            "בדיקת טוקנים",
+            "secrets review",
+            "secret scan",
+            "credential hygiene",
+        ),
+        domain="secrets_hygiene",
+    ),
+    IntentPattern(
+        "IdentityAccessReview",
+        (
+            "בדיקת הרשאות",
+            "סריקת הרשאות",
+            "בדיקת גישה",
+            "תבדקי הרשאות",
+            "תבדקי גישה",
+            "least privilege",
+            "access review",
+            "identity review",
+        ),
+        domain="identity_access",
+    ),
+    IntentPattern(
+        "NetworkDefenseReview",
+        (
+            "בדיקת רשת",
+            "סריקת רשת הגנתית",
+            "בדיקת חשיפת רשת",
+            "תבדקי חשיפת רשת",
+            "בדיקת tls",
+            "network defense",
+            "network exposure review",
+            "tls posture",
+        ),
+        domain="network_defense",
+    ),
+    IntentPattern(
+        "SupplyChainReview",
+        (
+            "בדיקת שרשרת אספקה",
+            "בדיקת supply chain",
+            "בדיקת build",
+            "בדיקת release",
+            "supply chain review",
+            "build integrity",
+            "release hygiene",
+        ),
+        domain="supply_chain_security",
+    ),
+    IntentPattern(
         "SecurityReview",
         ("סקירת אבטחה", "בדיקת אבטחה", "תבדקי אבטחה", "תבדקי את הקוד לאבטחה", "security review", "secure code review"),
         domain="secure_code_reviewer",
@@ -270,7 +326,7 @@ class IntentRouter:
 
         pattern = self._match_pattern(normalized)
         application = _extract_application(text)
-        resource = _extract_resource(text)
+        resource = None if pattern and _is_sensitive_inline_review(pattern.action) else _extract_resource(text)
         parameters: dict[str, Any] = {}
         if pattern and pattern.domain:
             parameters["domain"] = pattern.domain
@@ -280,12 +336,13 @@ class IntentRouter:
             parameters["follow_up_to"] = context.get("last_intent")
 
         if pattern:
+            intent_resource = resource if _is_sensitive_inline_review(pattern.action) else resource or _extract_url(text)
             return Intent(
                 action=pattern.action,
                 raw_text=text,
                 confidence=0.82,
                 application=resolve_application_alias(application),
-                resource=resource or _extract_url(text),
+                resource=intent_resource,
                 priority=priority,
                 parameters=parameters,
                 requires_confirmation=pattern.requires_confirmation,
@@ -390,6 +447,16 @@ def _extract_resource(text: str) -> str | None:
     if playlist:
         return playlist.group(1).strip()
     return None
+
+
+def _is_sensitive_inline_review(action: str) -> bool:
+    return action in {
+        "SecurityReview",
+        "SecretsHygieneReview",
+        "IdentityAccessReview",
+        "NetworkDefenseReview",
+        "SupplyChainReview",
+    }
 
 
 def _extract_url(text: str) -> str | None:

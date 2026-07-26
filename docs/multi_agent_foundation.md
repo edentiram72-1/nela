@@ -25,6 +25,10 @@ This document describes the first NELA specialist-agent layer.
 - `documentation_researcher`: turns official docs into implementation guidance.
 - `trend_monitor`: monitors ecosystem changes with product impact.
 - `security_researcher`: researches vulnerabilities defensively.
+- `secrets_hygiene`: reviews likely secret exposure and credential hygiene.
+- `identity_access`: reviews permissions, identity boundaries, and least privilege.
+- `network_defense`: reviews supplied network/TLS exposure configuration.
+- `supply_chain_security`: reviews build, release, and supply-chain hygiene.
 - `secure_code_reviewer`: performs defensive SAST-style review.
 - `vulnerability_research`: correlates dependencies with supplied advisory/CVE data.
 - `infrastructure_security`: audits infrastructure configs and hardening.
