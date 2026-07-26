@@ -17,6 +17,7 @@ Thumbs.db
 
 # Runtime outputs
 logs/*.log
+logs/*.log.*
 !logs/.gitkeep
 tmp/
 temp/
