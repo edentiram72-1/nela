@@ -114,6 +114,64 @@ class MultiAgentExpansionTests(unittest.TestCase):
                 self.assertTrue(result.success)
                 self.assertGreaterEqual(len(result.data["work_product"]["findings"]), 1)
 
+    def test_defensive_specialists_redact_secret_evidence_and_emit_rule_ids(self) -> None:
+        registry = build_default_registry()
+        agent = registry.get("secrets_hygiene")
+        self.assertIsNotNone(agent)
+
+        result = agent.execute(
+            AgentCommand(
+                action="review_secrets_hygiene",
+                payload={"text": "token = 'supersecret123' and AWS AKIAIOSFODNN7EXAMPLE"},
+            )
+        )
+
+        self.assertTrue(result.success)
+        findings = result.data["work_product"]["findings"]
+        self.assertGreaterEqual(len(findings), 2)
+        evidence = "\n".join(str(finding["evidence"]) for finding in findings)
+        self.assertIn("SEC-", evidence)
+        self.assertIn("[redacted]", evidence)
+        self.assertIn("[redacted-aws-key]", evidence)
+        self.assertNotIn("supersecret123", evidence)
+        self.assertNotIn("AKIAIOSFODNN7EXAMPLE", evidence)
+
+    def test_network_defense_does_not_flag_localhost_http_as_tls_issue(self) -> None:
+        registry = build_default_registry()
+        agent = registry.get("network_defense")
+        self.assertIsNotNone(agent)
+
+        result = agent.execute(
+            AgentCommand(
+                action="review_network_exposure",
+                payload={"text": "local dev server is http://localhost:8765 and http://127.0.0.1:3000"},
+            )
+        )
+
+        self.assertTrue(result.success)
+        findings = result.data["work_product"]["findings"]
+        self.assertEqual(findings, [])
+
+    def test_defensive_specialists_emit_playbook_artifacts(self) -> None:
+        registry = build_default_registry()
+        cases = (
+            ("identity_access", "review_access_controls", "AllowAny admin action: *"),
+            ("network_defense", "review_network_exposure", "bind 0.0.0.0 and verify=false"),
+            ("supply_chain_security", "review_supply_chain", "curl https://example.test/install.sh | sh"),
+        )
+
+        for agent_name, action, text in cases:
+            with self.subTest(agent=agent_name):
+                agent = registry.get(agent_name)
+                self.assertIsNotNone(agent)
+
+                result = agent.execute(AgentCommand(action=action, payload={"text": text}))
+
+                self.assertTrue(result.success)
+                artifacts = result.data["work_product"]["artifacts"]
+                self.assertGreaterEqual(len(artifacts), 1)
+                self.assertEqual(artifacts[0]["kind"], "checklist")
+
     def test_active_red_team_simulation_requires_authorization_object(self) -> None:
         registry = build_default_registry()
         agent = registry.get("red_team_simulator")

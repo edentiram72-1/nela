@@ -469,3 +469,35 @@ final production WebView architecture.
 - `ui/web.py`
 - `design/nela_living_eye.html`
 - `tests/test_ui_web.py`
+
+### DEC-0018: Keep First-Wave Cyber Specialists Passive, Rule-Based, And Redacted
+
+**Date:** 2026-07-27
+**Status:** Accepted
+
+**Context:** NELA needs stronger cyber-defense answers that produce useful
+findings, but the project is not ready for active scanning or unrestricted
+security automation. The existing first-wave specialists are intentionally T0
+and passive.
+
+**Decision:** Strengthen the passive specialists with stable rule IDs, focused
+defensive pattern coverage, redacted evidence, and checklist artifacts instead
+of adding active capabilities. Local development endpoints such as
+`http://localhost` are not treated as TLS findings by themselves; broad binds,
+non-local cleartext HTTP, disabled TLS verification, open CORS, wildcard IAM,
+hardcoded tokens, risky install paths, and registry risks are reported.
+
+**Consequences:**
+
+- Findings are easier for NELA, Codex, Claude, and the user to track.
+- User-facing evidence remains redacted by default.
+- The agents can become smarter without changing the Brain or Permission
+  Engine contracts.
+- Active cyber behavior remains blocked until scoped authorization, audit,
+  isolation, and lab controls are complete.
+
+**Related files:**
+
+- `agents/security/defensive_specialists.py`
+- `tests/test_multi_agent_expansion.py`
+- `docs/ai_handoff.md`

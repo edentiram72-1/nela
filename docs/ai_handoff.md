@@ -119,6 +119,14 @@ through the Brain to those agents and return normalized Hebrew security
 findings. These are T0/read-only reviews of supplied text or local context; they
 do not scan external targets, exploit vulnerabilities, or change the system.
 
+On 2026-07-27, those four passive cyber-defense specialists were sharpened
+with stable rule IDs, broader defensive pattern coverage, redacted evidence,
+and per-agent checklist artifacts. Secrets hygiene now recognizes common cloud
+and collaboration tokens, identity/access review detects wildcard principals
+and broad sudo patterns, network defense distinguishes local development HTTP
+from non-local cleartext HTTP, and supply-chain review flags registry and
+install-script risks. This remains a local/passive T0 capability only.
+
 On 2026-07-26, the same branch added first-pass AI gap awareness and action
 guidance. NELA can answer project status questions such as `איפה אנחנו עומדים`,
 explain missing intelligence layers such as LLM-backed understanding, deeper
@@ -127,6 +135,14 @@ unsupported imperative requests as helpful action guidance instead of generic
 `לא הבנתי` clarification. The implementation stays inside the
 conversation/Language Engine boundary and does not add a new LLM provider yet.
 See `docs/nela_ai_gap_plan.md`.
+
+On 2026-07-27, Claude's chat-only review documents were downloaded and preserved
+under `docs/NELA-claude-review-docs/` so the review work is no longer only in
+the Claude conversation. A current full-code review package was generated as
+`nela-current-agent-code-review-6196dd4.zip` with tracked Brain, Agent,
+Permission, Language, UI, script, test, and documentation files plus
+`docs/claude_current_code_review_prompt.md`. This package is intended for Claude
+to review the actual current branch head instead of stale code fragments.
 
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
@@ -218,6 +234,9 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `docs/manual_pr_instructions.md`
 - `docs/claude_sprint2_review_bundle.md`
 - `docs/claude_sprint2_review_prompt.md`
+- `docs/claude_current_code_review_prompt.md`
+- `docs/NELA-claude-review-docs/*`
+- `nela-current-agent-code-review-6196dd4.zip`
 - `docs/claude_k1_r1_review_bundle.md`
 - `docs/claude_k1_r1_review_prompt.md`
 - `docs/claude_k1_final_review_bundle.md`
@@ -355,6 +374,8 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - Send consolidated `develop` or `main` direct blob links to Claude for release verification.
 - Send `docs/claude_language_learning_cyber_review_bundle.md` to Claude for the
   next focused review of the current branch.
+- Send `nela-current-agent-code-review-6196dd4.zip` to Claude for evidence-based
+  review of the current branch head, including all current Agent code.
 - Ask Claude to review `docs/claude_handoff_2026-07-24.md`, `docs/personality_bible.md`, `docs/hebrew_language_guide.md`, `docs/tone_of_voice.md`, `docs/conversation_rules.md`, `language/pack_schema.md`, and `language/hebrew/`.
 - Choose and implement a WebView-compatible host for the Living Eye.
 - Add a durable persistence backend for long-term memory.
@@ -629,6 +650,7 @@ After release, continue in this order:
 - Do not create a direct communication channel with Claude or any other assistant.
 - Use GitHub as the collaboration layer.
 - For Claude review, share `docs/ai_inbox.md` direct blob links or regenerate `docs/claude_review_bundle.md` and paste/upload it to Claude.
+- For the current Agent/cyber review, upload `nela-current-agent-code-review-6196dd4.zip` to Claude and ask Claude to review against commit `6196dd4fd5b678115ce8d75b5da938ba96d5f000`.
 - Read `docs/architecture.md`, `docs/api.md`, and `docs/coding_rules.md` before changing code.
 - Keep the Brain agent-neutral.
 - Keep Hebrew phrasing and personality rules out of Brain modules.
