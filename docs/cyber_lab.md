@@ -83,6 +83,14 @@ existing defensive Agents:
   through `identity_access`.
 - `NetworkDefenseReview`: reviews supplied network exposure and TLS posture
   through `network_defense`.
+- `NetworkTargetClassification`: classifies user-supplied IPs, URLs, and
+  hostnames through `network_intelligence`.
+- `VPNStatusCheck`: checks local interface names for VPN-like signals through
+  `network_intelligence`.
+- `LocalNetworkReport`: prepares a passive local interface/IP report through
+  `network_intelligence`.
+- `SafeAccessTroubleshoot`: explains safe blocked-access troubleshooting
+  through `network_intelligence` without bypassing controls.
 - `SupplyChainReview`: reviews build, release, and supply-chain hygiene through
   `supply_chain_security`.
 - `SecurityCapabilitiesQuestion`: explains NELA's defensive cyber boundaries.
@@ -165,6 +173,22 @@ User: "תעשי בדיקת שרשרת אספקה"
   -> SupplyChainReview
   -> supply_chain_security.review_supply_chain
   -> Permission tier T0
+
+User: "תבדקי את ה-IP 192.168.1.1"
+  -> NetworkTargetClassification
+  -> network_intelligence.classify_network_target
+  -> Permission tier T0
+
+User: "אני מחובר ל-VPN?"
+  -> VPNStatusCheck
+  -> network_intelligence.detect_vpn_status
+  -> Permission tier T0
+
+User: "איך לעקוף חסימה באתר?"
+  -> SafeAccessTroubleshoot
+  -> network_intelligence.safe_access_troubleshoot
+  -> Permission tier T0
+  -> Safe diagnostic guidance, not bypass instructions
 ```
 
 Both routes are local and defensive. They do not contact external targets, do

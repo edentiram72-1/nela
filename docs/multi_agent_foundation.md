@@ -28,6 +28,8 @@ This document describes the first NELA specialist-agent layer.
 - `secrets_hygiene`: reviews likely secret exposure and credential hygiene.
 - `identity_access`: reviews permissions, identity boundaries, and least privilege.
 - `network_defense`: reviews supplied network/TLS exposure configuration.
+- `network_intelligence`: classifies user-supplied IPs, URLs, and hostnames,
+  reports local VPN-like interface signals, and gives safe access troubleshooting.
 - `supply_chain_security`: reviews build, release, and supply-chain hygiene.
 - `secure_code_reviewer`: performs defensive SAST-style review.
 - `vulnerability_research`: correlates dependencies with supplied advisory/CVE data.

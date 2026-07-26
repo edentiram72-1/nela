@@ -157,7 +157,9 @@ Agent. It classifies user-supplied IPs, URLs, and hostnames, checks local
 interface names for VPN-like signals, prepares local network reports, and gives
 safe access-troubleshooting guidance without scanning, bypassing controls, or
 touching external targets. Hebrew routing now covers IP classification, VPN
-status, local network reports, and blocked-access troubleshooting.
+status, local network reports, blocked-access troubleshooting, and bypass-worded
+requests that should be reframed into safe diagnostics rather than bypass
+instructions.
 
 Claude reviewed the replacement package and marked F1 (`cyber_lab/` source
 missing) as PASS after reading the lab source. Claude's final recommendation is
