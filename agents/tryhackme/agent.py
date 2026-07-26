@@ -76,6 +76,13 @@ class TryHackMeLearningAgent(SpecialistAgent):
         )
         return AgentWorkProduct(
             summary=f"TryHackMe lesson captured: {topic}.",
+            steps=(
+                "קראתי את סיכום החדר שקיבלתי ממך ולא התחברתי לאתר חיצוני.",
+                f"זיהיתי נושא מרכזי: {topic}.",
+                f"חילצתי מושגים ללמידה: {', '.join(concepts[:6])}.",
+                "שמרתי את השיעור בזיכרון הלימודי המקומי של נלה.",
+                "הכנתי שאלות חזרה ומפת מיומנויות להמשך.",
+            ),
             findings=findings,
             artifacts=(
                 artifact("lesson", lesson.id, _lesson_lines(lesson.topic, summary, concepts, commands, safety_notes)),
@@ -101,6 +108,11 @@ class TryHackMeLearningAgent(SpecialistAgent):
         )
         return AgentWorkProduct(
             summary=f"TryHackMe learning path prepared for {topic}.",
+            steps=(
+                f"זיהיתי בקשת מסלול לימוד עבור: {topic}.",
+                "בניתי סדר עבודה בטוח: להבין scope, לתעד מושגים, לבצע רק במעבדה חוקית.",
+                "חיברתי את המסלול לזיכרון הלימודי כדי שתוכל להוסיף חדרים בהמשך.",
+            ),
             findings=(
                 TaskFinding(
                     title="מסלול TryHackMe מוכן",
@@ -143,6 +155,11 @@ class TryHackMeLearningAgent(SpecialistAgent):
             )
         return AgentWorkProduct(
             summary=f"TryHackMe progress reviewed: {len(lessons)} lesson(s).",
+            steps=(
+                "פתחתי את זיכרון הלמידה המקומי של TryHackMe.",
+                f"ספרתי {len(lessons)} שיעורים שמורים.",
+                "בניתי תמונת מצב לפי נושאים ומושגים שחוזרים על עצמם.",
+            ),
             findings=findings,
             artifacts=(
                 artifact("lessons", "tryhackme_recent_lessons", _recent_lesson_lines(lessons)),

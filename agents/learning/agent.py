@@ -71,7 +71,7 @@ class LearningAgent(SpecialistAgent):
                     ),
                 ),
             ),
-            next_steps=("Ask the trigger phrase in the next conversation turn to verify the response.",),
+            next_steps=("אפשר לכתוב את הטריגר כבר עכשיו כדי לוודא שאני עונה ממנו.",),
         )
 
     def _list_learned_responses(self, command: AgentCommand) -> AgentWorkProduct:

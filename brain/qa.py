@@ -28,6 +28,7 @@ CONVERSATIONAL_ACTIONS = frozenset(
         "AgentStatusQuestion",
         "GeneralQuestion",
         "GeneralRequest",
+        "LearnedResponseRecall",
     }
 )
 
@@ -130,6 +131,9 @@ class KnowledgeEngine:
             if llm_answer is not None:
                 return llm_answer
         return KnowledgeAnswer("qa.unknown", "unknown", variables)
+
+    def has_learned_response(self, text: str) -> bool:
+        return self.learned_responses.find_response(text) is not None
 
     def _llm_answer(
         self,

@@ -65,6 +65,7 @@ class NelaResponseAdapter:
                     variables[key] = first_result.data[key]
             findings = _summarize_findings(turn.dispatched_results)
             variables.update(findings)
+            variables.update(_summarize_learning_update(turn.dispatched_results))
         response_variables = turn.intent.parameters.get("response_variables")
         if isinstance(response_variables, dict):
             variables.update(response_variables)
@@ -150,11 +151,15 @@ def _security_category(default_category: str, variables: dict[str, object]) -> s
 
 def _summarize_findings(results: tuple[AgentResult, ...]) -> dict[str, object]:
     findings: list[dict[str, object]] = []
+    steps: list[str] = []
     next_steps: list[str] = []
     for result in results:
         product = result.data.get("work_product")
         if not isinstance(product, dict):
             continue
+        raw_steps = product.get("steps", ())
+        if isinstance(raw_steps, list):
+            steps.extend(str(item) for item in raw_steps)
         raw_findings = product.get("findings", ())
         if isinstance(raw_findings, list):
             findings.extend(item for item in raw_findings if isinstance(item, dict))
@@ -178,9 +183,93 @@ def _summarize_findings(results: tuple[AgentResult, ...]) -> dict[str, object]:
     return {
         "findings_count": len(findings),
         "findings_count_label": _count_label(len(findings)),
+        "steps": "\n".join(f"{index}. {step}" for index, step in enumerate(steps[:5], start=1))
+        if steps
+        else "בדקתי את הבקשה, בחרתי סוכן מתאים, והרצתי פעולה בטוחה דרך ה-Brain.",
         "findings": "\n".join(finding_lines) if finding_lines else "לא נמצאו ממצאים חריגים בבדיקה הזאת.",
         "next_steps": " ".join(next_steps[:2]) if next_steps else "להמשיך בבדיקה הגנתית ממוקדת לפי scope מאושר.",
     }
+
+
+def _summarize_learning_update(results: tuple[AgentResult, ...]) -> dict[str, object]:
+    """Extract user-visible learning details from specialist work products."""
+
+    artifacts: list[dict[str, object]] = []
+    next_steps: list[str] = []
+    for result in results:
+        product = result.data.get("work_product")
+        if not isinstance(product, dict):
+            continue
+        raw_artifacts = product.get("artifacts", ())
+        if isinstance(raw_artifacts, list):
+            artifacts.extend(item for item in raw_artifacts if isinstance(item, dict))
+        raw_next_steps = product.get("next_steps", ())
+        if isinstance(raw_next_steps, list):
+            next_steps.extend(str(item) for item in raw_next_steps)
+
+    learned_response = _learning_artifact(artifacts, "learned_response")
+    if learned_response is not None:
+        details = _artifact_lines(learned_response)
+        trigger = _line_value(details, "trigger") or "הביטוי החדש"
+        response = _line_value(details, "response") or "התשובה החדשה"
+        tags = _line_value(details, "tags") or "conversation"
+        return {
+            "learning_update": f"למדתי תגובה חדשה: כשנשמע \"{trigger}\" אענה \"{response}\".",
+            "learning_detail": f"טריגר: {trigger}. תשובה: {response}. תגיות: {tags}.",
+            "memory_target": "זיכרון השפה המקומי",
+            "next_steps": _join_next_steps(next_steps, "אפשר לבדוק מיד: כתוב את הטריגר ותראה שאני עונה ממנו."),
+        }
+
+    lesson = _learning_artifact(artifacts, "lesson")
+    if lesson is not None:
+        details = _artifact_lines(lesson)
+        first_line = details[0] if details else "שיעור חדש"
+        return {
+            "learning_update": f"למדתי ועדכנתי את הזיכרון שלי עם {first_line}.",
+            "learning_detail": "\n".join(details[:4]) if details else first_line,
+            "memory_target": "זיכרון הלמידה המקומי",
+            "next_steps": _join_next_steps(next_steps, "להמשיך עם שאלת חזרה קצרה או להוסיף עוד דוגמה."),
+        }
+
+    if artifacts:
+        names = ", ".join(str(item.get("name") or item.get("kind") or "artifact") for item in artifacts[:3])
+        return {
+            "learning_update": f"עדכנתי תוצר למידה: {names}.",
+            "learning_detail": names,
+            "memory_target": "זיכרון העבודה של נלה",
+            "next_steps": _join_next_steps(next_steps, "להמשיך לעדכון הבא או לבקש ממני לסכם מה למדתי."),
+        }
+
+    return {
+        "learning_update": "למדתי ועדכנתי את הזיכרון שלי.",
+        "learning_detail": "העדכון נשמר דרך סוכן הלמידה.",
+        "memory_target": "זיכרון הלמידה המקומי",
+        "next_steps": _join_next_steps(next_steps, "אפשר לבקש ממני לספר מה למדתי."),
+    }
+
+
+def _learning_artifact(artifacts: list[dict[str, object]], kind: str) -> dict[str, object] | None:
+    for artifact in artifacts:
+        if str(artifact.get("kind") or "") == kind:
+            return artifact
+    return None
+
+
+def _artifact_lines(artifact: dict[str, object]) -> list[str]:
+    content = str(artifact.get("content") or "").strip()
+    return [line.strip() for line in content.splitlines() if line.strip()]
+
+
+def _line_value(lines: list[str], key: str) -> str | None:
+    prefix = f"{key}="
+    for line in lines:
+        if line.startswith(prefix):
+            return line[len(prefix) :].strip()
+    return None
+
+
+def _join_next_steps(next_steps: list[str], fallback: str) -> str:
+    return " ".join(next_steps[:2]) if next_steps else fallback
 
 
 def _severity_label(severity: str) -> str:

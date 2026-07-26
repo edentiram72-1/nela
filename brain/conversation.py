@@ -100,6 +100,13 @@ class ConversationEngine:
             return self._handle_pending_slot(text, input_mode, turn_id, pending_slot)
 
         intent = self.intent_router.classify(text, context=self.context.snapshot().__dict__)
+        if intent.action not in _LEARNING_WRITE_ACTIONS and self.knowledge.has_learned_response(text):
+            intent = replace(
+                intent,
+                action="LearnedResponseRecall",
+                confidence=max(intent.confidence, 0.99),
+                parameters={**intent.parameters, "source": "learned_response_store"},
+            )
         return self._process_intent(text, input_mode, turn_id, intent)
 
     def _process_intent(self, text: str, input_mode: str, turn_id: str, intent: Intent) -> ConversationTurn:
@@ -513,6 +520,18 @@ class ConversationEngine:
 
 
 ConfirmationAnswer = Literal["affirmative", "negative", "unclear"]
+
+
+_LEARNING_WRITE_ACTIONS = frozenset(
+    {
+        "TeachResponse",
+        "LearnTopic",
+        "TryHackMeLessonCapture",
+        "TryHackMeLearningPlan",
+        "TryHackMeProgressReview",
+        "Remember",
+    }
+)
 
 
 def _classify_confirmation_answer(text: str) -> ConfirmationAnswer:

@@ -174,12 +174,26 @@ safety boundaries, review questions, and skill graph signals. This does not
 connect to TryHackMe directly, scrape rooms, or execute commands. See
 `docs/tryhackme_learning.md`.
 
+TryHackMe learning responses now include visible work steps so the user can see
+what NELA read, extracted, saved, and prepared next. The generic Agent work
+product schema supports `steps` for other Agents that need the same transparent
+execution reporting.
+
 On 2026-07-27, an LLM-backed conversation adapter was added as the first real
 open-ended Brain layer. `brain/llm.py` supports a text-only OpenAI Responses API
 provider behind explicit env configuration. `KnowledgeEngine` uses it only for
 `GeneralQuestion` and unsupported open-ended guidance, and the LLM cannot call
 Agents, dispatch Tasks, or bypass permissions. If no provider/API key is
 configured, NELA falls back to the deterministic local QA behavior.
+
+On 2026-07-27, learning confirmations were made explicit and user-visible.
+When `LearningAgent` stores a taught response, the response adapter now extracts
+the saved trigger, response, tags, target memory, and next step from the Agent
+work product. Hebrew `learning.saved` variants now say that NELA learned or
+updated herself and include what changed, instead of returning a vague
+`שמרתי אצלי` response. Learned response recall is also checked before low
+confidence clarification, so brand-new user-taught triggers can answer from
+memory even when they are not otherwise recognized intents.
 
 On 2026-07-27, the Browser placeholder was replaced with a bounded safe
 BrowserAgent. Hebrew requests such as `תפתחי אינטרנט` and `חפשי באינטרנט ...`
@@ -255,10 +269,12 @@ Claude also referenced a Memory subsystem deliverable, `nela-memory-subsystem.zi
 - `brain/memory_manager.py`
 - `brain/planner.py`
 - `brain/qa.py`
+- `core/response.py`
 - `language/learning_store.py`
 - `memory/learning_core.py`
 - `agents/learning/agent.py`
 - `agents/tryhackme/agent.py`
+- `language/hebrew/success.json`
 - `tests/test_conversation_qa.py`
 - `tests/test_tryhackme_learning.py`
 - `tests/test_ui_web.py`

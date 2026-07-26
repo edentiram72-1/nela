@@ -138,14 +138,24 @@ class ConversationQATests(unittest.TestCase):
         runtime, temp_dir = make_runtime()
         with temp_dir:
             taught = runtime.conversation.handle_text("נלה תלמדי שכשאני אומר בוקר טוב תעני בוקר אור")
+            taught_response = runtime.response_adapter.render_turn(taught)
+            runtime.conversation.handle_text("נלה תלמדי שכשאני אומר בדיקת למידה תעני למדתי ועדכנתי")
             learned = runtime.conversation.handle_text("בוקר טוב")
             response = runtime.response_adapter.render_turn(learned)
+            custom = runtime.conversation.handle_text("בדיקת למידה")
+            custom_response = runtime.response_adapter.render_turn(custom)
 
         self.assertEqual(taught.intent.action, "TeachResponse")
         self.assertTrue(taught.dispatched_results[0].success)
-        self.assertEqual(learned.intent.action, "Greeting")
+        self.assertRegex(taught_response, r"למדתי|למדתי|עדכנתי|נכנס לזיכרון")
+        self.assertIn("בוקר טוב", taught_response)
+        self.assertIn("בוקר אור", taught_response)
+        self.assertEqual(learned.intent.action, "LearnedResponseRecall")
         self.assertEqual(learned.intent.parameters["response_category"], "qa.learned")
         self.assertEqual(response, "בוקר אור")
+        self.assertEqual(custom.intent.action, "LearnedResponseRecall")
+        self.assertEqual(custom.intent.parameters["response_category"], "qa.learned")
+        self.assertEqual(custom_response, "למדתי ועדכנתי")
 
     def test_security_capabilities_question_explains_defensive_boundary(self) -> None:
         runtime, temp_dir = make_runtime()
@@ -218,10 +228,12 @@ class ConversationQATests(unittest.TestCase):
         self.assertTrue(captured.dispatched_results[0].success)
         self.assertEqual(captured.dispatched_results[0].data["permission_tier"], "T1")
         self.assertRegex(captured_response, r"TryHackMe|שמרתי|שיעור")
+        self.assertRegex(captured_response, r"איך עבדתי|מה עשיתי")
         self.assertTrue(lessons_exists)
         self.assertEqual(reviewed.intent.action, "TryHackMeProgressReview")
         self.assertTrue(reviewed.dispatched_results[0].success)
         self.assertIn("TryHackMe", review_response)
+        self.assertIn("איך בדקתי", review_response)
 
     def test_defensive_security_review_routes_to_security_agent(self) -> None:
         runtime, temp_dir = make_runtime()

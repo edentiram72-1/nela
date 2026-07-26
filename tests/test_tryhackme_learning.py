@@ -32,6 +32,9 @@ class TryHackMeLearningTests(unittest.TestCase):
         self.assertEqual(lessons[0].room, "Nmap")
         self.assertIn("nmap", lessons[0].concepts)
         self.assertTrue(any("nmap -sV" in command for command in lessons[0].commands))
+        steps = result.data["work_product"]["steps"]
+        self.assertTrue(any("זיהיתי נושא" in step for step in steps))
+        self.assertTrue(any("שמרתי" in step for step in steps))
 
     def test_progress_review_reports_empty_and_populated_state(self) -> None:
         store = LearningMemoryStore()
@@ -50,6 +53,7 @@ class TryHackMeLearningTests(unittest.TestCase):
         self.assertIn("עוד אין", empty.data["work_product"]["findings"][0]["title"])
         self.assertTrue(captured.success)
         self.assertTrue(progress.success)
+        self.assertIn("steps", progress.data["work_product"])
         self.assertIn("שיעורי TryHackMe", progress.data["work_product"]["findings"][0]["title"])
 
 

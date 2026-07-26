@@ -19,6 +19,7 @@ conversations. A TryHackMe lesson becomes structured memory:
 - Safety boundaries
 - Review questions
 - Skill graph signals
+- Visible work steps shown to the user
 
 ## Agent
 
@@ -52,11 +53,16 @@ changing the Agent contract.
 
 NELA captures a lesson and returns:
 
+- How she processed the lesson
 - A saved lesson ID
 - Concepts such as `nmap`, `ports`, and `services`
 - Commands as study notes
 - Safety notes
 - Review questions
+
+The response intentionally shows what NELA did and how she did it: what input
+she read, which topic and concepts she extracted, what she saved, and which
+follow-up artifacts she prepared.
 
 ```text
 מה למדת ב TryHackMe?

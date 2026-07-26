@@ -391,8 +391,9 @@
       "variants": [
         {
           "id": "learning.tryhackme.saved.primary",
-          "text": "למדתי ושמרתי את שיעור ה-TryHackMe. מצאתי {findings_count_label}:\n{findings}\nהצעד הבא: {next_steps}",
+          "text": "למדתי ושמרתי את שיעור ה-TryHackMe.\nאיך עבדתי:\n{steps}\nמה מצאתי ({findings_count_label}):\n{findings}\nהצעד הבא: {next_steps}",
           "vars": [
+            "steps",
             "findings_count_label",
             "findings",
             "next_steps"
@@ -401,8 +402,9 @@
         },
         {
           "id": "learning.tryhackme.saved.tight",
-          "text": "למדתי וזה נכנס לזיכרון הלימודי שלי. {findings}\nממשיכים בחזרה קצרה: {next_steps}",
+          "text": "למדתי וזה נכנס לזיכרון הלימודי שלי.\nמה עשיתי:\n{steps}\n{findings}\nממשיכים בחזרה קצרה: {next_steps}",
           "vars": [
+            "steps",
             "findings",
             "next_steps"
           ]
@@ -415,8 +417,9 @@
       "variants": [
         {
           "id": "learning.tryhackme.review.primary",
-          "text": "בדקתי את למידת ה-TryHackMe:\n{findings}\nהצעד הבא: {next_steps}",
+          "text": "בדקתי את למידת ה-TryHackMe.\nאיך בדקתי:\n{steps}\nמה יצא:\n{findings}\nהצעד הבא: {next_steps}",
           "vars": [
+            "steps",
             "findings",
             "next_steps"
           ]

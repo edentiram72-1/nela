@@ -64,20 +64,35 @@
       "variants": [
         {
           "id": "core.saved.mine",
-          "text": "שמרתי אצלי.",
+          "text": "{learning_update}\nעדכנתי את {memory_target}. {next_steps}",
+          "vars": [
+            "learning_update",
+            "memory_target",
+            "next_steps"
+          ],
           "weight": 1.5
         },
         {
           "id": "core.saved.noted",
-          "text": "רשום."
+          "text": "למדתי. {learning_detail}\nזה נשמר ב{memory_target}.",
+          "vars": [
+            "learning_detail",
+            "memory_target"
+          ]
         },
         {
           "id": "core.saved.forever",
-          "text": "נכנס לזיכרון. זה יישאר."
+          "text": "נכנס לזיכרון. {learning_update}",
+          "vars": [
+            "learning_update"
+          ]
         },
         {
           "id": "core.saved.pref",
-          "text": "הבנתי — מהיום ככה."
+          "text": "הבנתי — עדכנתי את עצמי. {learning_detail}",
+          "vars": [
+            "learning_detail"
+          ]
         }
       ]
     },

@@ -76,6 +76,7 @@ class AgentWorkProduct:
     """Normalized specialist output for orchestration and tests."""
 
     summary: str
+    steps: tuple[str, ...] = ()
     findings: tuple[TaskFinding, ...] = ()
     artifacts: tuple[TaskArtifact, ...] = ()
     next_steps: tuple[str, ...] = ()
@@ -83,6 +84,7 @@ class AgentWorkProduct:
     def to_dict(self) -> dict[str, Any]:
         return {
             "summary": self.summary,
+            "steps": list(self.steps),
             "findings": [finding.to_dict() for finding in self.findings],
             "artifacts": [
                 {
