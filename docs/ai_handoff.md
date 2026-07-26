@@ -145,6 +145,13 @@ documentation files plus `docs/claude_current_code_review_prompt.md`. This
 package supersedes `nela-current-agent-code-review-6196dd4.zip` because it also
 includes the imported support packages Claude needed for evidence-based review.
 
+On 2026-07-27, `network_intelligence` was added as a passive T0 cyber-support
+Agent. It classifies user-supplied IPs, URLs, and hostnames, checks local
+interface names for VPN-like signals, prepares local network reports, and gives
+safe access-troubleshooting guidance without scanning, bypassing controls, or
+touching external targets. Hebrew routing now covers IP classification, VPN
+status, local network reports, and blocked-access troubleshooting.
+
 The same branch now includes a token-authenticated local browser prototype for
 Claude's Living Eye. `ui/web.py` serves `design/nela_living_eye.html` on
 `127.0.0.1` only, injects a per-launch token, verifies the expected same origin,

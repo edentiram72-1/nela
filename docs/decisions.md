@@ -501,3 +501,39 @@ hardcoded tokens, risky install paths, and registry risks are reported.
 - `agents/security/defensive_specialists.py`
 - `tests/test_multi_agent_expansion.py`
 - `docs/ai_handoff.md`
+
+### DEC-0019: Add Passive Network Intelligence As T0 Cyber Support
+
+**Date:** 2026-07-27
+**Status:** Accepted
+
+**Context:** NELA needs to answer practical network-security questions such as
+IP classification, local VPN status, local network posture, and blocked-access
+troubleshooting. These questions are useful for defense, but they must not turn
+into external scanning, bypass guidance, or unauthorized target interaction.
+
+**Decision:** Add `network_intelligence` as a passive T0 specialist. It can
+classify IPs, URLs, and hostnames from user-provided text, inspect local network
+interface names, prepare a local network report, and explain safe access
+troubleshooting. It has no network access permission, no filesystem access, and
+no active probing path.
+
+**Consequences:**
+
+- NELA can give practical network answers without pretending to bypass
+  controls or scan third-party systems.
+- Public targets are classified and explained only; active diagnostics still
+  require owned/local scope, confirmation, audit, and the lab flow.
+- The Brain remains agent-neutral: routing and planning delegate to the Agent
+  through the existing Dispatcher and Permission Engine.
+
+**Related files:**
+
+- `agents/security/defensive_specialists.py`
+- `agents/factory.py`
+- `agents/policy.py`
+- `brain/intent_router.py`
+- `brain/planner.py`
+- `core/response.py`
+- `tests/test_conversation_qa.py`
+- `tests/test_intent_recognition.py`
