@@ -49,7 +49,14 @@ This document describes the first NELA specialist-agent layer.
 - `recovery`: plans clean recovery and secret rotation.
 - `anomaly_discovery`: detects local metric anomalies and prepares lab-only fuzzing plans.
 - `authorized_lab`: gates local/owned cyber-lab work with target allowlists, authorization, audit logs, dry-run, and kill-switch controls.
-- `browser`, `terminal`, `github`, `files`, `automation`: registered tool-facing placeholders.
+- `automation`: routes computer tasks and creates high-level workflows.
+- `automation_workflow`: creates and validates repeatable automation runbooks.
+- `computer_control`: plans keyboard, mouse, and screen sequences in dry-run form.
+- `app_automation`: plans app lifecycle workflows for Desktop Agent handoff.
+- `file_automation`: previews file operations and flags unsafe paths.
+- `process_automation`: previews and runs allowlisted local verification commands.
+- `scheduler_automation`: plans recurring tasks without installing timers by default.
+- `browser`, `terminal`, `github`, `files`: registered tool-facing placeholders.
 
 ## Guardrails
 
@@ -76,8 +83,10 @@ Every specialist manifest includes a declarative `permission_profile`:
 - `may_contact_external_targets`
 
 These profiles are intentionally conservative. The current agents do not call
-external services or execute arbitrary commands. Future tool integrations should
-enforce these profiles at runtime.
+external services or execute arbitrary commands. `process_automation` is the
+exception: it can run only a tiny allowlist of local verification commands,
+without shell access, after dry-run and T2 confirmation. Future tool
+integrations should enforce these profiles at runtime.
 
 ## Usage
 

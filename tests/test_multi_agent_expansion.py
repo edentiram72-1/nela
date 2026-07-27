@@ -62,6 +62,12 @@ EXPECTED_AGENT_NAMES = {
     "github",
     "files",
     "automation",
+    "automation_workflow",
+    "computer_control",
+    "app_automation",
+    "file_automation",
+    "process_automation",
+    "scheduler_automation",
 }
 
 

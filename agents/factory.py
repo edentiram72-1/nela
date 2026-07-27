@@ -57,7 +57,15 @@ from agents.security import (
     VulnerabilityResearchAgent,
 )
 from agents.test_qa import TestQAAgent
-from agents.automation import AutomationAgent
+from agents.automation import (
+    AppAutomationAgent,
+    AutomationAgent,
+    AutomationWorkflowAgent,
+    ComputerControlAgent,
+    FileAutomationAgent,
+    ProcessAutomationAgent,
+    SchedulerAutomationAgent,
+)
 from agents.terminal import TerminalAgent
 from agents.tryhackme import TryHackMeLearningAgent
 from language.learning_store import LearnedResponseStore
@@ -126,6 +134,12 @@ def build_default_agents(
         GitHubAgent(),
         FilesAgent(),
         AutomationAgent(),
+        AutomationWorkflowAgent(),
+        ComputerControlAgent(),
+        AppAutomationAgent(),
+        FileAutomationAgent(),
+        ProcessAutomationAgent(),
+        SchedulerAutomationAgent(),
     )
 
 

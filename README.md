@@ -214,6 +214,12 @@ Implemented Agents:
 - Codex
 - Claude
 - Automation
+- Automation Workflow
+- Computer Control
+- App Automation
+- File Automation
+- Process Automation
+- Scheduler Automation
 - Orchestrator
 - Planner
 - Learning
@@ -226,7 +232,11 @@ Implemented Agents:
 - Anomaly Discovery
 - Authorized Lab
 
-All non-Desktop Agents currently validate delegation and lifecycle behavior through safe mock behavior. They do not perform real side effects.
+Most non-Desktop tool-facing Agents still validate delegation and lifecycle
+behavior through safe behavior. The automation layer now includes real
+structured runbook, UI-plan, app-plan, file-preview, process, and scheduler
+specialists. `process_automation` can run only allowlisted local verification
+commands, without shell access, after dry-run and confirmation.
 
 The first specialist-agent layer is available through `agents.build_default_registry()`.
 The security agents are defensive-only: local code analysis, SAST-style checks,
@@ -639,7 +649,11 @@ ChatGPT is responsible for:
 
 ## Current Known Limitations
 
-- Desktop Agent V1 can control supported macOS application lifecycle actions. Other Agents are safe mock placeholders and do not control real applications yet.
+- Desktop Agent V1 can control supported macOS application lifecycle actions.
+  The new automation specialists can plan and preview computer workflows, and
+  `process_automation` can run allowlisted local checks after confirmation.
+  Direct keyboard/mouse control, persistent scheduling, and broader terminal
+  automation still need future tool integrations.
 - Hebrew Language Engine and Voice Agent Foundation are foundation-stage infrastructure. Claude's language drop is integrated as authoritative content, while full schema behavior still needs additional engine work.
 - Claude's visual identity artifacts are present under `design/`, but the live Tkinter shell still uses a placeholder Eye component.
 - Intent recognition is deterministic and rule-based.

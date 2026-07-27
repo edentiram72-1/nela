@@ -200,7 +200,47 @@ def default_tool_permissions() -> dict[str, ToolPermissionProfile]:
         "recovery": ToolPermissionProfile("recovery", (*read_only, "recovery_plan"), filesystem="workspace_read"),
         "anomaly_discovery": ToolPermissionProfile("anomaly_discovery", (*security_read_only, "local_fuzz_plan"), filesystem="workspace_read"),
     }
-    for name in ("terminal", "github", "files", "automation"):
+    permissions["automation"] = ToolPermissionProfile(
+        "automation",
+        ("create_automation_workflow", "route_computer_task", "summarize"),
+        filesystem="workspace_read",
+    )
+    permissions["automation_workflow"] = ToolPermissionProfile(
+        "automation_workflow",
+        ("build_runbook", "validate_runbook", "summarize"),
+        filesystem="workspace_read",
+    )
+    permissions["computer_control"] = ToolPermissionProfile(
+        "computer_control",
+        ("plan_ui_sequence", "dry_run_ui_sequence"),
+        filesystem="none",
+        process_execution="disabled",
+    )
+    permissions["app_automation"] = ToolPermissionProfile(
+        "app_automation",
+        ("plan_app_workflow",),
+        filesystem="none",
+        process_execution="disabled",
+    )
+    permissions["file_automation"] = ToolPermissionProfile(
+        "file_automation",
+        ("preview_file_operation",),
+        filesystem="workspace_read",
+        process_execution="disabled",
+    )
+    permissions["process_automation"] = ToolPermissionProfile(
+        "process_automation",
+        ("preview_process_run", "run_allowlisted_command"),
+        filesystem="workspace_read",
+        process_execution="allowlisted_local_only",
+    )
+    permissions["scheduler_automation"] = ToolPermissionProfile(
+        "scheduler_automation",
+        ("plan_scheduled_task",),
+        filesystem="workspace_read",
+        process_execution="disabled",
+    )
+    for name in ("terminal", "github", "files"):
         permissions[name] = ToolPermissionProfile(name, ("status", "health_check"), filesystem="workspace_read")
     return permissions
 

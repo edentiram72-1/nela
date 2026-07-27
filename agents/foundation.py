@@ -148,12 +148,13 @@ def finding(
 def _permission_tier_for_action(action: str) -> PermissionTier:
     if action in {
         "contain_incident",
+        "run_allowlisted_command",
         "simulate_lab_adversary",
         "validate_exploit_safely",
         "scan_lab_target",
         "run_local_fuzzing",
     }:
-        return PermissionTier.T3
+        return PermissionTier.T2 if action == "run_allowlisted_command" else PermissionTier.T3
     if action in {"remember", "record_lesson", "teach_response", "capture_tryhackme_lesson", "register_lab_target"}:
         return PermissionTier.T1
     return PermissionTier.T0

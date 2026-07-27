@@ -212,6 +212,12 @@ health_check()
 - Codex
 - Claude
 - Automation
+- Automation Workflow
+- Computer Control
+- App Automation
+- File Automation
+- Process Automation
+- Scheduler Automation
 - Orchestrator
 - Planner
 - Learning
@@ -224,7 +230,10 @@ health_check()
 - Anomaly Discovery
 - Authorized Lab
 
-הסוכנים האלה בודקים כרגע האצלה ומחזור חיים. הם לא מבצעים פעולות אמיתיות עם תופעות לוואי.
+רוב סוכני הכלים עדיין עובדים בצורה בטוחה ומוגבלת, אבל שכבת האוטומציה כוללת
+עכשיו סוכני runbook, תכנון UI, תכנון אפליקציות, preview לפעולות קבצים,
+תהליכים ותזמון. `process_automation` יכול להריץ רק פקודות בדיקה מקומיות
+שנמצאות ב-allowlist, בלי shell, אחרי dry-run ואישור.
 
 שכבת הסוכנים המתמחים הראשונה זמינה דרך `agents.build_default_registry()`.
 סוכני הסייבר הם הגנתיים בלבד: ניתוח קוד מקומי, בדיקות בסגנון SAST,

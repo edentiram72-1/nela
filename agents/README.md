@@ -43,6 +43,12 @@ Shared types:
 - `claude`
 - `codex`
 - `automation`
+- `automation_workflow`
+- `computer_control`
+- `app_automation`
+- `file_automation`
+- `process_automation`
+- `scheduler_automation`
 - `vision`
 - `desktop`
 - `orchestrator`
@@ -125,6 +131,23 @@ confirmation, audit logging, and Cyber Lab dry-run/kill-switch controls.
 local/lab targets, evaluates scoped authorizations, records audit decisions, and
 prepares dry-run scans or local fuzz cases without contacting external systems.
 
+## Computer Automation
+
+The automation layer is split into narrow local specialists:
+
+- `automation`: routes computer tasks and creates high-level workflows.
+- `automation_workflow`: creates and validates repeatable runbooks.
+- `computer_control`: plans keyboard, mouse, and screen sequences in dry-run form.
+- `app_automation`: plans application lifecycle workflows for handoff to Desktop Agent.
+- `file_automation`: previews file operations and flags unsafe paths.
+- `process_automation`: previews and runs a tiny allowlist of local verification commands without shell access.
+- `scheduler_automation`: plans recurring local tasks without installing persistent timers.
+
+`process_automation.run_allowlisted_command` is intentionally narrow. It
+supports only known local verification commands, defaults to dry-run, requires
+`approved=True` for real execution, and is declared as T2 so Dispatcher routing
+requires confirmation before it runs.
+
 Sandbox profiles are declarative for now. Each specialist manifest includes a
 `permission_profile` with allowed tools, filesystem scope, network access, and
 process execution limits. Future runtime integrations should enforce those
@@ -132,7 +155,9 @@ profiles before any side-effecting tool is attached.
 
 ## Known Limitations
 
-- Current Agents are placeholders.
+- Some tool-facing Agents are placeholders, but the automation coordinator,
+  runbook, UI-plan, app-plan, file-preview, process, and scheduler automation
+  agents now return structured work products.
 - Real external integrations are not implemented yet.
 - The Claude Agent intentionally does not connect to Claude directly. It only prepares review requests and Markdown bundles.
 - Security analysis is local and heuristic. It is a defensive aid, not a release
